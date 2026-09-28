@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SLOPANOID ARCADE · The One-Shot Retro Trilogy</title>
+<title>SLOPANOID ARCADE · The One-Shot Retro Collection</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -176,7 +176,7 @@
   /* Games Grid */
   .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
     gap: 28px;
     width: 100%;
   }
@@ -245,6 +245,10 @@
   .icon-gng {
     background: linear-gradient(135deg, #15803d, #052e16);
     border-color: #22c55e;
+  }
+  .icon-lemmings {
+    background: linear-gradient(135deg, #7e22ce, #2e1065);
+    border-color: #c084fc;
   }
 
   .card-title-group {
@@ -380,7 +384,7 @@
 <div class="container">
   <header>
     <h1 class="logo-title">SLOPANOID ARCADE</h1>
-    <div class="tagline">The Autonomous Retro Demoscene Trilogy</div>
+    <div class="tagline">The Autonomous Retro Demoscene Collection</div>
   </header>
 
   <!-- Explanation of One-Shot Prompting -->
@@ -396,10 +400,11 @@
       <a class="prompt-pill" href="arkanoid/PROMPT.md">📜 Arkanoid Prompt</a>
       <a class="prompt-pill" href="xenon2/PROMPT.md">📜 Xenon 2 Prompt</a>
       <a class="prompt-pill" href="ghosts-n-goblins/PROMPT.md">📜 Ghosts 'n Goblins Prompt</a>
+      <a class="prompt-pill" href="lemmings/PROMPT.md">📜 Lemmings Prompt</a>
     </div>
   </section>
 
-  <!-- 3 Games Showcase -->
+  <!-- Games Showcase -->
   <main class="games-grid">
 
     <!-- GAME 1: ARKANOID -->
@@ -490,10 +495,40 @@
       </div>
     </article>
 
+    <!-- GAME 4: LEMMINGS: BEAT TRIBE -->
+    <article class="game-card">
+      <div>
+        <div class="card-header">
+          <div class="game-icon icon-lemmings">🎵</div>
+          <div class="card-title-group">
+            <span class="game-badge">16 Levels · 5 Genre Worlds</span>
+            <h2 class="game-title">Lemmings</h2>
+            <div class="game-subtitle">Beat Tribe · Playing Is Composing</div>
+          </div>
+        </div>
+
+        <p class="game-desc">
+          A Psygnosis puzzle tribute where every level is a living music sequencer: the terrain is the score, the lemmings are the playheads, and saving the tribe completes the song.
+        </p>
+
+        <ul class="feature-list">
+          <li><strong>Note Terrain:</strong> Colour-coded ground plays scale degrees as lemmings walk over it, every footstep quantized to the song clock so a crowd of 50 grooves instead of clattering.</li>
+          <li><strong>Skills Are Instruments:</strong> Diggers drum, Builders arpeggiate, Blockers drone, Bashers sweep the bass, and Bombers crash with a pitch-dropping "Oh no!".</li>
+          <li><strong>Stem Unlocks:</strong> Every 20% saved adds drums, bass, chords, lead, then the full mix, and the results screen replays the song you composed.</li>
+          <li><strong>Worlds:</strong> Amiga chiptune, acid warehouse, synthwave, jungle breakbeat, and an orchestral finale, plus a creeping Silence that eats sound.</li>
+        </ul>
+      </div>
+
+      <div class="button-group">
+        <a class="btn btn-play" href="lemmings/index.html">▶ Play Lemmings <kbd>[4]</kbd></a>
+        <a class="btn btn-prompt" href="lemmings/PROMPT.md">📄 Read One-Shot Prompt</a>
+      </div>
+    </article>
+
   </main>
 
   <footer>
-    <p>Hotkeys: Press <kbd>1</kbd>, <kbd>2</kbd>, or <kbd>3</kbd> to launch a game directly &middot; Press <kbd>P</kbd> to open prompt list</p>
+    <p>Hotkeys: Press <kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>, or <kbd>4</kbd> to launch a game directly &middot; Press <kbd>P</kbd> to open prompt list</p>
     <p style="margin-top: 6px;">All code and assets created self-contained in modern browsers. Check out the <a href="README.md">README</a> or view the source repository.</p>
   </footer>
 </div>
@@ -529,6 +564,7 @@
     if (e.key === '1') { beep(523, 'square', 0.1); window.location.href = 'arkanoid/index.html'; }
     if (e.key === '2') { beep(659, 'square', 0.1); window.location.href = 'xenon2/index.html'; }
     if (e.key === '3') { beep(784, 'square', 0.1); window.location.href = 'ghosts-n-goblins/index.html'; }
+    if (e.key === '4') { beep(1047, 'square', 0.1); window.location.href = 'lemmings/index.html'; }
     if (e.key === 'p' || e.key === 'P') {
       beep(440, 'triangle', 0.08);
       document.querySelector('.manifesto-box').scrollIntoView({ behavior: 'smooth' });

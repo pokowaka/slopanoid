@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!-- Real-browser smoke test. Run headless:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+       --autoplay-policy=no-user-gesture-required --allow-file-access-from-files \
+       --virtual-time-budget=20000 --dump-dom tools/browser-test.html
+     The final DOM contains a <pre id="report"> with errors and state trace. -->
+<html>
+<head><meta charset="utf-8"><link rel="stylesheet" href="../style.css"></head>
+<body class="crt">
+<div id="bezel"><div id="tube"><canvas id="screen" width="320" height="200"></canvas><div id="scan"></div></div></div>
+<pre id="report">RUNNING</pre>
+<script>
+  window.__log = [];
+  window.__err = [];
+  window.__raf = 0; const _raf = window.requestAnimationFrame.bind(window); window.requestAnimationFrame = (f) => _raf((t) => { window.__raf++; f(t); });
+  window.addEventListener('error', (e) => window.__err.push(e.message + ' @' + (e.filename || '').split('/').pop() + ':' + e.lineno));
+</script>
+<script src="../js/core.js"></script>
+<script src="../js/terrain.js"></script>
+<script src="../js/sim.js"></script>
+<script src="../js/levels.js"></script>
+<script src="../js/demos.js"></script>
+<script src="../js/gfx.js"></script>
+<script src="../js/sprites.js"></script>
+<script src="../js/render.js"></script>
+<script src="../js/songs.js"></script>
+<script src="../js/audio.js"></script>
+<script src="../js/game.js"></script>
+<script>
+(function () {
+  const cv = document.getElementById('screen');
+  const r = () => cv.getBoundingClientRect();
+  const at = (x, y) => ({ clientX: r().left + (x + 0.5) * r().width / 320, clientY: r().top + (y + 0.5) * r().height / 200, bubbles: true });
+  const mouse = (type, x, y, button) => { const o = Object.assign(at(x, y), { button: button || 0 }); (type === 'mousedown' ? cv : window).dispatchEvent(new MouseEvent(type, o)); };
+  const click = (x, y) => { mouse('mousemove', x, y); mouse('mousedown', x, y); mouse('mouseup', x, y); };
+  const key = (code, key) => { window.dispatchEvent(new KeyboardEvent('keydown', { code, key: key || code, bubbles: true })); setTimeout(() => window.dispatchEvent(new KeyboardEvent('keyup', { code, bubbles: true })), 30); };
+  const log = (m) => window.__log.push((performance.now() / 1000).toFixed(1) + 's raf=' + window.__raf + ' ' + m);
+  const steps = [
+    [500, () => log('state ' + BT.game.state)],
+    [800, () => click(160, 100)],
+    [1200, () => log('after click: ' + BT.game.state + ' audio=' + (BT.audio.ctx && BT.audio.ctx.state))],
+    [1300, () => { mouse('mousemove', 100, 26 + 3 * 8 + 3); }],
+    [1500, () => click(100, 26 + 3 * 8 + 3)],
+    [1800, () => log('state ' + BT.game.state)],
+    [2000, () => key('Enter')],
+    [2300, () => log('state ' + BT.game.state + ' level ' + (BT.game.run && BT.game.run.def.id))],
+    [6000, () => { key('KeyT'); log('lems ' + BT.game.run.sim.lems.length + ' step ' + BT.audio.nextStep + ' voices ' + BT.audio.active.length); }],
+    [8000, () => { key('KeyT'); key('KeyF'); }],
+    [9000, () => { const run = BT.game.run; const L = run.sim.lems.find((l) => l.st === BT.ST.WALK); if (L) { run.camX = Math.max(0, L.x - 160); click(3 * 15 + 7, 180); setTimeout(() => click(L.x - Math.round(run.camX), L.y - 5), 50); } }],
+    [10000, () => log('miner assigned? skills.miner=' + BT.game.run.sim.skills.miner + ' groove=' + BT.game.run.sim.groove)],
+    [12000, () => { click(11 * 15 + 7, 180); click(11 * 15 + 7, 180); log('nuking ' + BT.game.run.sim.nuking); }],
+    [17000, () => log('state ' + BT.game.state + (BT.audio.replay ? ' replay pos ' + BT.audio.replay.pos.toFixed(1) : ''))],
+    [19000, () => { key('Escape'); log('state ' + BT.game.state); }],
+    [19500, () => {
+      const f = BT.audio.spectrum(); let s = 0; if (f) for (const v of f) s += v;
+      document.getElementById('report').textContent = 'ERRORS: ' + window.__err.length + '\n' + window.__err.join('\n') + '\nLOG:\n' + window.__log.join('\n') + '\nspectrumSum=' + s + ' audioLog=' + BT.audio.log.length;
+    }],
+  ];
+  for (const [t, f] of steps) setTimeout(() => { try { f(); } catch (e) { window.__err.push('driver: ' + e.message); } }, t);
+})();
+</script>
+</body>
+</html>

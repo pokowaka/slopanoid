@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LEMMINGS: BEAT TRIBE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="crt">
+  <div id="bezel">
+    <div id="tube">
+      <canvas id="screen" width="320" height="200" aria-label="Lemmings: Beat Tribe game screen"></canvas>
+      <div id="scan"></div>
+    </div>
+    <div id="badge"><span class="led"></span>BEAT TRIBE <b>500</b><span class="sub">OCS · 320×200 · STEREO</span></div>
+  </div>
+  <!-- Load order matters: headless-safe core first, then DOM/audio layers. -->
+  <script src="js/core.js"></script>
+  <script src="js/terrain.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/demos.js"></script>
+  <script src="js/gfx.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/songs.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
