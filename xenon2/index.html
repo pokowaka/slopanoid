@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>XENON II · MEGABLAST — Evolution &amp; Tracker Odyssey</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="cabinet">
+  <header id="marquee">
+    <span class="logo-chrome">XENON II</span>
+    <span class="logo-gold">MEGABLAST</span>
+    <span class="logo-sub">EVOLUTION &amp; TRACKER ODYSSEY</span>
+  </header>
+
+  <div id="main">
+    <div id="screenCol">
+      <div id="bezel" class="crt-on">
+        <div id="screenWrap">
+          <canvas id="screen" width="320" height="200"></canvas>
+          <div id="crt"></div>
+          <div id="glass"></div>
+        </div>
+      </div>
+      <div id="help">
+        <span><b>MOVE</b> WASD / ARROWS / MOUSE</span>
+        <span><b>FIRE</b> SPACE / Z / LMB</span>
+        <span><b>REVERSE</b> HOLD DOWN AT BOTTOM</span>
+        <span><b>CHRONO</b> R / SHIFT / RMB</span>
+        <span><b>BOMB</b> Q</span>
+        <span><b>NASHWAN</b> X</span>
+        <span><b>SHOP</b> B</span>
+        <span><b>TRACKER</b> T</span>
+        <span><b>WARP</b> 1-5</span>
+        <span><b>PAUSE</b> P</span>
+      </div>
+    </div>
+
+    <aside id="side">
+      <div class="panel">
+        <div class="lbl">EPOCH</div>
+        <div id="hudStage" class="val">INSERT COIN</div>
+        <div id="hudEpoch" class="sm">&nbsp;</div>
+      </div>
+      <div class="panel two">
+        <div><div class="lbl">SCORE</div><div id="hudScore" class="val num">0000000</div></div>
+        <div><div class="lbl">CREDITS</div><div id="hudCredits" class="val num gold">0</div></div>
+      </div>
+      <div class="panel">
+        <div class="lbl">SHIELD</div>
+        <div class="bar"><div id="hudShield" class="fill shield"></div></div>
+        <div class="lbl">CHRONO ENERGY</div>
+        <div class="bar"><div id="hudChrono" class="fill chrono"></div></div>
+        <div class="stats">
+          <span>LIVES <b id="hudLives">3</b></span>
+          <span>BOMBS <b id="hudBombs">1</b></span>
+          <span>SPEED <b id="hudSpeed">0</b></span>
+          <span>NASH <b id="hudNash">0</b></span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="lbl">HARDPOINTS</div>
+        <ul id="hudHard" class="hard"></ul>
+      </div>
+      <div class="panel">
+        <div class="lbl">WEAPON SYNERGIES</div>
+        <ul id="hudSyn" class="syn"></ul>
+      </div>
+      <div class="panel">
+        <div class="lbl">SPECTRUM · OSCILLOSCOPE</div>
+        <canvas id="spec" width="240" height="60"></canvas>
+        <canvas id="scope" width="240" height="44"></canvas>
+        <div id="nowPlaying" class="sm np">&nbsp;</div>
+      </div>
+      <div class="panel buttons">
+        <button id="btnTracker">TRACKER VIEW [T]</button>
+        <button id="btnShop">SHOP DOCK [B]</button>
+        <button id="btnCrt">CRT BEZEL [C]</button>
+        <button id="btnMute">SOUND ON [M]</button>
+        <div class="warp">
+          <span>WARP</span>
+          <button data-warp="0">1</button><button data-warp="1">2</button><button data-warp="2">3</button><button data-warp="3">4</button><button data-warp="4">5</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ======================= CRISPIN'S INTERGALACTIC UPGRADE STORE ======================= -->
+<div id="shop" class="modal hidden">
+  <div class="shop-box">
+    <div class="shop-head">
+      <span class="shop-title">CRISPIN'S INTERGALACTIC UPGRADE STORE</span>
+      <span class="shop-credits">CREDITS <b id="shopCredits">0</b></span>
+    </div>
+    <div class="shop-body">
+      <div class="shop-left">
+        <canvas id="crispin" width="112" height="112"></canvas>
+        <div id="crispinSays" class="dialog"></div>
+      </div>
+      <div class="shop-mid">
+        <div class="doll">
+          <canvas id="doll" width="96" height="96"></canvas>
+          <button class="slot" data-slot="drones" style="left:0;top:0">ORBITAL DRONES<small></small></button>
+          <button class="slot" data-slot="nose" style="left:50%;top:0;transform:translateX(-50%)">NOSE<small></small></button>
+          <button class="slot" data-slot="hull" style="right:0;top:0">HULL / ENGINE<small></small></button>
+          <button class="slot" data-slot="lwing" style="left:0;top:44%">LEFT WING<small></small></button>
+          <button class="slot" data-slot="rwing" style="right:0;top:44%">RIGHT WING<small></small></button>
+          <button class="slot" data-slot="tail" style="left:50%;bottom:0;transform:translateX(-50%)">REAR TAIL<small></small></button>
+        </div>
+        <div id="shopSyn" class="shop-syn"></div>
+      </div>
+      <div class="shop-right">
+        <div id="shopSlotTitle" class="slot-title"></div>
+        <div id="shopItems" class="items"></div>
+        <div class="slot-title">SUPPLIES &amp; SPECIALS</div>
+        <div id="shopSupplies" class="items"></div>
+      </div>
+    </div>
+    <div class="shop-foot">
+      <span class="hint">CLICK A HARDPOINT · BUY / UPGRADE / SELL (50% TRADE-IN)</span>
+      <button id="undock">UNDOCK &amp; LAUNCH [B / ESC]</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= 8-CHANNEL TRACKER JUKEBOX ======================= -->
+<div id="tracker" class="modal hidden">
+  <div class="trk-box">
+    <div class="trk-head">
+      <span class="trk-title">MEGABLAST TRACKER 8CH</span>
+      <span class="trk-info">SONG <b id="trkSong">-</b> · POS <b id="trkPos">00</b> · PAT <b id="trkPat">00</b> · ROW <b id="trkRow">00</b> · BPM <b id="trkBpm">000</b></span>
+      <button id="trkClose">CLOSE [T]</button>
+    </div>
+    <div class="trk-bar"><span class="lbl">PATTERNS</span><div id="trkOrders"></div></div>
+    <div class="trk-bar"><span class="lbl">ERA SONGS</span><div id="trkSongs"></div><span class="lbl">MODE</span><div id="trkModes"></div></div>
+    <div id="trkPatName" class="trk-patname"></div>
+    <div class="trk-chans" id="trkChans"></div>
+    <div class="trk-grid-wrap" id="trkWrap">
+      <div class="trk-grid" id="trkGrid"></div>
+      <div class="trk-cursor"></div>
+    </div>
+  </div>
+</div>
+
+<script src="audio.js"></script>
+<script src="gfx.js"></script>
+<script src="sprites.js"></script>
+<script src="stages.js"></script>
+<script src="game.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>

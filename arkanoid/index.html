@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARKANOID · The Secret of Brick Island</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #040206; overflow: hidden; }
+  body {
+    display: flex; align-items: center; justify-content: center; font-family: 'Courier New', monospace;
+    background: radial-gradient(ellipse at 50% 40%, #1d1030 0%, #080410 55%, #020103 100%);
+  }
+  #cabinet {
+    position: relative; display: flex; flex-direction: column; align-items: center; padding: 10px 26px 14px;
+    background: linear-gradient(90deg, #1a0e06 0%, #3b2412 12%, #2a180b 50%, #3b2412 88%, #1a0e06 100%);
+    border-radius: 22px 22px 10px 10px; border: 3px solid #4d321a;
+    box-shadow: 0 0 0 5px #0b0603, 0 30px 80px #000, inset 0 0 40px rgba(0, 0, 0, .7);
+  }
+  #marquee {
+    width: 100%; text-align: center; margin-bottom: 10px; padding: 6px 0 5px; border-radius: 8px;
+    background: linear-gradient(#200a3a, #0c0418); border: 2px solid #5500aa;
+    box-shadow: 0 0 18px #aa00ff66, inset 0 0 12px #000;
+  }
+  #marquee b { display: block; font-size: 26px; letter-spacing: 10px; color: #ffff55; text-shadow: 0 0 8px #ffaa00, 3px 3px 0 #aa0000; }
+  #marquee i { display: block; font-style: normal; font-size: 11px; letter-spacing: 3px; color: #55ffff; }
+  #bezel {
+    position: relative; padding: 16px; border-radius: 16px; background: linear-gradient(#141418, #0a0a0c);
+    box-shadow: inset 0 0 22px #000, 0 0 0 3px #26262c, 0 0 0 6px #0b0b0d;
+  }
+  #screen {
+    display: block; width: min(86vw, calc((100vh - 175px) * 1.6)); aspect-ratio: 16 / 10; height: auto;
+    image-rendering: pixelated; image-rendering: crisp-edges; border-radius: 8px; cursor: none; background: #000;
+  }
+  #bezel::after {
+    content: ''; position: absolute; inset: 16px; border-radius: 8px; pointer-events: none;
+    background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, .16) 0 1px, transparent 1px 3px);
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, .55), inset 0 0 4px rgba(120, 160, 255, .25);
+  }
+  #help { margin-top: 9px; font-size: 11px; color: #c9a772; letter-spacing: 1px; text-align: center; }
+  #help kbd { color: #ffff55; font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="cabinet">
+  <div id="marquee"><b>ARKANOID</b><i>THE SECRET OF BRICK ISLAND · A LUCASARTS TRIBUTE</i></div>
+  <div id="bezel"><canvas id="screen" width="320" height="200"></canvas></div>
+  <div id="help"><kbd>MOUSE</kbd> / <kbd>&larr; &rarr;</kbd> / <kbd>A D</kbd> move &middot; <kbd>SPACE</kbd> / <kbd>CLICK</kbd> launch &amp; fire &middot; <kbd>P</kbd> pause &middot; <kbd>M</kbd> sound &middot; title screen: <kbd>&larr; &rarr;</kbd> or <kbd>1-7</kbd> pick a world</div>
+</div>
+<script>
+'use strict';
+/* =============================================================================
+ *  ARKANOID · THE SECRET OF BRICK ISLAND
+ *  A single-file LucasArts tribute: 320x200 EGA canvas, 33 mosaic levels,
+ *  and an AdLib/OPL2-flavoured FM synthesizer with a look-ahead tracker.
+ * ===========================================================================*/
+
+// ============================================================ EGA PALETTE
+// The 64 EGA colour registers: every channel is one of 00 / 55 / AA / FF.
+const LV = ['00', '55', 'aa', 'ff'];
+const E = (r, g, b) => '#' + LV[r] + LV[g] + LV[b];
+const EGA64 = Array.from({ length: 64 }, (_, i) =>
+  E(((i >> 2) & 1) * 2 + ((i >> 5) & 1), ((i >> 1) & 1) * 2 + ((i >> 4) & 1), (i & 1) * 2 + ((i >> 3) & 1)));
+const BLACK = E(0, 0, 0), WHITE = E(3, 3, 3);
+// brick colour letters -> EGA channel levels
+const COL = {
+  w: [3, 3, 3], r: [3, 1, 1], e: [2, 0, 0], g: [1, 3, 1], f: [0, 2, 0], b: [1, 1, 3], d: [0, 0, 2], c: [1, 3, 3], y: [3, 3, 1],
+  o: [3, 2, 0], n: [2, 1, 0], p: [3, 1, 3], v: [2, 0, 2], t: [3, 2, 1], k: [1, 1, 1], l: [2, 2, 2], m: [3, 2, 2], a: [0, 2, 2],
+};
+const shade = (c, d) => E(...c.map(v => Math.max(0, Math.min(3, v + d))));
+
+// ============================================================ PIXEL HELPERS
+const W = 320, H = 200, FX0 = 8, FX1 = 232, FY0 = 8, FW = 224, BW = 16, BH = 8, COLS = 14, BY0 = 20, PADY = 184;
+const screen = document.getElementById('screen');
+const X = screen.getContext('2d');
+X.imageSmoothingEnabled = false;
+let CX = X;
+function R(x, y, w, h, c) { CX.fillStyle = c; CX.fillRect(Math.floor(x), Math.floor(y), Math.round(w), Math.round(h)); }
+function P(x, y, c) { CX.fillStyle = c; CX.fillRect(Math.floor(x), Math.floor(y), 1, 1); }
+function mk(w, h, fn) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const prev = CX; CX = c.getContext('2d'); CX.imageSmoothingEnabled = false; fn(CX); CX = prev; return c;
+}
+function circ(cx, cy, r, c) { for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y) + 0.5); R(cx - w, cy + y, w * 2 + 1, 1, c); } }
+function ring(cx, cy, r, c) { for (let a = 0; a < 6.283; a += 0.9 / r) P(cx + Math.cos(a) * r, cy + Math.sin(a) * r, c); }
+function line(x0, y0, x1, y1, c, w) {
+  const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
+  for (let i = 0; i <= n; i++) R(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, w || 1, w || 1, c);
+}
+const BAYER = [0, 2, 3, 1];
+// vertical dithered gradient through a list of EGA colours (2x2 ordered dither, 4 steps per pair)
+function grad(x, y, w, h, cols) {
+  const n = cols.length - 1;
+  for (let j = 0; j < h; j++) {
+    const t = j / Math.max(1, h - 1) * n, i = Math.min(n - 1, Math.floor(t)), k = Math.round((t - i) * 4);
+    R(x, y + j, w, 1, k >= 4 ? cols[i + 1] : cols[i]);
+    if (k > 0 && k < 4) { CX.fillStyle = cols[i + 1]; for (let q = 0; q < w; q++) if (BAYER[(q & 1) + ((j & 1) << 1)] < k) CX.fillRect(x + q, y + j, 1, 1); }
+  }
+}
+function dith(x, y, w, h, c, k) { CX.fillStyle = c; for (let j = 0; j < h; j++) for (let q = 0; q < w; q++) if (BAYER[((x + q) & 1) + (((y + j) & 1) << 1)] < k) CX.fillRect(x + q, y + j, 1, 1); }
+function seeded(s) { return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const pad7 = n => String(Math.floor(n)).padStart(7, '0');
+function sprite(rows, map, sc) {
+  sc = sc || 1;
+  return mk(rows[0].length * sc, rows.length * sc, () => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (map[ch]) R(x * sc, y * sc, sc, sc, map[ch]); })));
+}
+
+// ============================================================ BITMAP FONTS (5x7 and 3x5)
+const F5SRC = {
+  A: '0e11111f111111', B: '1e11111e11111e', C: '0e11101010110e', D: '1e11111111111e', E: '1f10101e10101f', F: '1f10101e101010', G: '0e11101711110f',
+  H: '1111111f111111', I: '0e04040404040e', J: '0702020202120c', K: '11121418141211', L: '1010101010101f', M: '111b1515111111', N: '11111915131111',
+  O: '0e11111111110e', P: '1e11111e101010', Q: '0e11111115120d', R: '1e11111e141211', S: '0f10100e01011e', T: '1f040404040404', U: '1111111111110e',
+  V: '11111111110a04', W: '1111111515150a', X: '11110a040a1111', Y: '11110a04040404', Z: '1f01020408101f',
+  0: '0e11131519110e', 1: '040c040404040e', 2: '0e11010204081f', 3: '1f02040201110e', 4: '02060a121f0202', 5: '1f101e0101110e', 6: '0608101e11110e',
+  7: '1f010204080808', 8: '0e11110e11110e', 9: '0e11110f01020c',
+  ' ': '00000000000000', '.': '00000000000c0c', ',': '000000000c0408', '!': '04040404040004', '?': '0e110102040004', ':': '000c0c000c0c00',
+  '-': '0000001f000000', '+': '0004041f040400', '/': '01010204081010', "'": '04040800000000', '"': '0a0a0000000000', '(': '02040808080402',
+  ')': '08040202020408', '<': '02040810080402', '>': '08040201020408', '=': '00001f001f0000', '*': '0004150e150400', '&': '0c12140815120d',
+  '#': '0a0a1f0a1f0a0a', '%': '18190204081303', '_': '0000000000001f', '$': '040f140e051e04', '[': '0e08080808080e', ']': '0e02020202020e',
+  '@': '0e11171517100e', '·': '0000000c0c0000',
+};
+const F3SRC = {
+  A: '25755', B: '65656', C: '34443', D: '65556', E: '74647', F: '74644', G: '34553', H: '55755', I: '72227', J: '11152', K: '55655', L: '44447',
+  M: '57755', N: '65555', O: '25552', P: '65644', Q: '25573', R: '65655', S: '34216', T: '72222', U: '55557', V: '55552', W: '55775', X: '55255',
+  Y: '55222', Z: '71247', 0: '75557', 1: '26222', 2: '61247', 3: '61216', 4: '55711', 5: '74616', 6: '34652', 7: '71222', 8: '25252', 9: '75711',
+  ' ': '00000', '.': '00002', ',': '00024', '!': '22202', '?': '61202', ':': '02020', '-': '00700', "'": '22000', '"': '55000', '&': '25253',
+  '/': '11244', '(': '12221', ')': '42224', '#': '57575', '*': '05250', '+': '02720', '<': '12421', '>': '42124', '=': '07070', '@': '25743',
+  '%': '51245', '$': '36736', '·': '00200',
+};
+const FONTS = { 5: { w: 5, h: 7, adv: 6, rows: {} }, 3: { w: 3, h: 5, adv: 4, rows: {} } };
+for (const k in F5SRC) { const s = F5SRC[k]; const rows = []; for (let i = 0; i < 7; i++) { const v = parseInt(s.substr(i * 2, 2), 16) || 0; rows.push([16, 8, 4, 2, 1].map(m => (v & m) ? 1 : 0)); } FONTS[5].rows[k] = rows; }
+for (const k in F3SRC) FONTS[3].rows[k] = [...F3SRC[k]].map(d => [4, 2, 1].map(m => (+d & m) ? 1 : 0));
+const glyphCache = new Map();
+function glyph(fs, ch, col) {
+  const key = fs + ch + col; let g = glyphCache.get(key); if (g) return g;
+  const f = FONTS[fs], rows = f.rows[ch] || f.rows['?'];
+  g = mk(f.w, f.h, () => rows.forEach((r, y) => r.forEach((on, x) => { if (on) P(x, y, col); })));
+  glyphCache.set(key, g); return g;
+}
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+const textW = (s, o) => { o = o || {}; const f = FONTS[o.f || 5], sc = o.s || 1; return norm(s).length * f.adv * sc - sc; };
+function text(s, x, y, col, o) {
+  o = o || {}; const fs = o.f || 5, f = FONTS[fs], sc = o.s || 1; s = norm(s);
+  if (o.c) x -= Math.floor(textW(s, o) / 2); else if (o.r) x -= textW(s, o);
+  x = Math.round(x); y = Math.round(y);
+  const pass = (c, dx) => { for (let i = 0; i < s.length; i++) if (s[i] !== ' ') CX.drawImage(glyph(fs, s[i], c), x + i * f.adv * sc + dx, y + dx, f.w * sc, f.h * sc); };
+  if (o.sh) pass(o.sh, sc);
+  pass(col, 0);
+}
+function wrap(s, maxW, o) {
+  const lines = []; let cur = '';
+  for (const w of norm(s).split(' ')) { const t = cur ? cur + ' ' + w : w; if (cur && textW(t, o) > maxW) { lines.push(cur); cur = w; } else cur = t; }
+  if (cur) lines.push(cur); return lines;
+}
+
+// ============================================================ ADLIB / OPL2-STYLE SYNTHESIZER
+const Snd = (() => {
+  let ctx = null, comp, master, music, echoIn, distIn, sfxBus, noise, on = true, pending = null;
+  const chans = []; let chanIdx = 0;
+  let song = null, songName = '', step = 0, nextT = 0, timer = null, onDone = null;
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  const SONGS = {};
+
+  function distCurve(k) { const c = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; c[i] = (1 + k) * x / (1 + k * Math.abs(x)); } return c; }
+  function crushCurve(n) { const c = new Float32Array(2048); for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; c[i] = Math.round(x * n) / n; } return c; }
+
+  function init() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ctx = new AC();
+    comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -16; comp.knee.value = 8; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.2;
+    master = ctx.createGain(); master.gain.value = on ? 0.8 : 0;
+    comp.connect(master); master.connect(ctx.destination);
+    music = ctx.createGain(); music.gain.value = 0.5; music.connect(comp);
+    // tape-style echo send (feedback delay through a low-pass)
+    const dl = ctx.createDelay(1.5); dl.delayTime.value = 0.36;
+    const fb = ctx.createGain(); fb.gain.value = 0.42;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+    echoIn = ctx.createGain(); echoIn.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(music);
+    // overdrive chain for LeChuck's guitars
+    distIn = ctx.createGain();
+    const ws = ctx.createWaveShaper(); ws.curve = distCurve(45); ws.oversample = '2x';
+    const dlp = ctx.createBiquadFilter(); dlp.type = 'lowpass'; dlp.frequency.value = 3400;
+    const dg = ctx.createGain(); dg.gain.value = 0.42;
+    distIn.connect(ws); ws.connect(dlp); dlp.connect(dg); dg.connect(music);
+    // SFX: 4 dedicated channels -> bit-crusher -> own bus into the master compressor
+    sfxBus = ctx.createGain(); sfxBus.gain.value = 0.55; sfxBus.connect(comp);
+    const crusher = ctx.createWaveShaper(); crusher.curve = crushCurve(14); crusher.connect(sfxBus);
+    for (let i = 0; i < 4; i++) { const g = ctx.createGain(); g.connect(crusher); chans.push({ g, nodes: [] }); }
+    noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    if (pending) { const p = pending; pending = null; play(p.name, p.cb); }
+  }
+
+  // ---------------------------------------------------------------- voice building blocks
+  function osc(type, f, t) { const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); return o; }
+  function outNode(send, dest) {
+    const g = ctx.createGain(); g.connect(dest || music);
+    if (send) { const s = ctx.createGain(); s.gain.value = send; g.connect(s); s.connect(echoIn); }
+    return g;
+  }
+  function adsr(p, t, a, d, s, r, dur, pk) {
+    p.setValueAtTime(0.0001, t); p.linearRampToValueAtTime(pk, t + a);
+    p.setTargetAtTime(pk * s + 0.0001, t + a, d / 3 + 0.001);
+    p.setTargetAtTime(0.0001, t + Math.max(dur, a), r / 3 + 0.001);
+  }
+  // 2-operator FM: modulator -> GainNode (index) -> carrier.frequency
+  function fm(t, f, dur, vel, Pt, dest) {
+    const out = outNode(Pt.send, dest);
+    const c = osc(Pt.ct || 'sine', f, t), m = osc(Pt.mt || 'sine', f * Pt.ratio, t), mg = ctx.createGain();
+    mg.gain.setValueAtTime(Pt.i0 * f, t); mg.gain.setTargetAtTime(Pt.i1 * f, t + (Pt.ia || 0), Pt.it || 0.1);
+    m.connect(mg); mg.connect(c.frequency);
+    if (Pt.bend) {
+      const f0 = f * Math.pow(2, Pt.bend / 12);
+      c.frequency.setValueAtTime(f0, t); c.frequency.exponentialRampToValueAtTime(f, t + Pt.bendT);
+      m.frequency.setValueAtTime(f0 * Pt.ratio, t); m.frequency.exponentialRampToValueAtTime(f * Pt.ratio, t + Pt.bendT);
+    }
+    const g = ctx.createGain(); adsr(g.gain, t, Pt.a, Pt.d, Pt.s, Pt.r, dur, vel * Pt.vol);
+    c.connect(g); g.connect(out);
+    const end = t + dur + Pt.r + 0.15;
+    if (Pt.vib) {
+      const l = osc('sine', Pt.vibF || 5.5, t), lg = ctx.createGain();
+      lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(f * Pt.vib, t + (Pt.vibD || 0.2));
+      l.connect(lg); lg.connect(c.frequency); l.start(t); l.stop(end);
+    }
+    c.start(t); m.start(t); c.stop(end); m.stop(end);
+  }
+  const PATCH = {
+    pan:    { ratio: 3.5, i0: 2.4, i1: 0.15, it: 0.07, a: 0.003, d: 0.55, s: 0.0, r: 0.2, vol: 0.34, send: 0.25 },       // metallic steel drum
+    brass:  { ratio: 1, i0: 0.4, i1: 2.6, it: 0.06, a: 0.03, d: 0.3, s: 0.75, r: 0.12, vol: 0.22, send: 0.12 },            // biting brass
+    flute:  { ct: 'triangle', ratio: 2, i0: 0.5, i1: 0.25, it: 0.1, a: 0.06, d: 0.3, s: 0.85, r: 0.15, vol: 0.3, send: 0.35, vib: 0.007, vibF: 5, vibD: 0.3 },
+    reed:   { ratio: 3, i0: 1.3, i1: 0.8, it: 0.1, a: 0.04, d: 0.3, s: 0.8, r: 0.12, vol: 0.16, send: 0.3 },               // hollow clarinet
+    horn:   { ratio: 1, i0: 0.3, i1: 1.4, it: 0.08, a: 0.06, d: 0.4, s: 0.8, r: 0.2, vol: 0.16, send: 0.3 },
+    chime:  { ratio: 3.5, i0: 5, i1: 0.05, it: 0.35, a: 0.002, d: 2.2, s: 0, r: 1.2, vol: 0.24, send: 0.75 },
+    sax:    { ratio: 1, i0: 0.9, i1: 2.0, it: 0.08, a: 0.035, d: 0.3, s: 0.8, r: 0.1, vol: 0.26, send: 0.2, bend: -1.6, bendT: 0.09, vib: 0.013, vibF: 5.6, vibD: 0.25 },
+    guitar: { ct: 'sawtooth', ratio: 1, i0: 3.5, i1: 1.4, it: 0.1, a: 0.004, d: 0.3, s: 0.6, r: 0.06, vol: 0.2, dist: true },
+    shred:  { ct: 'sawtooth', ratio: 2, i0: 2.5, i1: 1.2, it: 0.1, a: 0.005, d: 0.3, s: 0.7, r: 0.08, vol: 0.13, dist: true, vib: 0.02, vibF: 7, vibD: 0.12 },
+    lead:   { ct: 'sawtooth', ratio: 1.001, i0: 0.3, i1: 0.9, it: 0.2, a: 0.02, d: 0.4, s: 0.8, r: 0.2, vol: 0.11, send: 0.35, vib: 0.01, vibF: 6, vibD: 0.25 },
+    organ:  { ct: 'square', ratio: 2, i0: 0.2, i1: 0.1, it: 0.05, a: 0.002, d: 0.09, s: 0.0, r: 0.05, vol: 0.08, send: 0.1 },
+    epiano: { ratio: 1, i0: 1.8, i1: 0.3, it: 0.15, a: 0.003, d: 0.5, s: 0.25, r: 0.15, vol: 0.13, send: 0.2 },
+    arp:    { ct: 'square', ratio: 1, i0: 0.1, i1: 0, it: 0.1, a: 0.002, d: 0.08, s: 0.3, r: 0.04, vol: 0.05, send: 0.3 },
+  };
+  // mischievous square lead with a fast-wobbling modulator (Purple Tentacle)
+  function sqwob(t, f, dur, vel) {
+    const out = outNode(0.15), g = ctx.createGain(); adsr(g.gain, t, 0.005, 0.2, 0.7, 0.06, dur, vel * 0.09);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2800; g.connect(lp); lp.connect(out);
+    const end = t + dur + 0.2, l = osc('sine', 11, t), lg = ctx.createGain(); lg.gain.value = f * 0.03; l.connect(lg);
+    for (const dt of [0, 8]) { const o = osc('square', f, t); o.detune.value = dt; lg.connect(o.frequency); o.connect(g); o.start(t); o.stop(end); }
+    l.start(t); l.stop(end);
+  }
+  // fat detuned triangle bass with a fast-closing resonant low-pass
+  function bass(t, f, dur, vel) {
+    const out = outNode(0), g = ctx.createGain(); adsr(g.gain, t, 0.004, 0.25, 0.55, 0.07, dur, vel * 0.5);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 6;
+    lp.frequency.setValueAtTime(2600, t); lp.frequency.setTargetAtTime(220, t, 0.06);
+    g.connect(lp); lp.connect(out); const end = t + dur + 0.2;
+    for (const dt of [-7, 7]) { const o = osc('triangle', f, t); o.detune.value = dt; o.connect(g); o.start(t); o.stop(end); }
+    const s = osc('square', f / 2, t), sg = ctx.createGain(); sg.gain.value = 0.16; s.connect(sg); sg.connect(g); s.start(t); s.stop(end);
+  }
+  // slow sweeping 3-saw pad drenched in echo (Atlantis)
+  function pad(t, f, dur, vel) {
+    const out = outNode(0.6), g = ctx.createGain(); adsr(g.gain, t, 0.9, 1.0, 0.8, 1.4, dur, vel * 0.055);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(450, t); lp.frequency.linearRampToValueAtTime(1500, t + dur * 0.5); lp.frequency.linearRampToValueAtTime(550, t + dur);
+    g.connect(lp); lp.connect(out); const end = t + dur + 1.6;
+    for (const dt of [-9, 0, 9]) { const o = osc('sawtooth', f, t); o.detune.value = dt; o.connect(g); o.start(t); o.stop(end); }
+  }
+  function hum(t, f, dur, vel) {
+    const out = outNode(0.3), g = ctx.createGain(); adsr(g.gain, t, 0.6, 0.8, 0.9, 1.0, dur, vel * 0.3); g.connect(out);
+    const end = t + dur + 1.2;
+    const a = osc('sine', f, t), b = osc('triangle', f * 2, t), bg = ctx.createGain(); bg.gain.value = 0.25;
+    a.connect(g); b.connect(bg); bg.connect(g); a.start(t); b.start(t); a.stop(end); b.stop(end);
+  }
+  function bowed(t, f, dur, vel) {
+    const out = outNode(0.3), g = ctx.createGain(); adsr(g.gain, t, 0.08, 0.3, 0.9, 0.25, dur, vel * 0.09);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; g.connect(lp); lp.connect(out);
+    const o = osc('sawtooth', f, t); o.connect(g); o.start(t); o.stop(t + dur + 0.5);
+  }
+  const CUSTOM = { sqwob, bass, pad, hum, bowed };
+  function voice(inst, t, f, dur, v, dest) {
+    const Pt = PATCH[inst];
+    if (Pt) return fm(t, f, dur, v, Pt, dest || (Pt.dist ? distIn : null));
+    if (CUSTOM[inst]) CUSTOM[inst](t, f, dur, v, dest);
+  }
+  // ---------------------------------------------------------------- drum kit
+  function nz(t, dur, vol, type, f, q) {
+    const s = ctx.createBufferSource(); s.buffer = noise;
+    const bf = ctx.createBiquadFilter(); bf.type = type; bf.frequency.value = f; bf.Q.value = q || 1;
+    const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    s.connect(bf); bf.connect(g); g.connect(music); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+  }
+  function thump(t, f0, f1, dur, vol, type) {
+    const o = osc(type || 'sine', f0, t), g = ctx.createGain(); o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.5);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); o.connect(g); g.connect(music); o.start(t); o.stop(t + dur + 0.02);
+  }
+  const DR = {
+    k: (t, v) => thump(t, 150, 42, 0.28, v * 0.9),                                               // kick
+    s: (t, v) => { nz(t, 0.16, v * 0.45, 'bandpass', 1900, 0.8); thump(t, 190, 120, 0.1, v * 0.3, 'triangle'); }, // snare
+    h: (t, v) => nz(t, 0.045, v * 0.16, 'highpass', 7500, 0.7),                                  // closed hat
+    o: (t, v) => nz(t, 0.28, v * 0.14, 'highpass', 6500, 0.7),                                   // open hat
+    r: (t, v) => { nz(t, 0.35, v * 0.1, 'bandpass', 5200, 3); thump(t, 3100, 3000, 0.3, v * 0.02, 'square'); }, // ride
+    c: (t, v) => nz(t, 1.1, v * 0.2, 'highpass', 4500, 0.5),                                     // crash
+    x: (t, v) => nz(t, 0.06, v * 0.08, 'bandpass', 9000, 2),                                     // shaker
+    b: (t, v) => thump(t, 90, 30, 1.2, v * 0.6),                                                 // temple boom
+    m: (t, v) => thump(t, 820, 780, 0.03, v * 0.2, 'square'),                                    // rimshot
+    t: (t, v) => thump(t, 220, 90, 0.25, v * 0.5),                                               // tom
+  };
+  // ---------------------------------------------------------------- tracker
+  const NOTE = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+  function n2m(s) { const m = /^([a-g])(#|b)?(-?\d)$/.exec(s); return m ? 12 * (+m[3] + 1) + NOTE[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) : 60; }
+  // Tracker text: one token per 16th step. "c4" note, "[c4e4g4]" chord, "-" hold, "." rest,
+  // "x*8" = token lasting 8 steps, suffix ' = accent, , = ghost. Drum tokens list kit letters (UPPER = accent).
+  function parseTrack(src, inst, vol) {
+    const ev = []; let pos = 0, last = null;
+    for (let tok of src.trim().split(/\s+/)) {
+      if (!tok || tok === '|') continue;
+      let n = 1; const mm = /\*(\d+)$/.exec(tok); if (mm) { n = +mm[1]; tok = tok.slice(0, mm.index); }
+      if (tok === '-') { if (last) last.dur += n; pos += n; continue; }
+      if (tok === '.') { last = null; pos += n; continue; }
+      let v = 1; if (tok.endsWith("'")) { v = 1.35; tok = tok.slice(0, -1); } else if (tok.endsWith(',')) { v = 0.55; tok = tok.slice(0, -1); }
+      const notes = inst === 'drums' ? tok.split('') : tok[0] === '[' ? tok.slice(1, -1).match(/[a-g][#b]?-?\d/g).map(n2m) : [n2m(tok)];
+      last = { pos, notes, dur: n, v }; ev.push(last); pos += n;
+    }
+    const by = new Array(pos); for (const e of ev) by[e.pos] = e;
+    return { inst, vol: vol || 1, len: Math.max(1, pos), by };
+  }
+  function define(name, o) {
+    const tracks = o.tracks.map(tr => tr.gen ? tr : parseTrack(tr.n, tr.i, tr.v));
+    SONGS[name] = { bpm: o.bpm, sw8: o.sw8 || 0, sw16: o.sw16 || 0, once: !!o.once, tracks, len: Math.max(...tracks.map(t => t.len || 0)) };
+  }
+  function play(name, cb) {
+    if (!ctx) { pending = { name, cb }; songName = name; return; }
+    if (!cb && songName === name && timer) return;
+    stopMusic(); song = SONGS[name]; songName = name; onDone = cb || null; step = 0; nextT = ctx.currentTime + 0.06;
+    timer = setInterval(pump, 25); pump();
+  }
+  function stopMusic() { if (timer) clearInterval(timer); timer = null; song = null; songName = ''; }
+  function pump() {
+    if (!song) return;
+    const spb = 60 / song.bpm / 4;
+    while (nextT < ctx.currentTime + 0.14) {
+      if (song.once && step >= song.len) {
+        const cb = onDone, endT = nextT; stopMusic();
+        if (cb) setTimeout(cb, Math.max(0, (endT - ctx.currentTime) * 1000));
+        return;
+      }
+      for (const tr of song.tracks) {
+        if (tr.gen) { tr.gen(step, nextT, spb); continue; }
+        const ls = step % tr.len, e = tr.by[ls]; if (!e) continue;
+        let t = nextT;
+        if (song.sw8 && ls % 4 === 2) t += spb * song.sw8 * 2;
+        if (song.sw16 && ls % 2 === 1) t += spb * song.sw16;
+        trigger(tr, e, t, spb);
+      }
+      nextT += spb; step++;
+    }
+  }
+  function trigger(tr, e, t, spb) {
+    const dur = e.dur * spb * 0.92, v = e.v * tr.vol;
+    if (tr.inst === 'drums') { for (const ch of e.notes) { const f = DR[ch.toLowerCase()]; if (f) f(t, (ch !== ch.toLowerCase() ? 1.3 : 0.85) * v); } return; }
+    for (const m of e.notes) voice(tr.inst, t, mtof(m), dur, v);
+  }
+
+  // ---------------------------------------------------------------- SFX (4 dedicated, bit-crushed channels)
+  function tone(t, d, n, type, f0, f1, dur, vol) {
+    const o = osc(type, f0, t); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+    const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(d); o.start(t); o.stop(t + dur + 0.02); n.push(o); return o;
+  }
+  function nzs(t, d, n, dur, vol, type, f0, f1, q) {
+    const s = ctx.createBufferSource(); s.buffer = noise;
+    const bf = ctx.createBiquadFilter(); bf.type = type; bf.Q.value = q || 1; bf.frequency.setValueAtTime(f0, t);
+    if (f1) bf.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    s.connect(bf); bf.connect(g); g.connect(d); s.start(t); s.stop(t + dur + 0.02); n.push(s);
+  }
+  const semi = (f, s) => f * Math.pow(2, s / 12);
+  const SFX = {
+    paddle: (t, d, n) => tone(t, d, n, 'square', 330, 520, 0.07, 0.22),
+    wall: (t, d, n) => tone(t, d, n, 'square', 900, 700, 0.03, 0.07),
+    brick: (t, d, n, a) => { const f = semi(520, a || 0); tone(t, d, n, 'square', f, f * 0.7, 0.07, 0.2); },
+    armor: (t, d, n) => { tone(t, d, n, 'triangle', 1500, 1400, 0.15, 0.25); tone(t, d, n, 'square', 2230, 2100, 0.08, 0.05); },
+    steel: (t, d, n) => { tone(t, d, n, 'sine', 1800, 1790, 0.25, 0.22); tone(t, d, n, 'sine', 2710, 2700, 0.18, 0.1); },
+    explode: (t, d, n) => { nzs(t, d, n, 0.6, 0.7, 'lowpass', 3000, 150, 1); tone(t, d, n, 'sine', 120, 30, 0.5, 0.6); },
+    launch: (t, d, n) => tone(t, d, n, 'square', 260, 980, 0.12, 0.18),
+    laser: (t, d, n) => tone(t, d, n, 'sawtooth', 1500, 280, 0.09, 0.15),
+    power: (t, d, n) => [0, 4, 7, 12].forEach((s, i) => tone(t + i * 0.05, d, n, 'square', semi(523, s), semi(523, s), 0.06, 0.16)),
+    life: (t, d, n) => [0, 4, 7, 12, 16, 19, 24].forEach((s, i) => tone(t + i * 0.06, d, n, 'triangle', semi(392, s), semi(392, s), 0.09, 0.3)),
+    lose: (t, d, n) => { tone(t, d, n, 'sawtooth', 700, 50, 1.0, 0.3); nzs(t + 0.1, d, n, 0.8, 0.3, 'lowpass', 1200, 100); },
+    warp: (t, d, n) => {
+      const o = osc('sine', 300, t); o.frequency.exponentialRampToValueAtTime(1800, t + 0.18); o.frequency.exponentialRampToValueAtTime(250, t + 0.42);
+      const l = osc('sine', 30, t), lg = ctx.createGain(); lg.gain.value = 60; l.connect(lg); lg.connect(o.frequency);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      o.connect(g); g.connect(d); o.start(t); o.stop(t + 0.46); l.start(t); l.stop(t + 0.46); n.push(o, l);
+    },
+    era: (t, d, n) => { nzs(t, d, n, 0.6, 0.35, 'bandpass', 300, 5000, 4); tone(t, d, n, 'triangle', 180, 900, 0.5, 0.15); },
+    dart: (t, d, n) => { nzs(t, d, n, 0.12, 0.3, 'highpass', 3000, 8000, 1); tone(t, d, n, 'square', 1100, 500, 0.12, 0.1); },
+    stun: (t, d, n) => { tone(t, d, n, 'square', 110, 90, 0.4, 0.2); tone(t, d, n, 'square', 117, 95, 0.4, 0.15); },
+    fire: (t, d, n) => { tone(t, d, n, 'triangle', 220, 1300, 0.35, 0.3); nzs(t, d, n, 0.35, 0.15, 'bandpass', 800, 3000, 2); },
+    note: (t, d, n, k) => { const f = semi(261.63, [0, 2, 4, 5, 7, 9, 11, 12][(k || 1) - 1]); tone(t, d, n, 'sine', f, f, 1.3, 0.35); tone(t, d, n, 'sine', f * 3.5, f * 3.5, 0.35, 0.08); tone(t, d, n, 'triangle', f * 2, f * 2, 0.6, 0.07); },
+    spell: (t, d, n) => { [0, 4, 7, 11, 12, 16, 19, 24].forEach((s, i) => tone(t + i * 0.045, d, n, 'triangle', semi(523, s), semi(523, s), 0.3, 0.2)); nzs(t, d, n, 0.8, 0.12, 'highpass', 6000, 9000, 1); },
+    insult: (t, d, n) => { for (let i = 0; i < 7; i++) { const f = 300 + Math.random() * 500; tone(t + i * 0.06, d, n, 'square', f, f * 0.9, 0.05, 0.12); } },
+    touche: (t, d, n) => [0, 4, 7, 12, 7, 12].forEach((s, i) => tone(t + i * 0.07, d, n, 'square', semi(392, s), semi(392, s), 0.08, 0.16)),
+    wrong: (t, d, n) => { tone(t, d, n, 'triangle', 440, 415, 0.25, 0.3); tone(t + 0.28, d, n, 'triangle', 330, 290, 0.45, 0.3); },
+    bosshit: (t, d, n) => { nzs(t, d, n, 0.15, 0.35, 'lowpass', 2500, 400, 1); tone(t, d, n, 'square', 200, 80, 0.14, 0.2); },
+    bossfire: (t, d, n) => { tone(t, d, n, 'square', 800, 180, 0.22, 0.14); nzs(t, d, n, 0.2, 0.15, 'bandpass', 1200, 400, 2); },
+    bossdie: (t, d, n) => { nzs(t, d, n, 2.2, 0.7, 'lowpass', 4000, 60, 1); tone(t, d, n, 'sawtooth', 300, 25, 2.0, 0.35); },
+    catch: (t, d, n) => tone(t, d, n, 'sine', 700, 300, 0.09, 0.3),
+    pause: (t, d, n) => tone(t, d, n, 'square', 660, 660, 0.06, 0.12),
+    select: (t, d, n) => tone(t, d, n, 'square', 880, 1100, 0.05, 0.12),
+  };
+  function sfx(name, a) {
+    if (!ctx || !on || !SFX[name]) return;
+    const now = ctx.currentTime, ch = chans[chanIdx++ % chans.length];
+    for (const nd of ch.nodes) { try { nd.stop(); } catch (e) { /* already stopped */ } }
+    ch.nodes = [];
+    SFX[name](now, ch.g, ch.nodes, a);
+    // brief duck so effects cut through the soundtrack
+    music.gain.cancelScheduledValues(now); music.gain.setTargetAtTime(0.36, now, 0.01); music.gain.setTargetAtTime(0.5, now + 0.08, 0.12);
+  }
+  function toggle() { on = !on; if (master) master.gain.setTargetAtTime(on ? 0.8 : 0, ctx.currentTime, 0.02); return on; }
+  return {
+    init, play, define, sfx, toggle, voice, mtof, stop: stopMusic,
+    get on() { return on; }, get current() { return songName; }, get ready() { return !!ctx; },
+  };
+})();
+const sfx = (n, a) => Snd.sfx(n, a);
+
+// ============================================================ COMPOSITIONS
+// helpers: pat() drops a chord into a rhythm per bar, q4() turns a list of notes into quarter notes
+const pat = (chords, p) => chords.map(c => p.replace(/X/g, c)).join(' | ');
+const q4 = s => s.split(/\s+/).map(t => t === '|' ? t : t + '*4').join(' ');
+const SKANK = '. . X . . . X . . . X . . . X .';
+
+// --- World 1: reggae on Melee Island (steel-pan FM, walking bass, offbeat skank)
+Snd.define('monkey', {
+  bpm: 128, sw16: 0.1, tracks: [
+    { i: 'pan', v: 1, n: `. . e5 . g5 . e5 c5 . d5 . e5 - . c5 . | . . f5 . a5 . f5 c5 . d5 . f5 - . a4 . | b4 . d5 . g5 - . f5 e5 . d5 . b4 - g4 . | c5 - . e5 . g5 . c6 - . b5 a5 g5 - . . |
+      . . a4 . c5 . e5 a5 . g5 . e5 - . c5 . | f5 . . a5 . f5 . c5 . . d5 . f5 . e5 d5 | d5 . b4 . g4 . b4 d5 . g5 . f5 e5 . d5 . | g5 - - . f5 . e5 . d5 . b4 . g4 - . .` },
+    { i: 'bass', v: 0.9, n: `c2 - . c2 e2 - . . g2 - . g2 a2 - b2 - | f2 - . f2 a2 - . . c3 - . c3 d3 - e3 - | g2 - . g2 b2 - . . d3 - . d3 b2 - a2 - | c3 - . c3 g2 - . . e2 - . e2 g2 - a2 - |
+      a2 - . a2 c3 - . . e3 - . e3 c3 - b2 - | f2 - . f2 a2 - . . c3 - . a2 g2 - f2 - | g2 - . g2 b2 - . . d3 - . b2 a2 - g2 - | g2 - . . b2 . d3 . g3 - f3 - d3 - b2 -` },
+    { i: 'organ', v: 0.8, n: pat(['[c4e4g4]', '[c4f4a4]', '[b3d4g4]', '[c4e4g4]', '[c4e4a4]', '[c4f4a4]', '[b3d4g4]', '[b3d4g4]'], SKANK) },
+    { i: 'drums', v: 0.9, n: 'h . h . h . h . KS . h . h m h . | h . h . h . h . KS . h . h . ko .' },
+  ],
+});
+
+// --- World 2: Purple Tentacle's chromatic march (wobbling square lead, descending bass stabs)
+Snd.define('tentacle', {
+  bpm: 116, tracks: [
+    { i: 'sqwob', v: 1, n: `d5 . e5 . f5 . f#5 . g5 - . . a5 . a#5 . | a5 . g#5 . g5 . f#5 . f5 - d5 . c#5 - . . | d5 . . d5 f5 . . f5 a5 . g#5 . a5 - . . | a#5 . a5 . g#5 . g5 . f#5 . f5 . e5 . c#5 . |
+      d4 . f4 . a4 . d5 . c#5 . d5 . f5 - e5 . | d5 . c#5 . c5 . b4 . a#4 - a4 . g#4 . a4 . | f5 . e5 . d#5 . e5 . f5 . f#5 . g5 . g#5 . | a5 - - . a4 . . . d5 - . . . . . .` },
+    { i: 'bass', v: 1, n: `d2 . . . a2 . . . d2 . . . a2 . . . | a1 . . . e2 . . . a1 . . . c#2 . . . | d2 . . . a2 . . . d2 . . . a2 . . . | a#1 . . . f2 . . . a1 . . . e2 . . . |
+      d3' . c#3' . c3' . b2' . a#2' - - . a2' - - . | g2 . . . d2 . . . a2 . . . e2 . . . | d3' . c#3' . c3' . b2' . a#2' . a2' . g#2' . g2' . | a1' - - . a1 . . . d2' - . . . . . .` },
+    { i: 'brass', v: 0.55, n: pat(['[d4f4a4]', '[c#4e4a4]', '[d4f4a4]', '[d4f4a#4]', '[d4f4a4]', '[d4g4a#4]', '[d4f4a4]', '[c#4e4a4]'], SKANK) },
+    { i: 'drums', v: 0.85, n: 'KC . s . k . s . K . s s k . s s | K . s . k . s . k s s s S . S .' },
+  ],
+});
+
+// --- World 3: Atlantis, slow ambient (sweeping echo pad, low hum, random pentatonic chimes)
+const CHIMES = [69, 72, 74, 76, 79, 81, 84, 86, 88];
+Snd.define('atlantis', {
+  bpm: 72, tracks: [
+    { i: 'pad', v: 1, n: '[a3c4e4]*32 [f3a3c4]*32 [d3f3a3]*32 [e3g#3b3]*32' },
+    { i: 'hum', v: 1, n: 'a1*32 f1*32 d2*32 e1*32' },
+    { gen: (step, t, spb) => { if (step % 2 === 0 && Math.random() < 0.28) Snd.voice('chime', t, Snd.mtof(CHIMES[Math.floor(Math.random() * CHIMES.length)]), spb * 6, 0.55 + Math.random() * 0.4); } },
+    { i: 'drums', v: 0.8, n: 'B .*15 .*4 x .*3 .*4 x .*3 | .*8 x .*7 b .*7 x .*7' },
+  ],
+});
+
+// --- World 4: space combat (driving 16th bass, soaring lead, rapid snares)
+const SPACE_ARP = [[64, 67, 71, 76], [60, 64, 67, 72], [62, 66, 69, 74], [59, 63, 66, 71]], ARP_ORDER = [0, 1, 2, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0, 1, 2, 1];
+Snd.define('space', {
+  bpm: 140, tracks: [
+    { i: 'bass', v: 0.85, n: `e2 e2 e3 e2 e2 e3 e2 e2 e3 e2 e2 e3 e2 e3 d3 b2 | c2 c2 c3 c2 c2 c3 c2 c2 c3 c2 c2 c3 c2 c3 b2 g2 |
+      d2 d2 d3 d2 d2 d3 d2 d2 d3 d2 d2 d3 d2 d3 c3 a2 | b1 b1 b2 b1 b1 b2 b1 b1 b2 b1 b1 b2 d#3 f#3 b2 d#2` },
+    { i: 'lead', v: 1, n: `e5*6 f#5 g5 b5*6 a5 g5 | e6*8 d6*4 c6 b5 a5 g5 | f#5*6 g5 a5 d6*6 c6 b5 | b5*12 a5 g5 f#5 d#5 |
+      e5*4 g5*4 b5*4 e6*4 | g6*6 f#6 e6 c6*8 | d6*4 c6*2 b5*2 a5*4 d6*4 | b5*16` },
+    { gen: (step, t, spb) => { const ch = SPACE_ARP[Math.floor(step / 16) % 4]; Snd.voice('arp', t, Snd.mtof(ch[ARP_ORDER[step % 16]] + 12), spb * 0.9, 0.8); } },
+    { i: 'drums', v: 0.85, n: 'K h s h k h s h K k s h k h S s | K h s h k h s h K k s k S s S S' },
+  ],
+});
+
+// --- World 5: Loom, a 4-voice chorale in B minor (flute, clarinet, horn, bowed bass)
+Snd.define('loom', {
+  bpm: 92, tracks: [
+    { i: 'flute', v: 1, n: `f#5*8 b4*2 c#5*2 d5*2 e5*2 | f#5*6 d5*2 f#5*6 d5*2 | f#5*6 b4*2 d5*2 b4*2 g4*2 d5*2 | b4*8 c#5*4 d5*4 |
+      e5*6 d5*2 c#5*4 f#5*4 | e5*4 d5*4 c#5*4 a#4*4 | b4*2 c#5*2 d5*2 e5*2 f#5*4 e5*4 | d5*4 c#5*4 b4*8` },
+    { i: 'reed', v: 1, n: `d5*8 f#4*4 g4*4 | a4*8 a4*8 | b4*8 g4*8 | f#4*8 f#4*4 a#4*4 | g4*6 b4*2 a#4*8 | c#5*4 b4*4 a#4*4 f#4*4 | g4*4 b4*4 a4*4 c#5*4 | a#4*8 f#4*8` },
+    { i: 'horn', v: 1, n: 'b3*8 d4*8 | f#4*8 d4*8 | d4*8 e4*8 | d4*8 c#4*8 | e4*8 c#4*8 | a#3*8 c#4*8 | d4*8 e4*8 | c#4*8 d4*8' },
+    { i: 'bowed', v: 1, n: 'b2*8 b2*4 a2*4 | d3*8 f#2*8 | g2*8 e2*8 | b2*8 f#2*8 | e2*8 f#2*8 | f#2*8 f#2*8 | g2*8 a2*8 | f#2*8 b1*8' },
+  ],
+});
+
+// --- World 6: Sam & Max swing jazz (12-bar blues in F, walking bass, bending sax)
+Snd.define('sammax', {
+  bpm: 132, sw8: 0.33, tracks: [
+    { i: 'bass', v: 0.9, n: q4('f2 a2 c3 a2 | f2 g2 a2 c3 | d#3 d3 c3 a2 | f2 a2 c3 e3 | a#2 d3 f3 d3 | a#2 g#2 g2 e2 | f2 a2 c3 a2 | f2 c3 d3 e3 | c3 e3 g3 e3 | a#2 d3 f3 d3 | f2 a2 c3 a2 | c3 a#2 a2 g2') },
+    { i: 'sax', v: 1, n: `. . f4 g#4 a4 - c5 - . . c5 d#5' - c5 . . | d5 - c5 - a4 - f4 - g#4 a4 - - - . . . | . . c5 - d#5 - f5' - - - d#5 c5 - a4 - . | c5*12 . . a4 c5 |
+      d5 - f5 - g#5' - - - f5 - d5 - c5 - a#4 - | g#4 - a4 - a#4 - b4 - c5*8 | . . f5 - d#5 - c5 - d#5 c5 - a4 - f4 - . | f4*8 .*4 c5 d5 d#5 e5 |
+      g5' - - - e5 - c5 - a#4 - g4 - e4 - g4 - | f5' - - - d5 - a#4 - g#4 - f4 - d4 - f4 - | c5 - a4 - f4 - g#4 a4 - c5 - d#5 - c5 - . | f4*6 e4 - g4*4 .*4` },
+    { i: 'epiano', v: 1, n: pat(['F', 'F', 'F', 'F', 'Bb', 'Bb', 'F', 'F', 'C', 'Bb', 'F', 'C'].map(c => ({ F: '[a3d#4g4]', Bb: '[d4g#4c5]', C: '[e4a#4d5]' })[c]), '. . . . . . X - . . . . . . X .') },
+    { i: 'drums', v: 0.8, n: 'rk . . . rh . r . rk . . . rh . r . | rk . . . rh . r . rk . . . rh . rs .' },
+  ],
+});
+
+// --- World 7: LeChuck metal (distorted FM guitars, double-time drums, dark minor bass)
+const LC_GTR1 = '[e2b2] [e2b2] . [e2b2] [e2b2] . [g2d3] - [e2b2] [e2b2] . [e2b2] [a#2f3] - [a2e3] -';
+Snd.define('lechuck', {
+  bpm: 150, tracks: [
+    { i: 'guitar', v: 1, n: `${LC_GTR1} | [e2b2] [e2b2] . [e2b2] [e2b2] . [c3g3] - [b2f#3] - [a2e3] - [g2d3] - [f#2c#3] - | ${LC_GTR1} |
+      [e2b2] [e2b2] [e2b2] [e2b2] [g2d3] [g2d3] [a2e3] [a2e3] [a#2f3]*4 [b2f#3]*4` },
+    { i: 'bass', v: 1, n: `e2 e2 . e2 e2 . g2 - e2 e2 . e2 a#2 - a2 - | e2 e2 . e2 e2 . c3 - b2 - a2 - g2 - f#2 - | e2 e2 . e2 e2 . g2 - e2 e2 . e2 a#2 - a2 - |
+      e2 e2 e2 e2 g2 g2 a2 a2 a#2*4 b2*4` },
+    { i: 'shred', v: 1, n: `.*64 | e5 f5 g5 a5 b5 c6 b5 a5 g5 f5 e5 d#5 e5*4 | b5*2 c6*2 b5*2 a5*2 g5*2 f#5*2 d#5*2 e5*2 | e6*4 d#6*2 e6*2 f6*4 e6*2 c6*2 | b5 a5 g5 f5 e5 f5 g5 a5 b5*8` },
+    { i: 'drums', v: 0.9, n: 'KC k S k k k S k K k S k k S S S | K k S k k k S k K k S k S S S S' },
+  ],
+});
+
+// --- jingles
+Snd.define('start', {
+  bpm: 150, once: true, tracks: [
+    { i: 'brass', v: 1, n: 'g4 c5 e5 g5 . e5 g5*2 c6*8' },
+    { i: 'pan', v: 0.7, n: '.*8 c6 e6 g6 c7*5' },
+    { i: 'bass', v: 1, n: 'c3*8 g2*4 c2*4' },
+    { i: 'drums', v: 0.9, n: 'k . . . s . . . k . k . SC . . .' },
+  ],
+});
+Snd.define('clear', {
+  bpm: 150, once: true, tracks: [
+    { i: 'brass', v: 1, n: 'g4 c5 e5 g5 c6*2 g5*2 c6*8' },
+    { i: 'bass', v: 1, n: 'c3*4 e3*4 g2*4 c2*4' },
+    { i: 'drums', v: 0.9, n: 'k . s . k . s . KC .*7' },
+  ],
+});
+Snd.define('over', {
+  bpm: 100, once: true, tracks: [
+    { i: 'brass', v: 1, n: 'c5*4 b4*4 a#4*4 a4*12' },
+    { i: 'bass', v: 1, n: 'c3*4 b2*4 a#2*4 a2*12' },
+  ],
+});
+Snd.define('victory', {
+  bpm: 120, once: true, tracks: [
+    { i: 'brass', v: 1, n: 'g4 c5 e5 g5*4 e5*2 g5*7 | a4 d5 f5 a5*4 f5*2 a5*7 | b5*4 g5*4 d6*4 b5*4 | c6*16' },
+    { i: 'pad', v: 1, n: '[c4e4g4]*16 [d4f4a4]*16 [d4g4b4]*16 [c4e4g4c5]*16' },
+    { i: 'bass', v: 1, n: 'c3*8 g2*8 d3*8 a2*8 g2*8 g2*8 c2*16' },
+    { i: 'drums', v: 0.9, n: 'KC . h . s . h . k . h . s . h . | K . h . s . h . k . h . s . h . | K . h . s . h . k k h . s s S S | KC .*15' },
+  ],
+});
+
+// ============================================================ LEVELS
+// 14 columns per row. Lowercase colour = 1-hit brick, UPPERCASE = armored, # steel, * grog (explodes 3x3),
+// ! insult (sword fight), @ Chron-o-John portal, ~ solid in the PAST, ^ solid in the FUTURE, % dart trap,
+// $ orichalcum (fireball), & gravity well, 1-8 Loom note bricks (c d e f g a b C).
+const LEVELS = [
+  // ----------------------------------------------------------------- THE SECRET OF MONKEY ISLAND
+  { n: 'GROG: THE DRINK OF PIRATES', m: [
+    '..............', '....wwwwww....', '...ww*ww*ww...', '..wwwwwwwwww..', '..fggggggggfnn', '..fg*gggg*gf.n', '..fggg!!gggf.n',
+    '..fggggggggf.n', '..fg*gggg*gf.n', '..fggggggggfnn', '..ffffffffff..'] },
+  { n: 'MURRAY, THE DEMONIC TALKING SKULL', m: [
+    '....wwwwww....', '...wwwwwwww...', '..wwwwwwwwww..', '..wkkwwwwkkw..', '..wkrkwwkrkw..', '..wkkwwwwkkw..', '..wwwwkkwwww..',
+    '...wwwkkwww...', '....w!ww!w....', '....wkwwkw....', '.....wwww.....', '..............', '.#NNNNNNNNNN#.', '.#nnnn**nnnn#.'] },
+  { n: 'MELEE ISLAND BEACH', m: [
+    '....ff..ff....', '..ffggffggff..', '.fggfgggfggff.', '.fgf..nn..fgf.', '.f....nn....f.', '......nn......', '.....nn.......',
+    '.....nn.......', '....nn...ooo..', '....nn..o!!!o.', '.yyyyyyyyyyyy.', 'yyyy*yyyy*yyyy', 'cccccccccccccc', 'CCCCCCCCCCCCCC'] },
+  { n: 'THE THREE-HEADED MONKEY', m: [
+    '.NN...NN...NN.', 'nttn.nttn.nttn', 'nkkn.nkkn.nkkn', 'nttn.nttn.nttn', '.nn...nn...nn.', '..nn..nn..nn..', '...nnnnnnnn...',
+    '..nnnnnnnnnn..', '.nn.nn!!nn.nn.', '.n..nnnnnn..n.', '....nn..nn....', '...nnn..nnn...'] },
+  { n: 'THE SEA MONKEY', m: [
+    '......k.......', '.....wwww..e..', '....www!w.ee..', '...wwwwww.eee.', '..wwwwwww.....', '......k.......', '.....wkwww....',
+    '....wwkwwww...', 'nnnnnnnnnnnnnn', '.nNn*nNn*nNnn.', '..nnnnnnnnnn..', 'dddddddddddddd', 'bbbbbbbbbbbbbb'] },
+  { n: 'A RUBBER CHICKEN WITH A PULLEY IN THE MIDDLE', m: [
+    'KKKKKKKKKKKKKK', '......ll......', '.....lkkl.....', '.....lkkl.....', '......ll......', '...yy..k......', '..yyyy.k......',
+    '.oyyyyyyyyy...', '..yyyyyyyyyyy.', '...yyyyyyyyy..', '....y!yy!yy...', '.....yyyyy....', '......o..o....', '.....oo..oo...'] },
+  // ----------------------------------------------------------------- DAY OF THE TENTACLE
+  { n: 'PURPLE TENTACLE', m: [
+    '.....vvvv.....', '....vvvvvv....', '...vvvvvvvv...', '...vwkvvwkv...', '...vwwvvwwv...', '...vvvvvvvv...', '..VVVVVVVVVV..',
+    '...vvvvvvvv...', '...vpvvvvpv...', '...vvvvvvvv...', '...vpvvvvpv...', '....vvvvvv....', '....vpvvpv....', '.....vvvv.....', '.@..........@.'] },
+  { n: 'GREEN TENTACLE, PARTY ANIMAL', m: [
+    '.....gggg.....', '....gggggg....', '...gwkggwkg...', '...gwwggwwg...', '...gggggggg...', '..GGGGGGGGGG..', '...gggggggg...',
+    '...glgggglg...', '..~gggggggg^..', '..~glgggglg^..', '..~gggggggg^..', '..~.gggggg.^..', '..~..gggg..^..'] },
+  { n: 'THE CHRON-O-JOHN', m: [
+    '....bbbbbb....', '...bBBBBBBb...', '...bbbbbbbb...', '...bb@bb@bb...', '...bbbbbbbb...', '...bbyyyybb...', '...bbybbybb...',
+    '...bbyyyybb...', '...bbbbbbbb...', '...bb~~~~bb...', '...bb^^^^bb...', '...bbbbbbbb...', '..kkkkkkkkkk..', '@............@'] },
+  { n: 'THE HAMSTER AND THE MICROWAVE', m: [
+    '.llllllllllll.', '.lkkkkkkkklKl.', '.lk..oo..klyl.', '.lk.oooo.klKl.', '.lk.otoo.klrl.', '.lk.oooo.klKl.', '.lk..oo..klgl.',
+    '.lkkkkkkkklKl.', '.llllllllllll.', '..............', '..~~~~~~~~~~..', '..^^^^^^^^^^..', '.@..........@.'] },
+  { n: 'THE EDISON MANSION', m: [
+    '......vv......', '.....vvvv.....', '....vvvvvv....', '...vvvvvvvv...', '..VVVVVVVVVV..', '..nnnnnnnnnn..', '..nyynnnnyyn..',
+    '..nyynnnnyyn..', '..nnnnnnnnnn..', '..nyyn~~nyyn..', '..nnnn^^nnnn..', '..nnnn##nnnn..', '.@..........@.'] },
+  { n: "DR. FRED'S GRANDFATHER CLOCK", m: [
+    '.....nnnn.....', '....nwwwwn....', '...nwkwwkwn...', '...nwwkwwwn...', '...nwwkkwwn...', '...nwwwwwwn...', '....nwwwwn....',
+    '.....nNNn.....', '.....n~~n.....', '.....n^^n.....', '.....n~~n.....', '.....n^^n.....', '....nnnnnn....', '...NNNNNNNN...', '@............@'] },
+  // ----------------------------------------------------------------- INDIANA JONES AND THE FATE OF ATLANTIS
+  { n: 'THE ORICHALCUM SUN STONE', m: [
+    '......oo......', '...o..yy..o...', '....oyyyyo....', '..o.yyyyyy.o..', '...yyYYYYyy...', '.oyyYy$$yYyyo.', '.oyyY%$$%Yyyo.',
+    '.oyyYyyyyYyyo.', '...yyYYYYyy...', '..o.yyyyyy.o..', '....oyyyyo....', '...o..yy..o...', '......oo......'] },
+  { n: 'THE STONE HEAD OF THE JUNGLE', m: [
+    '...LLLLLLLL...', '..LllllllllL..', '..llllllllll..', '..lkkllllkkl..', '..lkwllllwkl..', '..llllllllll..', '..lllllnllll..',
+    '..llllnnllll..', '..llllllllll..', '..lkkkkkkkkl..', '..llll$$llll..', '...llllllll...', '..%%%%##%%%%..'] },
+  { n: 'THE TEMPLE PYRAMID OF TIKAL', m: [
+    '......nn......', '.....nNNn.....', '.....n$$n.....', '....nnnnnn....', '....n%nn%n....', '...nnnnnnnn...', '...nNNnnNNn...',
+    '..nnnnnnnnnn..', '..n%nnnnnn%n..', '.nnnnnnnnnnnn.', '.nNNnn##nnNNn.', 'nnnnnn##nnnnnn'] },
+  { n: "SOPHIA'S ORICHALCUM NECKLACE", m: [
+    '.y..........y.', '.o..........o.', '..y........y..', '..o........o..', '...y......y...', '...o......o...', '....y....y....',
+    '....o....o....', '.....yooy.....', '....oOOOOo....', '...oO$yy$Oo...', '...oOy%%yOo...', '....oOOOOo....', '.....oooo.....', '..............', '#llll%ll%llll#'] },
+  { n: 'THE ATLANTEAN COLOSSUS', m: [
+    '.....LLLL.....', '.....lool.....', '.....llll.....', '...LLLLLLLL...', '..Ll.llll.lL..', '..l..l$$l..l..', '..l..llll..l..',
+    '.ll..l%%l..ll.', '.....llll.....', '.....l..l.....', '.....l..l.....', '....ll..ll....', '..#%......%#..'] },
+  { n: "NUR-AB-SAL'S SPIRAL GATE", m: [
+    '#nnnnnnnnnnnn#', '#nKKKKKKKKKKn#', '#nknnnnnnnnkn#', '#nknkkkkkknkn#', '#nknkn$$nknkn#', '#nknkn%%nknkn#', '#nknknnnnknkn#',
+    '#nknkkkkkknkn#', '#nknnnnnnnnkn#', '#nkkkkkk.kkkn#', '#nnnnnnnnnnnn#'] },
+  // ----------------------------------------------------------------- X-WING: SPACE COMBAT
+  { n: 'THE REBEL STARFIGHTER', m: [
+    'r............r', '.ll........ll.', '..ll......ll..', '...ll....ll...', '....llkkll....', '.....lbbl.....', '....llkkll....',
+    '...ll....ll...', '..ll......ll..', '.ll........ll.', 'r............r', '..............', '......&.......'] },
+  { n: 'THE TWIN ION ENGINE FIGHTER', m: [
+    'KK..........KK', 'KK....kk....KK', 'KK...kkkk...KK', 'KK..kkbbkk..KK', 'KKlllkbbklllKK', 'KK..kkbbkk..KK', 'KK...kkkk...KK',
+    'KK....kk....KK', 'KK..........KK', '..............', '..&........&..'] },
+  { n: 'THE BATTLE MOON', m: [
+    '.....llll.....', '...llllllll...', '..llllllkkll..', '.lllllllkkkll.', '.lllllllkkkll.', '.llllllllllll.', 'KKKKKKKKKKKKKK',
+    '.llllllllllll.', '.llllllllllll.', '..llllllllll..', '...llllllll...', '.....llll.....', '..............', '&............&'] },
+  { n: 'THE ALLIANCE STARBIRD', m: [
+    '......rr......', '.....rrrr.....', '.r...rRRr...r.', '.rr..rRRr..rr.', '.rrr.rrrr.rrr.', '.rrrrrrrrrrrr.', '..rrrrrrrrrr..',
+    '...rrrrrrrr...', '....rr..rr....', '...rr....rr...', '..rr......rr..', '..............', '..&........&..'] },
+  { n: 'THE IMPERIAL COG', m: [
+    '.....KKKK.....', '..KK.kllk.KK..', '..KkkllllkkK..', '...kll..llk...', '.KKll....llKK.', '.Kkl......lkK.', '.Kkl..&...lkK.',
+    '.Kkl......lkK.', '.KKll....llKK.', '...kll..llk...', '..KkkllllkkK..', '..KK.kllk.KK..', '.....KKKK.....'] },
+  { n: 'THE RINGED GAS GIANT', m: [
+    'k....l....k...', '.......oooo...', '..l...oyyyyo..', '.....oyyYyyyo.', 'aaaaaoyyyyyyaa', '.aaaaaaaaaaaa.', '.....oyyyYyyo.',
+    '.k....oyyyyo..', '.......oooo..k', '..l...........', '...&......&...'] },
+  // ----------------------------------------------------------------- LOOM
+  { n: 'THE SWAN OF THE GUILD', draft: '3132', spell: 'UNMAKING', m: [
+    '##.########.##', '...ww.........', '..wwww........', '..ow.w........', '.....w........', '.....ww.......', '.....www..www.',
+    '....wwwwwwwww.', '...wwwwwwwwww.', '....wwwwwwww..', 'cccccccccccccc', '..............', '.1.2.3.4.5.6..'] },
+  { n: 'THE DISTAFF OF BOBBIN', draft: '8531', spell: 'SHARPENING', m: [
+    '......yyy.....', '.....yyyyy....', '......yyy.....', '.......n......', '.p.....n.....p', '..p....n....p.', '...p...n...p..',
+    '....p..n..p...', '.....p.n.p....', '......pnp.....', '.......N......', '.......N......', '...12345678...'] },
+  { n: 'THE GREAT LOOM', draft: '1351', spell: 'OPENING', m: [
+    'nnnnnnnnnnnnnn', 'n.p.p.p.p.p.pn', 'nbpbpbpbpbpbpn', 'n.p.p.p.p.p.pn', 'nbpbpbpbpbpbpn', 'n.p.p.p.p.p.pn', 'NNNNNNNNNNNNNN',
+    '..............', '.##########...', '.#yyyyyyyy#...', '.##########...', '..............', '..1.2.3.4.5...'] },
+  { n: 'BOBBIN THREADBARE', draft: '6532', spell: 'HEALING', m: [
+    '.....dddd.....', '....dddddd....', '...dddddddd...', '..dddkkkkddd..', '..ddkkkkkkdd..', '..ddkwkkwkdd..', '..ddkkkkkkdd..',
+    '..dddkkkkddd..', '..dddddddddd..', '.dddddddddddd.', '.DDDDDDDDDDDD.', '..............', '.1..2.3.5..6..'] },
+  { n: 'THE PATTERN OF THE LOOM', draft: '8642', spell: 'OPENING', m: [
+    '......pp......', '.....pyyp.....', '....pyccyp....', '...pyc##cyp...', '..pyc#yy#cyp..', '.pyc#y**y#cyp.', '..pyc#yy#cyp..',
+    '...pyc##cyp...', '....pyccyp....', '.....pyyp.....', '......pp......', '..............', '.2..4..6..8...'] },
+  { n: 'CHAOS AT THE FORGE', draft: '5431', spell: 'UNMAKING', m: [
+    '.r..o..r..o..r', '..o..r..o..r..', 'KKKKKKKKKKKKKK', '.kkkkkkkkkkkk.', '...kkkkkkkk...', '....kkkkkk....', '....kk**kk....',
+    '...kkkkkkkk...', '..kkkkkkkkkk..', '..#..#..#..#..', '..............', '1.3.4.5.......'] },
+  // ----------------------------------------------------------------- SAM & MAX HIT THE ROAD
+  { n: 'SAM, CANINE SHAMUS', lanes: { 11: 0.6, 12: -0.8 }, m: [
+    '...kkkkkkkk...', '..kkkkkkkkkk..', '.KKKKKKKKKKKK.', '....llllll....', '..llllllllll..', '.llwkllllwkll.', '.llllllllllll.',
+    '.llllkkllllll.', '..llllllllll..', '...lleeeell...', '....llllll....', 'rr...bb...yy..', '..gg....pp....'] },
+  { n: "MAX & THE WORLD'S LARGEST BALL OF TWINE", lanes: { 9: 0.5, 10: -0.5, 11: 0.9 }, m: [
+    '.....ww.......', '....w..w......', '....w..w......', '....wwww......', '...wwkwkww....', '...wwwwwww....', '...wwrrrww....',
+    '....wwwww.....', '.....www......', 'nnoonnoonnoonn', 'oonnoonnoonnoo', '..nnoonn..oonn'] },
+  // ----------------------------------------------------------------- MONKEY ISLAND 2: LECHUCK'S REVENGE
+  { n: "LECHUCK'S VOODOO FORTRESS", boss: true, m: [
+    '..............', '..............', '..............', '..............', '..............', '..............',
+    '#.e*e.ee.e*e.#', '#eeeeeeeeeeee#', '..............', '.KK..KK..KK...'] },
+];
+const WORLD_START = [0, 6, 12, 18, 24, 30, 32];
+const worldOf = i => WORLD_START.filter(s => s <= i).length - 1;
+const WORLDS = [
+  { name: 'THE SECRET OF MONKEY ISLAND', short: 'MONKEY ISLAND', song: 'monkey', hint: 'HIT A RED ! BRICK TO START AN INSULT SWORD FIGHT. BOUNCE THE BALL OFF THE THIRD (L/M/R) OF THE SCREEN WITH THE RIGHT COMEBACK.' },
+  { name: 'DAY OF THE TENTACLE', short: 'TENTACLE', song: 'tentacle', hint: 'TIME SHIFTS BETWEEN PAST AND FUTURE. HOURGLASS BRICKS ARE ONLY SOLID IN THEIR OWN ERA. CHRON-O-JOHNS TELEPORT THE BALL.' },
+  { name: 'INDIANA JONES AND THE FATE OF ATLANTIS', short: 'ATLANTIS', song: 'atlantis', hint: 'TRAP BRICKS FIRE POISON DARTS THAT STUN YOUR PADDLE. SMASH ORICHALCUM TO TURN THE BALL INTO A PIERCING FIREBALL.' },
+  { name: 'X-WING: SPACE COMBAT', short: 'SPACE COMBAT', song: 'space', hint: 'GRAVITY WELLS BEND THE PATH OF THE BALL. USE THEM TO SLINGSHOT AROUND THE SHIELDS.' },
+  { name: 'LOOM', short: 'LOOM', song: 'loom', hint: 'NOTE BRICKS PLAY THE DISTAFF. STRIKE THE NOTES OF THE DRAFT SHOWN ON THE RIGHT, IN ORDER, TO WEAVE A SPELL.' },
+  { name: 'SAM & MAX HIT THE ROAD', short: 'SAM & MAX', song: 'sammax', hint: 'HIGHWAY TRAFFIC! THE LOWER ROWS OF BRICKS DRIVE ACROSS THE SCREEN.' },
+  { name: "MONKEY ISLAND 2: LECHUCK'S REVENGE", short: 'LECHUCK', song: 'lechuck', hint: 'THE ZOMBIE PIRATE LECHUCK HURLS VOODOO FIRE. DODGE IT AND HIT HIM WITH THE BALL UNTIL HE FALLS.' },
+];
+// Monkey Island insult sword fighting: [insult, comeback]
+const INSULTS = [
+  ['YOU FIGHT LIKE A DAIRY FARMER!', 'HOW APPROPRIATE. YOU FIGHT LIKE A COW.'],
+  ["SOON YOU'LL BE WEARING MY SWORD LIKE A SHISH KEBAB!", "FIRST YOU'D BETTER STOP WAVING IT LIKE A FEATHER-DUSTER."],
+  ["I'VE SPOKEN WITH APES MORE POLITE THAN YOU.", "I'M GLAD TO HEAR YOU ATTENDED YOUR FAMILY REUNION."],
+  ['PEOPLE FALL AT MY FEET WHEN THEY SEE ME COMING.', 'EVEN BEFORE THEY SMELL YOUR BREATH?'],
+  ['I ONCE OWNED A DOG THAT WAS SMARTER THAN YOU.', 'HE MUST HAVE TAUGHT YOU EVERYTHING YOU KNOW.'],
+  ["NOBODY'S EVER DRAWN BLOOD FROM ME AND NOBODY EVER WILL.", 'YOU RUN THAT FAST?'],
+  ['YOU MAKE ME WANT TO PUKE.', 'YOU MAKE ME THINK SOMEBODY ALREADY DID.'],
+  ['MY HANDKERCHIEF WILL WIPE UP YOUR BLOOD!', 'SO YOU GOT THAT JOB AS JANITOR, AFTER ALL.'],
+];
+const NOTE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'];
+const NOTE_COL = [[3, 1, 1], [3, 2, 0], [3, 3, 1], [1, 3, 1], [1, 3, 3], [1, 1, 3], [2, 0, 2], [3, 1, 3]];
+
+// ============================================================ SPRITES
+const sprCache = new Map();
+function cached(key, w, h, fn) { let c = sprCache.get(key); if (!c) { c = mk(w, h, fn); sprCache.set(key, c); } return c; }
+function bevel(col, w, h) {
+  R(0, 0, w, h, E(...col)); R(0, 0, w, 1, shade(col, 1)); R(0, 0, 1, h, shade(col, 1));
+  R(0, h - 1, w, 1, shade(col, -1)); R(w - 1, 0, 1, h, shade(col, -1));
+}
+// crack patterns for armored bricks, revealed one by one as the brick takes damage
+const CRACKS = [[[3, 1], [4, 2], [4, 3], [5, 4], [6, 5]], [[11, 1], [10, 2], [11, 3], [10, 4], [9, 5]], [[7, 2], [8, 3], [7, 4], [8, 5], [6, 3]], [[2, 4], [3, 5], [12, 4], [13, 5], [9, 1]]];
+function brickSprite(k) {
+  const colKey = k.col ? k.col.join('') : '';
+  switch (k.t) {
+    case 'n': return cached('n' + colKey, 15, 7, () => { bevel(k.col, 15, 7); P(2, 1, shade(k.col, 2)); });
+    case 'a': {
+      const stage = Math.min(4, Math.ceil((k.max - k.hp) / k.max * 4));
+      return cached('a' + colKey + stage, 15, 7, () => {
+        bevel(k.col, 15, 7);
+        R(2, 2, 11, 1, shade(k.col, -1)); R(2, 2, 1, 3, shade(k.col, -1)); R(2, 4, 11, 1, shade(k.col, 1)); R(12, 2, 1, 3, shade(k.col, 1));
+        for (const [x, y] of [[1, 1], [13, 1], [1, 5], [13, 5]]) P(x, y, shade(k.col, -2));
+        for (let s = 0; s < stage; s++) for (const [x, y] of CRACKS[s]) P(x, y, BLACK);
+      });
+    }
+    case 's': return cached('s', 15, 7, () => {
+      grad(0, 0, 15, 7, [WHITE, E(2, 2, 2), E(1, 1, 1)]); R(0, 0, 15, 1, WHITE); R(14, 0, 1, 7, E(1, 1, 1)); R(0, 6, 15, 1, E(1, 1, 1));
+      for (const [x, y] of [[2, 2], [12, 2], [2, 4], [12, 4]]) { P(x, y, E(1, 1, 1)); P(x - 1, y - 1, WHITE); }
+    });
+    case 'g': return cached('g', 15, 7, () => { // a leaking barrel of grog
+      bevel([2, 1, 0], 15, 7); R(3, 0, 1, 7, E(1, 1, 1)); R(11, 0, 1, 7, E(1, 1, 1));
+      R(6, 1, 3, 3, WHITE); P(6, 2, BLACK); P(8, 2, BLACK); R(6, 4, 3, 1, E(2, 2, 2)); P(7, 5, E(1, 3, 1)); P(13, 5, E(1, 3, 1));
+    });
+    case 'i': return cached('i', 15, 7, () => { // crossed cutlasses
+      bevel([3, 1, 1], 15, 7);
+      for (let i = 0; i < 5; i++) { P(4 + i, 1 + i, WHITE); P(10 - i, 1 + i, WHITE); }
+      P(3, 5, E(3, 3, 1)); P(11, 5, E(3, 3, 1)); P(4, 5, E(3, 2, 0)); P(10, 5, E(3, 2, 0));
+    });
+    case 'h': return cached('h' + k.era, 15, 7, () => { // era bricks carry an hourglass
+      const c = k.era ? [1, 3, 3] : [2, 1, 0]; bevel(c, 15, 7);
+      R(5, 1, 5, 1, WHITE); R(6, 2, 3, 1, E(3, 3, 1)); P(7, 3, E(3, 3, 1)); R(6, 4, 3, 1, E(3, 3, 1)); R(5, 5, 5, 1, WHITE);
+    });
+    case 't': return cached('t', 15, 7, () => { // carved stone with dart holes
+      bevel([1, 1, 1], 15, 7); dith(1, 1, 13, 5, E(2, 2, 2), 1);
+      for (const x of [3, 7, 11]) { R(x, 3, 2, 2, BLACK); P(x, 2, E(0, 0, 0)); }
+    });
+    case 'o': return cached('o', 15, 7, () => { // orichalcum bead
+      bevel([3, 2, 0], 15, 7); R(4, 2, 7, 3, E(3, 3, 1)); R(5, 1, 5, 5, E(3, 3, 1)); R(6, 2, 2, 1, WHITE); P(9, 4, E(3, 2, 0));
+    });
+    case 'm': return cached('m' + k.note, 15, 7, () => { // a distaff note
+      const c = NOTE_COL[k.note - 1]; bevel(c, 15, 7); R(1, 1, 13, 5, shade(c, -1));
+      R(3, 4, 2, 2, BLACK); R(4, 1, 1, 4, BLACK); P(5, 1, BLACK); P(6, 2, BLACK);
+      text(NOTE_NAMES[k.note - 1], 9, 1, WHITE, { f: 3 });
+    });
+  }
+  return null;
+}
+// capsule icons (7x5) - L laser blaster, E rubber chicken, C compass, S hourglass, P the gold guy
+const ICONS = {
+  L: ['.......', 'wwwwwwk', 'wwwwww.', '.ww....', '.w.....'],
+  E: ['.yy....', 'yrky...', '.yyyyy.', '..yyyyy', '...r.r.'],
+  C: ['..www..', '.wwrww.', 'ww.w.ww', '.wwkww.', '..www..'],
+  S: ['.wwwww.', '..wyw..', '...y...', '..wyw..', '.wwwww.'],
+  P: ['y.yyy.y', '.y.y.y.', '...y...', '..y.y..', '.y...y.'],
+};
+const CAPS = { L: [3, 1, 1], E: [1, 1, 3], C: [1, 3, 1], S: [3, 2, 0], P: [1, 1, 1] };
+const ICON_MAP = { w: WHITE, k: BLACK, y: E(3, 3, 1), r: E(3, 1, 1) };
+function capSprite(k, ph) {
+  return cached('cap' + k + ph, 16, 7, () => {
+    const c = CAPS[k]; R(1, 0, 14, 7, E(...c)); R(0, 1, 16, 5, E(...c));
+    R(1, 0, 14, 1, shade(c, 1)); R(1, 6, 14, 1, shade(c, -1));
+    R(2 + ph * 3, 1, 1, 5, shade(c, 1));
+    text(k, 2, 1, WHITE, { f: 3, sh: BLACK });
+    CX.drawImage(sprite(ICONS[k], ICON_MAP), 8, 1);
+  });
+}
+const LECHUCK_ROWS = [
+  '....kkkkkkkkkkkk....', '..kkkkkkkwwkkkkkkk..', '.kkkkkkkwkkwkkkkkkk.', 'kkkkkkkkkwwkkkkkkkkk', '..yyyyyyyyyyyyyyyy..',
+  '....gggggggggggg....', '...ggbbggggggbbgg...', '...grrwggggggwrrg...', '...ggggggnngggggg...', '...gbbbbbbbbbbbbg...',
+  '...bbwbwbwbwbwbbb...', '..bbbbbbbbbbbbbbbb..', '..bbbbbeebbeebbbbb..', '.kkkbbbbbbbbbbbbkkk.', 'kkkkkbbbbbbbbbbkkkkk',
+  'kkkkkkbbbbbbbbkkkkkk', 'kk.kkkkybbbbykkkk.kk', 'gg.kkkkkkkkkkkkkk.gg', 'gg.kkkkykkkkykkkk.gg', '...kkkkkkkkkkkkkk...',
+  '...eeeeeekkeeeeee...', '...nnnn......nnnn...'];
+let LECHUCK = null, LECHUCK_HIT = null;
+function bossSprites() {
+  if (LECHUCK) return;
+  LECHUCK = sprite(LECHUCK_ROWS, { k: E(1, 0, 1), w: WHITE, g: E(1, 2, 1), r: E(3, 0, 0), y: E(3, 3, 1), n: E(0, 1, 0), b: E(1, 1, 1), e: E(2, 0, 0) }, 2);
+  const all = {}; for (const ch of 'kwgrynbe') all[ch] = WHITE;
+  LECHUCK_HIT = sprite(LECHUCK_ROWS, all, 2);
+}
+
+// ============================================================ PARALLAX BACKGROUNDS (256x192, far + near layer)
+const BGW = 256, BGH = 192;
+function ridge(rng, y0, amp, col, step, x0, x1) {
+  let y = y0; for (let x = x0 || 0; x < (x1 || BGW); x++) { y = clamp(y + (rng() - 0.5) * step, y0 - amp, y0 + amp); R(x, y, 1, BGH - y, col); }
+}
+function starfield(rng, n, y1, cols) { for (let i = 0; i < n; i++) P(rng() * BGW, rng() * y1, cols[Math.floor(rng() * cols.length)]); }
+function dcirc(cx, cy, r, c, k) { CX.fillStyle = c; for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r && BAYER[((cx + x) & 1) + (((cy + y) & 1) << 1)] < k) CX.fillRect(cx + x, cy + y, 1, 1); }
+function tri(cx, top, h, slope, col) { for (let j = 0; j < h; j++) R(cx - j * slope, top + j, j * slope * 2 + 1, 1, col); }
+function palm(x, y, h, col) {
+  let tx = x; for (let j = 0; j < h; j++) { tx += Math.sin(j / h * 1.6) * 0.35; R(tx, y - j, 3, 1, col); }
+  const topX = tx + 1, topY = y - h;
+  for (const [a, l] of [[-2.7, 17], [-2.2, 19], [-1.4, 12], [-0.6, 18], [-0.15, 16], [-3.05, 13]])
+    for (let k = 0; k < l; k++) R(topX + Math.cos(a) * k, topY + Math.sin(a) * k * 0.5 + k * k / l * 0.4, 2, k < l * 0.6 ? 2 : 1, col);
+}
+const twinkles = (rng, n, y1) => Array.from({ length: n }, () => ({ x: Math.floor(rng() * BGW), y: Math.floor(rng() * y1), p: Math.floor(rng() * 97) }));
+const BG_BUILD = [
+  // 0: Melee Island night sky, SCUMM Bar and the dock
+  () => {
+    const rng = seeded(11), tw = twinkles(rng, 26, 120);
+    const far = mk(BGW, BGH, () => {
+      grad(0, 0, BGW, 150, [E(0, 0, 1), E(0, 0, 1), E(1, 0, 1), E(1, 0, 2)]);
+      starfield(rng, 170, 130, [E(1, 1, 1), E(2, 2, 2), WHITE, E(1, 3, 3)]);
+      ring(190, 40, 19, E(1, 0, 2)); ring(190, 40, 16, E(1, 1, 2)); circ(190, 40, 13, E(3, 3, 2));
+      circ(185, 36, 3, E(2, 2, 1)); circ(195, 45, 2, E(2, 2, 1)); circ(194, 32, 2, E(2, 2, 1));
+      tri(62, 104, 32, 1.3, E(0, 0, 1)); ridge(rng, 134, 5, E(0, 0, 1), 1.2);
+      R(120, 118, 10, 16, E(0, 0, 1)); R(118, 115, 14, 4, E(0, 0, 1)); P(124, 122, E(3, 3, 1)); // the governor's mansion lookout
+      grad(0, 146, BGW, 46, [E(0, 0, 1), E(0, 0, 2)]);
+      for (let i = 0; i < 40; i++) R(rng() * BGW, 150 + rng() * 40, 3 + rng() * 6, 1, E(0, 1, 2));
+    });
+    const near = mk(BGW, BGH, () => {
+      const k = BLACK; ridge(rng, 172, 4, k, 1, 0, 80);
+      R(6, 128, 46, 44, k); for (let j = 0; j <= 12; j++) R(27 - 2 * j, 116 + j, 4 * j + 4, 1, k);
+      R(12, 140, 6, 6, E(3, 3, 1)); R(26, 140, 6, 6, E(3, 2, 0)); R(40, 140, 6, 6, E(3, 3, 1)); R(22, 158, 8, 14, E(2, 1, 0));
+      text('SCUMM BAR', 11, 131, E(3, 1, 1), { f: 3 });
+      palm(212, 182, 46, k); palm(238, 188, 62, k); palm(60, 176, 36, k);
+      R(110, 168, 146, 3, E(1, 0, 0)); for (let x = 114; x < 256; x += 18) R(x, 168, 2, 24, E(1, 0, 0));
+      R(150, 140, 2, 28, k); R(147, 137, 8, 3, k); circ(151, 142, 2, E(3, 3, 1));
+    });
+    const anim = (t, xf, xn, ph) => {
+      if (ph) return;
+      for (const s of tw) if ((t + s.p * 7) % 97 < 6) P(xf + s.x, FY0 + s.y, WHITE);
+      for (let j = 0; j < 12; j++) if (((t >> 3) + j) % 3) R(xf + 184 + Math.sin(j * 1.7 + t * 0.06) * 4, FY0 + 150 + j * 3, 12 - j * 0.6, 1, E(3, 3, 1));
+    };
+    return { far, near, anim };
+  },
+  // 1: the Edison mansion - purple wallpaper, moonlit windows, grandfather clocks
+  () => {
+    const rng = seeded(22);
+    const far = mk(BGW, BGH, () => {
+      R(0, 0, BGW, BGH, E(1, 0, 1));
+      for (let y = 4; y < 132; y += 12) for (let x = ((y / 12) & 1) * 6; x < BGW; x += 12) { P(x, y, E(2, 0, 2)); P(x - 1, y + 1, E(2, 0, 2)); P(x + 1, y + 1, E(2, 0, 2)); P(x, y + 2, E(2, 0, 2)); }
+      for (const wx of [30, 190]) {
+        R(wx - 2, 26, 40, 68, E(2, 1, 0)); grad(wx, 30, 36, 60, [E(0, 0, 1), E(0, 0, 2)]);
+        for (let i = 0; i < 14; i++) P(wx + rng() * 36, 30 + rng() * 50, WHITE);
+        R(wx + 17, 30, 2, 60, E(2, 1, 0)); R(wx, 58, 36, 2, E(2, 1, 0));
+      }
+      circ(200, 44, 5, E(3, 3, 2));
+      R(106, 34, 44, 54, E(3, 2, 0)); R(109, 37, 38, 48, E(0, 1, 0));
+      R(122, 50, 12, 32, E(0, 2, 0)); circ(128, 50, 6, E(0, 2, 0)); R(123, 48, 4, 3, WHITE); R(129, 48, 4, 3, WHITE); P(124, 49, BLACK); P(131, 49, BLACK);
+      R(120, 60, 16, 2, E(1, 3, 1));
+      R(0, 132, BGW, 60, E(1, 0, 0)); R(0, 132, BGW, 2, E(2, 1, 0));
+      for (let x = 6; x < BGW; x += 36) { R(x, 140, 28, 24, E(2, 1, 0)); R(x + 1, 141, 26, 22, E(1, 0, 0)); }
+    });
+    const near = mk(BGW, BGH, () => {
+      for (let y = 172; y < BGH; y += 5) for (let x = 0; x < BGW; x += 10) R(x + (((y - 172) / 5) & 1) * 5, y, 5, 5, E(1, 1, 1));
+      for (const cx of [2, 226]) {
+        R(cx, 90, 28, 82, E(1, 0, 0)); R(cx + 1, 91, 26, 80, E(2, 1, 0)); R(cx + 3, 93, 22, 76, E(1, 0, 0));
+        circ(cx + 14, 106, 8, E(3, 3, 2)); ring(cx + 14, 106, 8, E(3, 2, 0)); R(cx + 14, 100, 1, 6, BLACK); R(cx + 14, 106, 5, 1, BLACK);
+        R(cx + 6, 120, 16, 44, BLACK); R(cx - 2, 84, 32, 6, E(2, 1, 0));
+      }
+    });
+    const anim = (t, xf, xn, ph) => {
+      if (!ph) return;
+      for (const cx of [2, 226]) { const a = Math.sin(t * 0.05) * 0.35, px = xn + cx + 14, py = FY0 + 122; line(px, py, px + Math.sin(a) * 30, py + Math.cos(a) * 30, E(3, 2, 0)); circ(px + Math.sin(a) * 32, py + Math.cos(a) * 32, 3, E(3, 3, 1)); }
+    };
+    return { far, near, anim };
+  },
+  // 2: a Mayan temple vault (corbel arch, carved blocks, torches)
+  () => {
+    const rng = seeded(33);
+    const far = mk(BGW, BGH, () => {
+      for (let y = 0; y < BGH; y += 8) for (let x = -((y / 8) & 1) * 8; x < BGW; x += 16) {
+        R(x, y, 16, 8, BLACK); R(x, y, 15, 7, E(1, 0, 0)); R(x, y, 15, 1, E(2, 1, 0));
+        if (rng() < 0.12) { R(x + 4, y + 2, 7, 3, BLACK); P(x + 5, y + 3, E(2, 1, 0)); P(x + 9, y + 3, E(2, 1, 0)); }
+      }
+      for (let i = 0; i < 9; i++) { const hw = 16 + i * 11; R(128 - hw, 12 + i * 10, hw * 2, 10, BLACK); }
+      R(128 - 104, 102, 208, 70, BLACK); dith(128 - 104, 12, 208, 160, E(0, 0, 1), 1);
+      R(104, 110, 48, 62, E(1, 0, 0)); R(110, 116, 36, 56, BLACK); tri(128, 94, 16, 1.4, E(1, 0, 0)); // inner doorway
+      for (let x = 0; x < BGW; x += 16) R(x, 172, 15, 20, E(1, 0, 0));
+    });
+    const near = mk(BGW, BGH, () => {
+      for (const px of [0, 226]) {
+        R(px, 0, 30, BGH, E(2, 1, 0)); R(px + 2, 0, 26, BGH, E(1, 0, 0));
+        for (let y = 6; y < BGH; y += 22) { R(px + 5, y, 20, 14, E(2, 1, 0)); R(px + 8, y + 3, 4, 4, BLACK); R(px + 18, y + 3, 4, 4, BLACK); R(px + 10, y + 9, 10, 2, BLACK); }
+      }
+      for (const bx of [34, 218]) { R(bx - 1, 92, 6, 3, E(1, 1, 1)); R(bx, 95, 4, 10, E(1, 1, 1)); }
+    });
+    const anim = (t, xf, xn, ph) => {
+      if (!ph) return;
+      for (const bx of [34, 218]) {
+        const fx = xn + bx + 2, fy = FY0 + 90;
+        for (let i = 0; i < 7; i++) { const h = ((t * 3 + i * 17) % 14), w = 3 - h / 5; R(fx - w / 2 + Math.sin(t * 0.3 + i) * 1.5, fy - h, Math.max(1, w), 2, h < 4 ? E(3, 3, 1) : h < 9 ? E(3, 2, 0) : E(3, 1, 1)); }
+        if ((t >> 2) & 1) dcirc(Math.round(fx), fy - 4, 9, E(3, 2, 0), 1);
+      }
+    };
+    return { far, near, anim };
+  },
+  // 3: deep space - nebula, a gas planet and a star destroyer, with streaking stars
+  () => {
+    const rng = seeded(44), streaks = Array.from({ length: 34 }, () => ({ x: rng() * BGW, y: rng() * BGH, v: 0.4 + rng() * 1.8 }));
+    const far = mk(BGW, BGH, () => {
+      R(0, 0, BGW, BGH, BLACK);
+      for (let i = 0; i < 16; i++) dcirc(Math.floor(60 + rng() * 140), Math.floor(30 + rng() * 90), 10 + Math.floor(rng() * 18), i & 1 ? E(1, 0, 1) : E(0, 0, 1), 1 + (i % 3 === 0));
+      starfield(rng, 190, BGH, [E(1, 1, 1), E(2, 2, 2), WHITE, E(3, 3, 1), E(1, 1, 3)]);
+    });
+    const near = mk(BGW, BGH, () => {
+      circ(214, 196, 56, E(0, 1, 2)); for (let y = 140; y < BGH; y += 7) R(150, y, 120, 2, E(0, 0, 2));
+      dcirc(236, 190, 50, BLACK, 2); for (let x = 140; x < 256; x++) P(x, 176 - (x - 140) * 0.18, E(1, 3, 3));
+      for (let j = 0; j < 22; j++) R(20 + j * 2.2, 30 + j, 70 - j * 2.2, 1, j < 3 ? E(2, 2, 2) : E(1, 1, 1));
+      R(52, 22, 12, 8, E(1, 1, 1)); R(56, 18, 4, 4, E(2, 2, 2));
+      for (let i = 0; i < 8; i++) P(40 + i * 7, 36 + (i & 1), E(3, 3, 1));
+    });
+    const anim = (t, xf, xn, ph) => {
+      if (ph) return;
+      for (const s of streaks) { const y = (s.y + t * s.v) % BGH; R(xf + s.x, FY0 + y, 1, s.v > 1.4 ? 3 : s.v > 0.9 ? 2 : 1, s.v > 1.4 ? WHITE : E(2, 2, 2)); }
+    };
+    return { far, near, anim };
+  },
+  // 4: the island of Loom at twilight and the Great Loom
+  () => {
+    const rng = seeded(55), tw = twinkles(rng, 30, 90);
+    const far = mk(BGW, BGH, () => {
+      grad(0, 0, BGW, 150, [E(0, 0, 1), E(1, 0, 1), E(2, 0, 1), E(3, 1, 1)]);
+      starfield(rng, 90, 70, [E(1, 1, 2), WHITE, E(2, 2, 3)]);
+      circ(60, 112, 14, E(3, 2, 1));
+      ridge(rng, 120, 12, E(1, 0, 1), 3); ridge(rng, 136, 6, E(0, 0, 1), 2);
+      grad(0, 150, BGW, 42, [E(0, 0, 1), E(1, 0, 2)]);
+      for (let i = 0; i < 30; i++) R(20 + rng() * 80, 152 + rng() * 38, 4 + rng() * 8, 1, E(3, 1, 1));
+    });
+    const near = mk(BGW, BGH, () => {
+      const k = E(0, 0, 0); ridge(rng, 172, 6, k, 2);
+      R(150, 60, 6, 112, k); R(236, 60, 6, 112, k); R(144, 54, 104, 7, k); R(144, 150, 104, 5, k);
+      for (let x = 160; x < 234; x += 5) R(x, 61, 1, 89, E(1, 1, 2));
+      R(156, 100, 80, 3, k); tri(196, 38, 16, 1.2, k);
+    });
+    const anim = (t, xf, xn, ph) => {
+      if (!ph) { for (const s of tw) if ((t + s.p * 5) % 97 < 8) P(xf + s.x, FY0 + s.y, WHITE); return; }
+      for (let x = 160, i = 0; x < 234; x += 5, i++) { const y = 61 + ((t * 0.7 + i * 13) % 89); R(xn + x, FY0 + y, 1, 4, EGA64[[7, 15, 23, 31, 39, 47, 55, 63][(i + (t >> 4)) % 8]]); }
+    };
+    return { far, near, anim };
+  },
+  // 5: highway to the World's Largest Ball of Twine at dusk
+  () => {
+    const rng = seeded(66);
+    const far = mk(BGW, BGH, () => {
+      grad(0, 0, BGW, 120, [E(0, 0, 1), E(1, 0, 1), E(2, 0, 1), E(2, 1, 1)]);
+      starfield(rng, 50, 50, [E(2, 2, 2), WHITE]);
+      circ(128, 118, 18, E(3, 2, 0));
+      for (const [x, w, h] of [[10, 50, 30], [80, 30, 18], [150, 70, 36], [215, 40, 22]]) { R(x, 120 - h, w, h, E(1, 0, 0)); R(x - 3, 120 - h, w + 6, 3, E(2, 1, 0)); }
+      R(0, 118, BGW, 74, E(2, 1, 0)); dith(0, 118, BGW, 74, E(1, 0, 0), 2);
+    });
+    const near = mk(BGW, BGH, () => {
+      for (let y = 124; y < BGH; y++) { const hw = 6 + (y - 124) * 1.6; R(128 - hw, y, hw * 2, 1, E(1, 1, 1)); }
+      for (let x = 12; x < BGW; x += 58) { R(x, 60, 2, 110, BLACK); R(x - 8, 64, 18, 2, BLACK); }
+      for (let x = 0; x < BGW; x++) P(x, 66 + Math.sin(((x % 58) / 58) * Math.PI) * 6, BLACK);
+      R(168, 70, 76, 34, E(3, 3, 3)); R(170, 72, 72, 30, E(0, 0, 2)); R(186, 104, 3, 40, BLACK); R(224, 104, 3, 40, BLACK);
+      text('SEE THE BALL', 176, 76, E(3, 3, 1), { f: 3 }); text('OF TWINE!', 182, 84, E(3, 3, 1), { f: 3 }); text('20 MI', 192, 93, WHITE, { f: 3 });
+      circ(40, 150, 10, E(3, 2, 1)); ring(40, 150, 10, E(2, 1, 0)); ring(40, 150, 6, E(2, 1, 0));
+    });
+    const anim = (t, xf, xn, ph) => {
+      if (!ph) return;
+      for (let i = 0; i < 6; i++) { const f = ((t * 0.02 + i / 6) % 1), y = 124 + f * f * 68; R(xn + 127, FY0 + y, 2, 1 + f * 6, E(3, 3, 1)); }
+    };
+    return { far, near, anim };
+  },
+  // 6: LeChuck's voodoo fortress in a lava cavern
+  () => {
+    const rng = seeded(77);
+    const far = mk(BGW, BGH, () => {
+      grad(0, 0, BGW, BGH, [BLACK, E(1, 0, 0), E(2, 0, 0)]);
+      for (let x = 0; x < BGW; x += 4) { const h = 6 + rng() * 34; for (let j = 0; j < h; j++) R(x + j / h * 2, j, 4 - j / h * 3, 1, BLACK); }
+      R(70, 70, 116, 104, BLACK); for (const tx of [62, 104, 150, 180]) { R(tx, 44, 18, 40, BLACK); tri(tx + 9, 28, 16, 0.6, BLACK); }
+      circ(128, 110, 22, E(1, 1, 1)); R(116, 104, 8, 8, BLACK); R(132, 104, 8, 8, BLACK); R(120, 122, 16, 6, BLACK);
+      for (let i = 0; i < 14; i++) R(78 + rng() * 100, 60 + rng() * 60, 3, 4, E(1, 3, 1));
+    });
+    const near = mk(BGW, BGH, () => {
+      for (let x = 0; x < BGW; x += 6) { const h = 4 + rng() * 26; for (let j = 0; j < h; j++) R(x + j / h * 3, BGH - 22 - j, 6 - j / h * 5, 1, BLACK); }
+      R(0, BGH - 22, BGW, 22, E(2, 0, 0));
+    });
+    const lava = [E(2, 0, 0), E(3, 1, 1), E(3, 2, 0), E(3, 3, 1)];
+    const anim = (t, xf, xn, ph) => {
+      if (!ph) return;
+      for (let x = 0; x < BGW; x += 2) { const v = Math.sin(x * 0.11 + t * 0.07) + Math.sin(x * 0.05 - t * 0.04); R(xn + x, FY0 + BGH - 20 + v * 2, 2, 2, lava[Math.floor((v + 2) * 0.99)]); }
+      for (let i = 0; i < 5; i++) { const ph = (t + i * 53) % 80; if (ph < 20) circ(xn + ((i * 67) % 240) + 8, FY0 + BGH - 14 - ph * 0.4, ph < 14 ? 1 : 2, E(3, 3, 1)); }
+    };
+    return { far, near, anim };
+  },
+];
+const bgCache = [];
+const getBG = w => bgCache[w] || (bgCache[w] = BG_BUILD[w]());
+function drawBG(w, x0, off, t) {
+  const bg = getBG(w), xf = Math.round(x0 - 16 - off * 12), xn = Math.round(x0 - 16 - off * 28);
+  X.drawImage(bg.far, xf, FY0); bg.anim(t, xf, xn, 0); X.drawImage(bg.near, xn, FY0); bg.anim(t, xf, xn, 1);
+}
+
+// ============================================================ GAME STATE
+const HI_KEY = 'arkanoid_brick_island_hi';
+const loadHi = () => { try { return +localStorage.getItem(HI_KEY) || 50000; } catch (e) { return 50000; } };
+const G = { state: 'menu', t: 0, st: 0, score: 0, hi: loadHi(), lives: 3, level: 0, world: 0, menuWorld: 0, paused: false, nextLife: 50000, bonus: 0 };
+const saveHi = () => { G.hi = Math.max(G.hi, G.score); try { localStorage.setItem(HI_KEY, String(G.hi)); } catch (e) { /* storage unavailable (private mode) */ } };
+let bricks = [], portals = [], wells = [], ball = null, boss = null;
+let caps = [], shots = [], bolts = [], darts = [], blasts = [], parts = [], pops = [], booms = [];
+let banner = null, duel = null, lastInsult = -1, shake = 0;
+let era = 0, eraT = 0, eraFlash = 0, hasEra = false, weave = 0, spellCast = false, fireT = 0, slowT = 0, speedT = 0;
+const pad = { x: FX0 + FW / 2, w: 32, tw: 32, mode: '', cd: 0, stun: 0 };
+const input = { left: false, right: false, fire: false, mouseDown: false, mouseX: null, useMouse: false };
+let musicTok = 0;
+function music(name) { musicTok++; Snd.play(name); }
+function jingle(name, then) { const tok = ++musicTok; Snd.play(name, () => { if (tok === musicTok && then) then(); }); }
+function setState(s) { G.state = s; G.st = 0; }
+const baseSpeed = () => 1.9 + G.world * 0.08;
+const maxSpeed = () => 3.2 + G.world * 0.06;
+const DESTRUCTIBLE = { n: 1, a: 1, g: 1, h: 1, t: 1, o: 1 };
+const destructible = k => !!DESTRUCTIBLE[k.t];
+const isSolid = k => !k.dead && k.solid && (k.t !== 'h' || k.era === era);
+const wrapXs = k => k.x + BW > FX1 ? [k.x, k.x - FW] : [k.x];
+
+function addScore(n) {
+  G.score += n;
+  while (G.score >= G.nextLife) { G.nextLife += 100000; G.lives++; sfx('life'); popup(pad.x, PADY - 14, 'EXTRA PADDLE!', E(3, 3, 1)); }
+  if (G.score > G.hi) G.hi = G.score;
+}
+function burst(x, y, col, n, sp) {
+  for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = Math.random() * (sp || 1.5); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.4, c: col, life: 18 + Math.random() * 22 }); }
+}
+function popup(x, y, s, c) { pops.push({ x: clamp(x, FX0 + textW(s, { f: 3 }) / 2 + 2, FX1 - textW(s, { f: 3 }) / 2 - 2), y, s, c, life: 55 }); }
+function showBanner(s, c, sub, dur) { banner = { s, c, sub, t: dur || 110 }; }
+
+// ------------------------------------------------------------ level construction
+function makeBrick(ch, r, c, li) {
+  if (ch === '.') return null;
+  const x = FX0 + c * BW, y = BY0 + r * BH;
+  if (ch === '&') { wells.push({ x: x + 8, y: y + 4 }); return null; }
+  const lanes = LEVELS[li].lanes;
+  const b = { r, c, x, y, t: 'n', col: null, hp: 1, max: 1, count: true, solid: true, vx: lanes && lanes[r] ? lanes[r] : 0, era: 0, note: 0, dead: false, flash: 0 };
+  if (COL[ch]) { b.col = COL[ch]; return b; }
+  const lc = ch.toLowerCase();
+  if (COL[lc]) { b.t = 'a'; b.col = COL[lc]; b.hp = b.max = 2 + Math.floor(li / 11); return b; }
+  switch (ch) {
+    case '#': Object.assign(b, { t: 's', count: false }); break;
+    case '*': Object.assign(b, { t: 'g', col: [3, 2, 0] }); break;
+    case '!': Object.assign(b, { t: 'i', col: [3, 1, 1] }); break;
+    case '@': Object.assign(b, { t: 'p', count: false, solid: false }); break;
+    case '~': Object.assign(b, { t: 'h', era: 0, col: [2, 1, 0] }); break;
+    case '^': Object.assign(b, { t: 'h', era: 1, col: [1, 3, 3] }); break;
+    case '%': Object.assign(b, { t: 't', col: [1, 1, 1] }); break;
+    case '$': Object.assign(b, { t: 'o', col: [3, 3, 1] }); break;
+    default:
+      if (ch >= '1' && ch <= '8') { Object.assign(b, { t: 'm', note: +ch, count: false, col: NOTE_COL[+ch - 1] }); break; }
+      return null;
+  }
+  return b;
+}
+function loadLevel(i) {
+  const L = LEVELS[i]; G.level = i; G.world = worldOf(i);
+  bricks = []; wells = []; caps = []; shots = []; bolts = []; darts = []; blasts = []; parts = []; pops = []; booms = [];
+  banner = null; duel = null; boss = null; era = 0; eraT = 420; eraFlash = 0; weave = 0; spellCast = false; fireT = 0; slowT = 0;
+  L.m.forEach((row, r) => [...(row + '..............').slice(0, COLS)].forEach((ch, c) => { const b = makeBrick(ch, r, c, i); if (b) bricks.push(b); }));
+  portals = bricks.filter(k => k.t === 'p');
+  hasEra = bricks.some(k => k.t === 'h');
+  if (L.boss) { bossSprites(); boss = { hp: 30, max: 30, x: FX0 + 112, y: 36, t: 0, cd: 150, inv: 0, flash: 0 }; }
+  resetPaddle(); serve();
+}
+function resetPaddle() { pad.x = FX0 + FW / 2; pad.w = pad.tw = 32; pad.mode = ''; pad.cd = 0; pad.stun = 0; }
+function serve() { ball = { x: pad.x + 6, y: PADY - 2.5, vx: 0, vy: 0, r: 2.5, s: baseSpeed(), stuck: true, off: 6, stuckT: 420, pcd: 0, trail: [] }; speedT = 0; }
+function launch() {
+  const b = ball; if (!b || !b.stuck) return;
+  let a = clamp(b.off / (pad.w / 2), -1, 1) * 1.05; if (Math.abs(a) < 0.25) a = 0.35 * (b.off < 0 ? -1 : 1);
+  b.vx = Math.sin(a) * b.s; b.vy = -Math.cos(a) * b.s; b.stuck = false; sfx('launch');
+}
+// keep the ball at its speed and away from hopelessly flat or vertical angles
+function fixAngle(b, jitter) {
+  let a = Math.atan2(b.vy, b.vx); if (jitter) a += (Math.random() - 0.5) * jitter;
+  let vx = Math.cos(a), vy = Math.sin(a);
+  if (Math.abs(vy) < 0.28) { vy = vy < 0 ? -0.28 : 0.28; vx = (vx < 0 ? -1 : 1) * Math.sqrt(1 - vy * vy); }
+  if (Math.abs(vx) < 0.1) { vx = vx < 0 ? -0.1 : 0.1; vy = (vy < 0 ? -1 : 1) * Math.sqrt(1 - vx * vx); }
+  b.vx = vx * b.s; b.vy = vy * b.s;
+}
+
+// ------------------------------------------------------------ collision: circle vs axis-aligned box
+function circRect(b, x, y, w, h) {
+  if (b.x + b.r <= x || b.x - b.r >= x + w || b.y + b.r <= y || b.y - b.r >= y + h) return null;
+  const cx = clamp(b.x, x, x + w), cy = clamp(b.y, y, y + h), dx = b.x - cx, dy = b.y - cy, d2 = dx * dx + dy * dy;
+  if (d2 >= b.r * b.r) return null;
+  if (d2 > 1e-9) { const d = Math.sqrt(d2); return { ux: dx / d, uy: dy / d, pen: b.r - d }; }
+  // centre is inside the box: leave along the axis of least penetration
+  const l = b.x - x, rr = x + w - b.x, t = b.y - y, bo = y + h - b.y, m = Math.min(l, rr, t, bo);
+  if (m === t) return { ux: 0, uy: -1, pen: t + b.r };
+  if (m === bo) return { ux: 0, uy: 1, pen: bo + b.r };
+  if (m === l) return { ux: -1, uy: 0, pen: l + b.r };
+  return { ux: 1, uy: 0, pen: rr + b.r };
+}
+function reflect(b, nx, ny) { const dot = b.vx * nx + b.vy * ny; if (dot < 0) { b.vx -= 2 * dot * nx; b.vy -= 2 * dot * ny; } }
+function collideBricks(b) {
+  const hits = [];
+  for (const k of bricks) {
+    if (!isSolid(k) || Math.abs(k.y + 4 - b.y) > 8) continue;
+    for (const kx of wrapXs(k)) { const h = circRect(b, kx, k.y, BW, BH); if (h) { h.k = k; h.kx = kx; hits.push(h); } }
+  }
+  if (!hits.length) return;
+  hits.sort((p, q) => q.pen - p.pen);
+  let nx = 0, ny = 0, bounced = false, steel = false; const struck = new Set();
+  for (const h of hits) {
+    const k = h.k; struck.add(k);
+    if (fireT > 0 && destructible(k)) continue; // the fireball burns straight through
+    const again = circRect(b, h.kx, k.y, BW, BH); // re-test after earlier push-outs so seams don't double-push
+    if (again) { b.x += again.ux * again.pen; b.y += again.uy * again.pen; }
+    nx += h.ux; ny += h.uy; bounced = true; if (k.t === 's' || k.t === 'm') steel = true;
+  }
+  if (bounced) { const l = Math.hypot(nx, ny); if (l > 1e-6) reflect(b, nx / l, ny / l); }
+  for (const k of struck) hitBrick(k, fireT > 0 ? 99 : 1);
+  if (bounced) fixAngle(b, steel ? 0.12 : 0);
+}
+
+// ------------------------------------------------------------ bricks
+const PTS = { n: 50, a: 100, g: 150, h: 120, t: 150, o: 250, i: 1000 };
+function hitBrick(k, dmg) {
+  if (k.dead) return;
+  k.flash = 6;
+  switch (k.t) {
+    case 's': sfx('steel'); return;
+    case 'm': k.flash = 24; sfx('note', k.note); loomNote(k.note); return;
+    case 'i': if (!duel) startDuel(); else sfx('armor'); return;
+    case 'p': return;
+  }
+  k.hp -= dmg;
+  if (k.hp > 0) { sfx('armor'); addScore(20); return; }
+  killBrick(k);
+}
+function killBrick(k) {
+  if (k.dead) return;
+  k.dead = true;
+  const cx = k.x + 8, cy = k.y + 4;
+  addScore(PTS[k.t] * (k.t === 'a' ? k.max : 1));
+  burst(cx, cy, E(...(k.col || [3, 2, 0])), 8, 1.4);
+  if (ball && !ball.stuck) ball.s = Math.min(maxSpeed(), ball.s + 0.015);
+  switch (k.t) {
+    case 'g': blasts.push({ x: cx, y: cy, t: 5 }); break;
+    case 't': darts.push({ x: cx, y: cy + 4 }); sfx('dart'); break;
+    case 'o': fireT = 480; sfx('fire'); showBanner('ORICHALCUM!', E(3, 2, 0), 'THE BALL BURNS THROUGH STONE', 90); break;
+    case 'i': break;
+    default: sfx('brick', clamp(14 - k.r, 0, 14));
+  }
+  maybeDrop(cx, cy);
+}
+function maybeDrop(x, y) {
+  if (caps.length >= 2 || Math.random() > 0.13) return;
+  let r = Math.random() * 90, kind = 'L';
+  for (const [key, w] of [['L', 20], ['E', 22], ['C', 20], ['S', 22], ['P', 6]]) if ((r -= w) < 0) { kind = key; break; }
+  caps.push({ x: x - 8, y: y - 3, k: kind, ph: 0 });
+}
+function updateBlasts() {
+  for (let i = 0; i < blasts.length; i++) {
+    const bl = blasts[i]; if (--bl.t > 0) continue;
+    bl.done = true; sfx('explode'); shake = 6;
+    booms.push({ x: bl.x, y: bl.y, t: 0 });
+    burst(bl.x, bl.y, E(3, 2, 0), 14, 2.2); burst(bl.x, bl.y, E(3, 3, 1), 8, 1.2);
+    // grog eats through everything in the 3x3 block around it; neighbouring barrels chain
+    for (const k of bricks) if (!k.dead && destructible(k) && Math.abs(k.y + 4 - bl.y) <= 9 && wrapXs(k).some(kx => Math.abs(kx + 8 - bl.x) <= 17)) killBrick(k);
+    if (boss && Math.hypot(boss.x - bl.x, boss.y - bl.y) < 30) damageBoss(2, false);
+  }
+  blasts = blasts.filter(b => !b.done);
+}
+
+// ------------------------------------------------------------ power-ups
+const CAP_NAMES = { L: 'SPACE-RANGER LASERS!', E: 'RUBBER CHICKEN!', C: 'MAGNETIC COMPASS!', S: 'HOURGLASS: SLOW!', P: 'GOLD GUY: 1UP!' };
+function collect(k) {
+  addScore(1000); popup(pad.x, PADY - 10, CAP_NAMES[k], E(3, 3, 1));
+  switch (k) {
+    case 'L': pad.mode = 'L'; pad.tw = 32; sfx('power'); break;
+    case 'E': pad.mode = 'E'; pad.tw = 48; sfx('power'); break;
+    case 'C': pad.mode = 'C'; pad.tw = 32; sfx('power'); break;
+    case 'S': slowT = 720; sfx('power'); if (ball) { ball.s = Math.max(1.5, ball.s * 0.6); if (!ball.stuck) fixAngle(ball); } break;
+    case 'P': G.lives++; sfx('life'); break;
+  }
+}
+function updateCaps() {
+  for (const c of caps) {
+    c.y += 0.9; c.ph = (G.t >> 3) % 4;
+    if (c.y + 7 >= PADY && c.y <= PADY + 6 && c.x + 16 >= pad.x - pad.w / 2 && c.x <= pad.x + pad.w / 2) { c.dead = true; collect(c.k); }
+    else if (c.y > H) c.dead = true;
+  }
+  caps = caps.filter(c => !c.dead);
+}
+function fireLaser() {
+  if (pad.mode !== 'L' || pad.cd > 0 || pad.stun > 0 || (ball && ball.stuck)) return;
+  pad.cd = 14; shots.push({ x: Math.round(pad.x - pad.w / 2 + 3), y: PADY - 3 }, { x: Math.round(pad.x + pad.w / 2 - 4), y: PADY - 3 }); sfx('laser');
+}
+function updateShots() {
+  for (const s of shots) {
+    s.y -= 5;
+    if (s.y < FY0) { s.dead = true; continue; }
+    for (const k of bricks) {
+      if (!isSolid(k) || s.y > k.y + BH || s.y + 5 < k.y) continue;
+      if (wrapXs(k).some(kx => s.x >= kx && s.x < kx + BW)) { hitBrick(k, 1); s.dead = true; break; }
+    }
+    if (!s.dead && boss && boss.hp > 0 && Math.abs(s.x - boss.x) < 17 && s.y < boss.y + 22 && s.y > boss.y - 20) { s.dead = true; damageBoss(0.5, false); }
+  }
+  shots = shots.filter(s => !s.dead);
+}
+
+// ------------------------------------------------------------ world mechanics
+function startDuel() {
+  let i; do { i = Math.floor(Math.random() * INSULTS.length); } while (i === lastInsult); lastInsult = i;
+  const wrong = []; while (wrong.length < 2) { const j = Math.floor(Math.random() * INSULTS.length); if (j !== i && !wrong.includes(j)) wrong.push(j); }
+  const ok = Math.floor(Math.random() * 3), opts = wrong.map(j => INSULTS[j][1]); opts.splice(ok, 0, INSULTS[i][1]);
+  duel = { i, opts, ok, t: 900, grace: 50 }; sfx('insult');
+}
+function resolveDuel(zone) {
+  if (zone === duel.ok) {
+    for (const k of bricks) if (k.t === 'i' && !k.dead) killBrick(k);
+    sfx('touche'); showBanner('TOUCHE!', E(3, 3, 1), 'THE PIRATE IS SPEECHLESS', 90);
+  } else {
+    if (ball) ball.s = Math.min(maxSpeed() + 0.5, ball.s + 0.35);
+    sfx('wrong'); showBanner('OUCH!', E(3, 1, 1), 'THAT WAS NOT THE RIGHT COMEBACK', 90);
+  }
+  duel = null;
+}
+function checkPortals(b) {
+  if (b.pcd > 0 || portals.length < 2) return;
+  for (const p of portals) {
+    if (Math.hypot(b.x - (p.x + 8), b.y - (p.y + 4)) >= 6) continue;
+    const others = portals.filter(q => q !== p), q = others[Math.floor(Math.random() * others.length)], s = Math.hypot(b.vx, b.vy) || 1;
+    burst(p.x + 8, p.y + 4, E(1, 3, 3), 10, 1.2);
+    b.x = clamp(q.x + 8 + b.vx / s * 9, FX0 + b.r, FX1 - b.r); b.y = Math.max(FY0 + b.r, q.y + 4 + b.vy / s * 9); b.pcd = 30;
+    burst(q.x + 8, q.y + 4, E(1, 3, 3), 10, 1.2); sfx('warp');
+    return;
+  }
+}
+// weaving: each note that matches the next note of the draft advances the weave; stray notes are ignored
+function loomNote(n) {
+  const L = LEVELS[G.level];
+  if (!L.draft || spellCast) return;
+  if (+L.draft[weave] === n) { weave++; popup(pad.x, PADY - 12, 'WOVEN ' + weave + '/' + L.draft.length, E(3, 1, 3)); }
+  if (weave >= L.draft.length) castSpell(L.spell);
+}
+function castSpell(sp) {
+  spellCast = true; sfx('spell'); shake = 4;
+  showBanner(sp, E(3, 1, 3), 'THE DRAFT IS WOVEN', 140);
+  switch (sp) {
+    case 'OPENING':
+      for (const k of bricks) if (k.t === 's' && !k.dead) { Object.assign(k, { t: 'n', col: COL.l, count: true, hp: 1, max: 1 }); burst(k.x + 8, k.y + 4, E(3, 1, 3), 6, 1); }
+      break;
+    case 'UNMAKING': {
+      const pool = bricks.filter(k => !k.dead && k.count && destructible(k));
+      for (let i = 0; i < 8 && pool.length; i++) killBrick(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+      break;
+    }
+    case 'SHARPENING': fireT = 600; break;
+    case 'HEALING': G.lives++; sfx('life'); break;
+  }
+}
+function updateDarts() {
+  for (const d of darts) {
+    d.y += 1.5; d.x += clamp(pad.x - d.x, -0.3, 0.3);
+    if (d.y >= PADY && d.y <= PADY + 6 && Math.abs(d.x - pad.x) <= pad.w / 2) { d.dead = true; pad.stun = 100; sfx('stun'); popup(pad.x, PADY - 10, 'STUNNED!', E(1, 3, 3)); }
+    else if (d.y > H) d.dead = true;
+  }
+  darts = darts.filter(d => !d.dead);
+}
+function updateBoss() {
+  const B = boss; if (!B || B.hp <= 0) return;
+  B.t++; B.x = FX0 + 112 + Math.sin(B.t * 0.012) * 80; B.y = 36 + Math.sin(B.t * 0.031) * 4;
+  if (B.inv > 0) B.inv--; if (B.flash > 0) B.flash--;
+  if (--B.cd <= 0) {
+    const angry = B.hp < B.max / 2, ox = B.x, oy = B.y + 14, base = Math.atan2(PADY - oy, pad.x - ox);
+    B.cd = angry ? 72 : 110;
+    for (const da of angry ? [-0.3, 0, 0.3] : [0]) bolts.push({ x: ox, y: oy, vx: Math.cos(base + da) * 1.55, vy: Math.sin(base + da) * 1.55 });
+    sfx('bossfire');
+  }
+  for (const f of bolts) {
+    f.x += f.vx; f.y += f.vy;
+    if (f.y >= PADY - 1 && f.y <= PADY + 6 && Math.abs(f.x - pad.x) <= pad.w / 2 + 1) { loseLife(); return; }
+    if (f.y > H || f.x < FX0 - 4 || f.x > FX1 + 4) f.dead = true;
+  }
+  bolts = bolts.filter(f => !f.dead);
+}
+function damageBoss(n, useInv) {
+  const B = boss; if (!B || B.hp <= 0) return;
+  if (useInv) { if (B.inv > 0) return; B.inv = 12; }
+  B.hp -= n; B.flash = 8; addScore(300); sfx('bosshit'); burst(B.x, B.y, E(1, 3, 1), 8, 1.6);
+  if (B.hp <= 0) {
+    B.hp = 0; addScore(50000); bolts = []; shots = []; darts = []; caps = []; ball = null; duel = null;
+    musicTok++; Snd.stop(); sfx('bossdie'); setState('bossdie');
+  }
+}
+
+// ------------------------------------------------------------ ball & paddle
+function movePaddle() {
+  if (pad.stun > 0) return;
+  if (input.left) pad.x -= 4.5;
+  if (input.right) pad.x += 4.5;
+  if (!input.left && !input.right && input.useMouse && input.mouseX !== null) pad.x = input.mouseX;
+  pad.x = clamp(pad.x, FX0 + pad.w / 2, FX1 - pad.w / 2);
+}
+function paddleHit(b) {
+  b.y = PADY - b.r;
+  const a = clamp((b.x - pad.x) / (pad.w / 2), -1, 1) * 1.05;
+  b.vx = Math.sin(a) * b.s; b.vy = -Math.cos(a) * b.s; fixAngle(b);
+  sfx('paddle');
+  if (duel && duel.grace <= 0) resolveDuel(clamp(Math.floor((b.x - FX0) / (FW / 3)), 0, 2));
+  if (pad.mode === 'C' && pad.stun <= 0 && G.state === 'play') { b.stuck = true; b.off = clamp(b.x - pad.x, 2 - pad.w / 2, pad.w / 2 - 2); b.stuckT = 180; sfx('catch'); }
+}
+function updateBall() {
+  const b = ball; if (!b) return;
+  if (b.pcd > 0) b.pcd--;
+  if (b.stuck) { b.x = clamp(pad.x + b.off, FX0 + b.r, FX1 - b.r); b.y = PADY - b.r; if (--b.stuckT <= 0) launch(); return; }
+  if (slowT <= 0 && ++speedT % 900 === 0) b.s = Math.min(maxSpeed(), b.s + 0.08);
+  if (wells.length) {
+    for (const w of wells) { const dx = w.x - b.x, dy = w.y - b.y, d2 = dx * dx + dy * dy, d = Math.sqrt(d2) || 1, a = 45 / (d2 + 80); b.vx += dx / d * a; b.vy += dy / d * a; }
+    fixAngle(b);
+  }
+  const cur = Math.hypot(b.vx, b.vy) || 1; b.vx *= b.s / cur; b.vy *= b.s / cur;
+  b.trail.push({ x: b.x, y: b.y }); if (b.trail.length > 7) b.trail.shift();
+  const f = duel ? 0.7 : 1, n = Math.max(1, Math.ceil(b.s * f / 1.2));
+  for (let i = 0; i < n; i++) {
+    const py = b.y;
+    b.x += b.vx * f / n; b.y += b.vy * f / n;
+    if (b.x - b.r < FX0) { b.x = FX0 + b.r; b.vx = Math.abs(b.vx); sfx('wall'); }
+    else if (b.x + b.r > FX1) { b.x = FX1 - b.r; b.vx = -Math.abs(b.vx); sfx('wall'); }
+    if (b.y - b.r < FY0) { b.y = FY0 + b.r; b.vy = Math.abs(b.vy); sfx('wall'); }
+    if (b.vy > 0 && py + b.r <= PADY + 2 && b.y + b.r >= PADY && Math.abs(b.x - pad.x) <= pad.w / 2 + b.r) { paddleHit(b); if (b.stuck) return; continue; }
+    collideBricks(b);
+    if (!ball) return; // the boss may have died from that very hit
+    if (boss && boss.hp > 0) {
+      const h = circRect(b, boss.x - 17, boss.y - 20, 34, 42);
+      if (h) { b.x += h.ux * h.pen; b.y += h.uy * h.pen; reflect(b, h.ux, h.uy); fixAngle(b); damageBoss(fireT > 0 ? 2 : 1, true); if (!ball) return; }
+    }
+    checkPortals(b);
+    if (b.y - b.r > H) { loseLife(); return; }
+  }
+}
+
+// ------------------------------------------------------------ flow
+function loseLife() {
+  if (G.state !== 'play') return;
+  setState('dying'); sfx('lose'); shake = 8;
+  burst(pad.x, PADY + 3, E(2, 2, 2), 22, 2.2); burst(pad.x, PADY + 3, E(3, 1, 1), 14, 1.6);
+  ball = null; duel = null; bolts = []; darts = []; caps = []; shots = [];
+}
+function afterDeath() {
+  G.lives--;
+  if (G.lives <= 0) { G.lives = 0; saveHi(); setState('over'); jingle('over'); return; }
+  resetPaddle(); serve(); fireT = 0; slowT = 0; setState('play');
+}
+function startLevel(i) { loadLevel(i); setState('intro'); jingle('start', () => music(WORLDS[G.world].song)); }
+function newGame() {
+  G.score = 0; G.lives = 3; G.nextLife = 50000; G.paused = false;
+  startLevel(WORLD_START[G.menuWorld]);
+}
+function toMenu() {
+  saveHi(); G.paused = false; setState('menu');
+  bricks = []; ball = null; boss = null; caps = []; shots = []; bolts = []; darts = []; parts = []; pops = []; booms = []; banner = null; duel = null;
+  music('monkey');
+}
+function checkClear() {
+  if (boss || G.state !== 'play' || bricks.some(k => !k.dead && k.count)) return;
+  G.bonus = 1000 * (G.world + 1); addScore(G.bonus);
+  ball = null; caps = []; shots = []; darts = []; duel = null;
+  setState('clear'); jingle('clear');
+}
+function updateFx() {
+  for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life--; }
+  parts = parts.filter(p => p.life > 0);
+  for (const p of pops) { p.y -= 0.35; p.life--; }
+  pops = pops.filter(p => p.life > 0);
+  for (const b of booms) b.t++;
+  booms = booms.filter(b => b.t < 20);
+  if (banner && --banner.t <= 0) banner = null;
+  if (shake > 0) shake--;
+  if (eraFlash > 0) eraFlash--;
+}
+function playTick() {
+  movePaddle();
+  if (pad.cd > 0) pad.cd--;
+  if (pad.stun > 0) pad.stun--;
+  pad.w += clamp(pad.tw - pad.w, -1, 1);
+  if (input.fire || input.mouseDown) fireLaser();
+  if (fireT > 0) fireT--;
+  if (slowT > 0) slowT--;
+  for (const k of bricks) {
+    if (k.flash > 0) k.flash--;
+    if (k.vx && !k.dead) { k.x += k.vx; if (k.x >= FX1) k.x -= FW; else if (k.x < FX0) k.x += FW; }
+  }
+  if (hasEra && --eraT <= 0) {
+    era ^= 1; eraT = 420; eraFlash = 14; sfx('era');
+    showBanner(era ? 'THE FUTURE' : 'THE PAST', era ? E(1, 3, 3) : E(3, 2, 1), 'THE CHRON-O-JOHN SHIFTS TIME', 70);
+  }
+  if (duel) { duel.grace--; if (--duel.t <= 0) { duel = null; sfx('wrong'); showBanner('TOO SLOW!', E(3, 1, 1), 'THE PIRATE WANDERS OFF', 80); } }
+  updateBall();
+  if (G.state !== 'play') return;
+  updateShots(); updateCaps(); updateDarts(); updateBlasts();
+  if (boss) updateBoss();
+  checkClear();
+}
+function update() {
+  G.t++;
+  if (G.paused) return;
+  G.st++;
+  updateFx();
+  switch (G.state) {
+    case 'intro':
+      movePaddle(); if (ball) { ball.x = pad.x + ball.off; ball.y = PADY - ball.r; }
+      if (G.st > 170) setState('play');
+      break;
+    case 'play': playTick(); break;
+    case 'dying': if (G.st > 100) afterDeath(); break;
+    case 'clear':
+      movePaddle(); updateBlasts();
+      if (G.st > 180) { if (G.level + 1 < LEVELS.length) startLevel(G.level + 1); else { saveHi(); setState('victory'); jingle('victory', () => music('loom')); } }
+      break;
+    case 'bossdie': {
+      const B = boss;
+      if (G.st % 5 === 0) { const x = B.x + (Math.random() - 0.5) * 44, y = B.y + (Math.random() - 0.5) * 46; booms.push({ x, y, t: 0 }); burst(x, y, [E(3, 2, 0), E(3, 3, 1), E(3, 1, 1), E(1, 3, 1)][(G.st / 5) % 4], 8, 2); }
+      if (G.st % 30 === 0) sfx('explode');
+      shake = 3;
+      if (G.st > 200) { boss = null; saveHi(); setState('victory'); jingle('victory', () => music('loom')); }
+      break;
+    }
+    case 'victory': // fireworks over the island of Loom
+      if (G.st % 20 === 0) burst(FX0 + 20 + Math.random() * (FW - 40), 30 + Math.random() * 60, EGA64[40 + Math.floor(Math.random() * 24)], 16, 1.8);
+      break;
+  }
+}
+
+// ============================================================ RENDERING
+const BALL_SPR = sprite(['.www.', 'wwwww', 'wwwwl', 'wwwll', '.lll.'], { w: WHITE, l: E(2, 2, 2) });
+const FIRE_SPR = sprite(['.yyy.', 'ywwyo', 'ywyyo', 'yyyoo', '.ooo.'], { w: WHITE, y: E(3, 3, 1), o: E(3, 2, 0) });
+const WHITE_BRICK = mk(15, 7, () => R(0, 0, 15, 7, WHITE));
+const PIPE = [E(1, 1, 1), E(2, 2, 2), WHITE, WHITE, E(2, 2, 2), E(2, 2, 2), E(1, 1, 1), BLACK];
+const PIPE_RED = [E(2, 0, 0), E(3, 1, 1), E(3, 3, 3), E(3, 1, 1), E(3, 1, 1), E(2, 0, 0), E(2, 0, 0), BLACK];
+const PIPE_V = mk(8, H, () => { for (let i = 0; i < 8; i++) R(i, 0, 1, H, PIPE[i]); for (const y of [44, 124]) for (let i = 0; i < 8; i++) R(i, y, 1, 14, PIPE_RED[i]); for (const y of [44, 57, 124, 137]) R(0, y, 8, 1, BLACK); });
+const PIPE_H = mk(FW + 16, 8, () => { for (let i = 0; i < 8; i++) R(0, i, FW + 16, 1, PIPE[i]); for (const x of [58, 170]) { for (let i = 0; i < 8; i++) R(x, i, 14, 1, PIPE_RED[i]); R(x, 0, 1, 8, BLACK); R(x + 13, 0, 1, 8, BLACK); } });
+function drawFrame(x0) {
+  X.drawImage(PIPE_V, x0 - 8, 0); X.drawImage(PIPE_V, x0 + FW, 0); X.drawImage(PIPE_H, x0 - 8, 0);
+  for (const cx of [x0 - 8, x0 + FW]) { R(cx, 0, 8, 8, E(1, 1, 1)); R(cx + 1, 1, 6, 6, E(2, 2, 2)); R(cx + 2, 2, 3, 3, WHITE); }
+}
+function drawBrick(k, x) {
+  const y = k.y;
+  if (k.t === 'p') { // Chron-o-John with a swirling time vortex
+    const cx = x + 8, cy = y + 4;
+    for (let i = 0; i < 10; i++) { const a = G.t * 0.12 + i * 0.628; P(cx + Math.cos(a) * 7, cy + Math.sin(a) * 4.5, [E(1, 3, 3), E(1, 1, 3), WHITE][i % 3]); }
+    R(cx - 3, y, 7, 8, E(0, 0, 2)); R(cx - 3, y, 7, 1, E(1, 1, 3)); P(cx, y + 2, E(3, 3, 1)); P(cx + 1, y + 2, E(3, 3, 1)); P(cx + 2, y + 5, E(3, 3, 1));
+    return;
+  }
+  if (k.t === 'h' && k.era !== era) { // out of phase: only a dotted ghost remains
+    const c = E(...k.col);
+    for (let i = 0; i < 15; i += 2) { P(x + i, y, c); P(x + i, y + 6, c); }
+    for (let j = 2; j < 6; j += 2) { P(x, y + j, c); P(x + 14, y + j, c); }
+    return;
+  }
+  X.drawImage(brickSprite(k), x, y);
+  if (k.flash > 0 && (k.flash & 2)) X.drawImage(WHITE_BRICK, x, y);
+  switch (k.t) {
+    case 's': { const p = (G.t + k.c * 7 + k.r * 3) % 150; if (p < 20) for (let j = 0; j < 7; j++) { const sx = p - 3 + j; if (sx >= 0 && sx < 15) P(x + sx, y + 6 - j, WHITE); } break; }
+    case 'o': P(x + 3 + ((G.t >> 2) % 9), y + 1 + ((G.t >> 3) & 1) * 4, WHITE); break;
+    case 'g': if ((G.t >> 3) & 1) P(x + 13, y + 1, E(3, 1, 1)); break;
+    case 'm': if (k.flash > 0) { const r = 26 - k.flash; ring(x + 7, y + 3, r * 0.5, E(...k.col)); } break;
+  }
+}
+function drawPaddle() {
+  const w = Math.round(pad.w), x = Math.round(pad.x - w / 2), y = PADY, st = pad.stun > 0;
+  if (pad.mode === 'E') { // the rubber chicken with a pulley in the middle
+    const yc = st ? E(2, 2, 2) : E(3, 3, 1);
+    R(x + 4, y + 1, w - 8, 4, yc); R(x + 7, y, w - 14, 6, yc); R(x + 7, y + 5, w - 14, 1, E(3, 2, 0));
+    R(x, y, 6, 4, yc); R(x - 2, y + 1, 2, 2, E(3, 2, 0)); R(x + 1, y - 1, 3, 1, E(3, 1, 1)); P(x + 2, y + 1, BLACK);
+    R(x + w - 4, y - 1, 4, 3, yc); R(x + w - 12, y + 6, 1, 2, E(3, 2, 0)); R(x + 11, y + 6, 1, 2, E(3, 2, 0));
+    const cx = Math.round(pad.x); circ(cx, y + 2, 3, E(2, 2, 2)); circ(cx, y + 2, 1, E(1, 1, 1)); R(cx - 12, y - 1, 24, 1, E(2, 1, 0));
+  } else { // the Vaus
+    R(x - 1, y - 1, w + 2, 8, BLACK); // outline keeps the paddle readable over bright backdrops
+    grad(x + 4, y, w - 8, 6, st ? [E(2, 2, 2), E(1, 1, 1)] : [WHITE, E(2, 2, 2), E(1, 1, 1)]);
+    const cap = st ? E(1, 1, 3) : E(2, 0, 0), hi = st ? E(1, 3, 3) : E(3, 1, 1);
+    for (const cx of [x, x + w - 5]) { R(cx, y + 1, 5, 4, cap); R(cx + 1, y, 3, 6, cap); R(cx + 1, y + 1, 3, 1, hi); }
+    R(x + w / 2 - 3, y + 2, 6, 2, (G.t >> 4) & 1 ? E(1, 3, 3) : E(0, 2, 2));
+    if (pad.mode === 'L') for (const cx of [x + 2, x + w - 4]) { R(cx, y - 3, 2, 3, E(1, 1, 1)); P(cx, y - 3, E(3, 1, 1)); P(cx + 1, y - 3, E(3, 3, 1)); }
+    if (pad.mode === 'C') for (let i = 4; i < w - 4; i++) if (((i + (G.t >> 2)) & 3) === 0) P(x + i, y - 1, E(1, 3, 1));
+  }
+  if (st) for (let i = 0; i < 3; i++) P(x + Math.random() * w, y - 2 + Math.random() * 9, E(1, 3, 3));
+}
+function drawWell(w) {
+  const cols = [E(1, 1, 3), E(1, 3, 3), WHITE, E(1, 0, 2)];
+  for (let i = 0; i < 30; i++) { const r = (i * 0.55 + G.t * 0.15) % 16, a = i * 0.9 - G.t * 0.08 + r * 0.35; P(w.x + Math.cos(a) * r, w.y + Math.sin(a) * r * 0.8, cols[i & 3]); }
+  circ(w.x, w.y, 2, BLACK); ring(w.x, w.y, 3, E(1, 0, 2));
+}
+function drawField() {
+  X.save(); X.beginPath(); X.rect(FX0, FY0, FW, H - FY0); X.clip();
+  drawBG(G.world, FX0, (pad.x - (FX0 + FW / 2)) / FW, G.t);
+  if (eraFlash > 0) dith(FX0, FY0, FW, H - FY0, era ? E(1, 3, 3) : E(3, 2, 1), eraFlash > 7 ? 2 : 1);
+  for (const w of wells) drawWell(w);
+  for (const k of bricks) if (!k.dead) for (const kx of wrapXs(k)) drawBrick(k, kx);
+  if (boss) {
+    const B = boss, bx = Math.round(B.x - 20), by = Math.round(B.y - 22);
+    if (B.hp < B.max / 2 && G.state === 'play') dcirc(Math.round(B.x), Math.round(B.y), 26, E(1, 3, 1), (G.t >> 3) & 1 ? 1 : 0);
+    if (G.state !== 'bossdie' || (G.st >> 2) & 1) X.drawImage(B.flash > 0 && (B.flash & 2) ? LECHUCK_HIT : LECHUCK, bx, by);
+  }
+  for (const c of caps) X.drawImage(capSprite(c.k, c.ph), Math.round(c.x), Math.round(c.y));
+  for (const d of darts) { R(d.x, d.y - 4, 1, 4, E(2, 1, 0)); P(d.x, d.y, WHITE); P(d.x - 1, d.y - 4, E(3, 1, 1)); P(d.x + 1, d.y - 4, E(3, 1, 1)); }
+  for (const s of shots) { R(s.x, s.y, 1, 5, E(3, 1, 1)); P(s.x, s.y, WHITE); P(s.x, s.y + 1, E(3, 3, 1)); }
+  for (const f of bolts) { P(f.x - f.vx * 2, f.y - f.vy * 2, E(0, 2, 0)); P(f.x - f.vx * 3.5, f.y - f.vy * 3.5, E(0, 1, 0)); circ(f.x, f.y, 2, (G.t >> 1) & 1 ? E(1, 3, 1) : E(0, 2, 0)); P(f.x, f.y, WHITE); }
+  if (duel) drawDuel();
+  if (G.state === 'intro' || G.state === 'play' || G.state === 'clear') drawPaddle();
+  if (ball) {
+    if (fireT > 0) for (let i = 0; i < ball.trail.length; i++) { const p = ball.trail[i]; circ(p.x, p.y, i > 4 ? 2 : 1, i > 3 ? E(3, 2, 0) : E(3, 1, 1)); }
+    X.drawImage(fireT > 0 ? FIRE_SPR : BALL_SPR, Math.round(ball.x - 2.5), Math.round(ball.y - 2.5));
+  }
+  for (const b of booms) { ring(b.x, b.y, b.t * 0.9, b.t < 7 ? WHITE : b.t < 13 ? E(3, 3, 1) : E(3, 1, 1)); if (b.t < 6) circ(b.x, b.y, 5 - b.t, E(3, 3, 1)); }
+  for (const p of parts) P(p.x, p.y, p.c);
+  for (const p of pops) text(p.s, p.x, p.y, (p.life >> 2) & 1 ? p.c : WHITE, { f: 3, c: 1, sh: BLACK });
+  if (duel) drawZones();
+  X.restore();
+}
+function panel(x, y, w, h, border, k) { dith(x, y, w, h, BLACK, k === undefined ? 4 : k); R(x, y, w, 1, border); R(x, y + h - 1, w, 1, border); R(x, y, 1, h, border); R(x + w - 1, y, 1, h, border); }
+function drawDuel() {
+  const o = { f: 3 }, lines = [];
+  for (const l of wrap('"' + INSULTS[duel.i][0] + '"', 208, o)) lines.push([l, E(3, 3, 1), 0]);
+  lines.push(['', null, 0]);
+  duel.opts.forEach((s, i) => wrap(s, 196, o).forEach((l, j) => lines.push([l, WHITE, j ? 0 : 'LMR'[i]])));
+  const h = lines.length * 6 + 12, top = 176 - h;
+  panel(FX0 + 4, top, FW - 8, h, E(3, 1, 1), 3);
+  text('PIRATE:', FX0 + 8, top + 3, E(3, 1, 1), o);
+  lines.forEach(([l, c, tag], i) => { if (!c) return; const yy = top + 10 + i * 6; if (tag) text(tag + ':', FX0 + 8, yy, E(1, 3, 3), o); text(l, FX0 + (c === WHITE ? 18 : 8), yy, c, o); });
+  R(FX0 + 5, top + h - 2, (FW - 10) * duel.t / 900, 1, E(3, 1, 1));
+}
+function drawZones() {
+  const zw = FW / 3, cur = clamp(Math.floor((pad.x - FX0) / zw), 0, 2);
+  for (let z = 1; z < 3; z++) for (let y = 178; y < H; y += 3) P(FX0 + zw * z, y, E(1, 1, 1));
+  for (let z = 0; z < 3; z++) text('LMR'[z], FX0 + zw * z + zw / 2, 194, z === cur ? E(1, 3, 3) : E(1, 1, 1), { f: 3, c: 1 });
+}
+function bar(x, y, w, frac, col) { R(x, y, w, 3, E(1, 1, 1)); R(x + 1, y + 1, Math.max(0, (w - 2) * clamp(frac, 0, 1)), 1, col); }
+function drawHUD() {
+  const x = 240, L = LEVELS[G.level], o3 = { f: 3 };
+  R(x, 0, 80, H, E(0, 0, 1)); dith(x, 0, 80, H, E(1, 0, 1), 1);
+  R(x + 1, 1, 78, 1, E(1, 1, 3)); R(x + 1, H - 2, 78, 1, E(1, 1, 3)); R(x + 78, 1, 1, H - 2, E(1, 1, 3)); R(x + 1, 1, 1, H - 2, E(1, 1, 3));
+  text('SCORE', x + 5, 5, E(3, 1, 1), o3); text(pad7(G.score), x + 5, 11, WHITE, { sh: E(0, 0, 2) });
+  text('HIGH SCORE', x + 5, 22, E(3, 1, 1), o3); text(pad7(G.hi), x + 5, 28, E(3, 3, 1), { sh: E(0, 0, 2) });
+  text('LEVEL', x + 5, 40, E(3, 1, 1), o3); text(String(G.level + 1).padStart(2, '0') + '/33', x + 5, 46, E(1, 3, 3), { sh: E(0, 0, 2) });
+  text(WORLDS[G.world].short, x + 5, 58, E(3, 2, 0), o3);
+  const nl = wrap(L.n, 70, o3); nl.slice(0, 4).forEach((l, i) => text(l, x + 5, 65 + i * 6, E(2, 2, 2), o3));
+  text('PADDLES', x + 5, 92, E(3, 1, 1), o3);
+  for (let i = 0; i < Math.min(G.lives - 1, 6); i++) { const px = x + 5 + (i % 3) * 13, py = 99 + Math.floor(i / 3) * 5; R(px, py, 11, 3, E(2, 2, 2)); R(px, py, 2, 3, E(2, 0, 0)); R(px + 9, py, 2, 3, E(2, 0, 0)); }
+  if (G.lives - 1 > 6) text('+' + (G.lives - 7), x + 45, 101, WHITE, o3);
+  text('POWER', x + 5, 112, E(3, 1, 1), o3);
+  const pw = pad.stun > 0 ? ['STUNNED!', E(1, 3, 3)] : { L: ['LASERS', E(3, 1, 1)], E: ['RUBBER CHICKEN', E(3, 3, 1)], C: ['CATCH', E(1, 3, 1)] }[pad.mode] || ['-', E(1, 1, 1)];
+  text(pw[0], x + 5, 118, pw[1], o3);
+  let yy = 125;
+  if (slowT > 0) { text('SLOW', x + 5, yy, E(3, 2, 0), o3); bar(x + 25, yy + 1, 48, slowT / 720, E(3, 2, 0)); yy += 7; }
+  if (fireT > 0) { text('FIRE', x + 5, yy, E(3, 1, 1), o3); bar(x + 25, yy + 1, 48, fireT / 600, E(3, 1, 1)); yy += 7; }
+  // world-specific readout
+  R(x + 4, 141, 72, 1, E(1, 1, 3));
+  const iy = 145;
+  switch (G.world) {
+    case 0: {
+      const left = bricks.filter(k => k.t === 'i' && !k.dead).length;
+      text('SWORD FIGHT', x + 5, iy, E(3, 3, 1), o3);
+      if (duel) { text('DUEL! PICK L/M/R', x + 5, iy + 7, (G.t >> 3) & 1 ? E(3, 1, 1) : WHITE, o3); bar(x + 5, iy + 14, 68, duel.t / 900, E(3, 1, 1)); }
+      else text(left ? 'HIT ! TO DUEL: ' + left : 'PIRATES BEATEN', x + 5, iy + 7, E(2, 2, 2), o3);
+      break;
+    }
+    case 1:
+      if (hasEra) { text('ERA: ' + (era ? 'FUTURE' : 'PAST'), x + 5, iy, era ? E(1, 3, 3) : E(3, 2, 1), o3); bar(x + 5, iy + 7, 68, eraT / 420, era ? E(1, 3, 3) : E(3, 2, 1)); }
+      else text('TIME IS STABLE', x + 5, iy, E(2, 2, 2), o3);
+      if (portals.length) text('CHRON-O-JOHNS: ' + portals.length, x + 5, iy + 13, E(2, 2, 2), o3);
+      break;
+    case 2:
+      text('TRAPS: ' + bricks.filter(k => k.t === 't' && !k.dead).length, x + 5, iy, E(2, 2, 2), o3);
+      text('ORICHALCUM: ' + bricks.filter(k => k.t === 'o' && !k.dead).length, x + 5, iy + 7, E(3, 3, 1), o3);
+      break;
+    case 3: text('GRAVITY WELLS: ' + wells.length, x + 5, iy, E(1, 1, 3), o3); text('SLINGSHOT!', x + 5, iy + 7, E(2, 2, 2), o3); break;
+    case 4: {
+      text('DRAFT: ' + (L.spell || ''), x + 5, iy, E(3, 1, 3), o3);
+      [...(L.draft || '')].forEach((d, i) => {
+        const c = NOTE_COL[+d - 1], done = i < weave || spellCast, next = i === weave && !spellCast;
+        R(x + 5 + i * 12, iy + 7, 10, 7, done ? E(...c) : shade(c, -2)); text(NOTE_NAMES[+d - 1], x + 9 + i * 12, iy + 8, done ? BLACK : E(...c), o3);
+        if (done) R(x + 5 + i * 12, iy + 16, 10, 1, WHITE); else if (next && (G.t >> 3) & 1) R(x + 5 + i * 12, iy + 16, 10, 1, E(...c));
+      });
+      text(spellCast ? 'THE SPELL IS WOVEN!' : 'STRIKE THE NOTES', x + 5, iy + 20, spellCast ? E(3, 3, 1) : E(2, 2, 2), o3);
+      break;
+    }
+    case 5: text('TRAFFIC LANES: ' + Object.keys(L.lanes || {}).length, x + 5, iy, E(2, 2, 2), o3); text('MIND THE ROAD', x + 5, iy + 7, E(3, 2, 0), o3); break;
+    case 6:
+      text('LECHUCK', x + 5, iy, E(1, 3, 1), o3);
+      if (boss) bar(x + 5, iy + 7, 68, boss.hp / boss.max, E(3, 1, 1));
+      break;
+  }
+  text(Snd.on ? 'P PAUSE  M MUTE' : 'P PAUSE  M UNMUTE', x + 5, 191, E(1, 1, 3), o3);
+}
+function bigText(s, y, col, sub, subCol) {
+  const cx = FX0 + FW / 2;
+  text(s, cx, y, col, { s: 2, c: 1, sh: BLACK });
+  if (sub) wrap(sub, FW - 16, { f: 3 }).forEach((l, i) => text(l, cx, y + 18 + i * 6, subCol || WHITE, { f: 3, c: 1, sh: BLACK }));
+}
+function drawOverlays() {
+  const cx = FX0 + FW / 2, o3 = { f: 3, c: 1 };
+  if (banner && G.state === 'play') bigText(banner.s, 92, banner.c, banner.sub, WHITE);
+  switch (G.state) {
+    case 'intro': {
+      const W0 = WORLDS[G.world], hint = wrap(W0.hint, 180, { f: 3 }), nm = wrap(LEVELS[G.level].n, 180, {}), h = 58 + nm.length * 9 + hint.length * 6;
+      const top = 96 - h / 2;
+      panel(FX0 + 12, top, FW - 24, h, E(3, 3, 1), 3);
+      text('LEVEL ' + String(G.level + 1).padStart(2, '0'), cx, top + 6, E(3, 3, 1), { s: 2, c: 1, sh: BLACK });
+      text(W0.name, cx, top + 24, E(3, 2, 0), o3);
+      nm.forEach((l, i) => text(l, cx, top + 33 + i * 9, WHITE, { c: 1, sh: BLACK }));
+      hint.forEach((l, i) => text(l, cx, top + 38 + nm.length * 9 + i * 6, E(1, 3, 3), o3));
+      if ((G.t >> 4) & 1) text('GET READY!', cx, top + h - 9, E(3, 1, 1), o3);
+      break;
+    }
+    case 'clear': bigText('LEVEL CLEAR!', 80, E(3, 3, 1), 'BONUS ' + G.bonus, E(1, 3, 3)); break;
+    case 'dying': if (G.lives <= 1) bigText('LAST PADDLE LOST', 90, E(3, 1, 1)); break;
+    case 'over':
+      panel(FX0 + 16, 64, FW - 32, 70, E(3, 1, 1), 3);
+      bigText('GAME OVER', 72, E(3, 1, 1), 'YOU FIGHT LIKE A DAIRY FARMER.', E(3, 3, 1));
+      text('SCORE ' + pad7(G.score), cx, 104, WHITE, { c: 1 });
+      if (G.st > 90 && (G.t >> 4) & 1) text('PRESS SPACE', cx, 120, E(1, 3, 3), o3);
+      break;
+    case 'bossdie': bigText('LECHUCK FALLS!', 100, E(1, 3, 1), 'THE VOODOO FORTRESS CRUMBLES'); break;
+  }
+  if (G.paused) { panel(FX0 + 50, 80, FW - 100, 36, WHITE, 3); bigText('PAUSED', 88, WHITE, 'P TO RESUME  ESC FOR MENU', E(1, 3, 3)); }
+}
+// the ARKANOID logo, built from tiny colour-cycling EGA bricks
+function drawLogo(y) {
+  const s = 'ARKANOID', rows = FONTS[5].rows, x0 = 160 - (s.length * 6 * 4 - 4) / 2;
+  for (let i = 0; i < s.length; i++) rows[s[i]].forEach((r, gy) => r.forEach((on, gx) => {
+    if (!on) return;
+    const px = x0 + (i * 6 + gx) * 4, py = y + gy * 3, c = EGA64[[60, 62, 54, 38, 58, 57, 61, 63][(i + gy + (G.t >> 3)) % 8]];
+    R(px, py, 4, 3, c); R(px, py + 2, 4, 1, BLACK); R(px + 3, py, 1, 3, BLACK); P(px, py, WHITE);
+  }));
+}
+function drawMenu() {
+  X.save(); X.beginPath(); X.rect(48, 8, 224, 192); X.clip();
+  drawBG(G.menuWorld, 48, Math.sin(G.t * 0.01) * 0.5, G.t);
+  dith(48, 8, 224, 192, BLACK, 2);
+  X.restore();
+  drawFrame(48);
+  R(0, 0, 40, H, BLACK); R(280, 0, 40, H, BLACK);
+  drawLogo(14);
+  text('THE SECRET OF BRICK ISLAND', 160, 40, E(3, 3, 1), { c: 1, sh: E(2, 0, 0) });
+  const w = WORLDS[G.menuWorld], o3 = { f: 3, c: 1 };
+  panel(56, 51, 208, 34, E(1, 1, 3), 3);
+  text('START IN WORLD', 160, 55, E(3, 1, 1), o3);
+  text('<  ' + (G.menuWorld + 1) + '  >', 160, 62, (G.t >> 3) & 1 ? WHITE : E(1, 3, 3), { c: 1 });
+  text(w.name, 160, 70, E(3, 2, 0), o3);
+  const a = WORLD_START[G.menuWorld] + 1, b = G.menuWorld < 6 ? WORLD_START[G.menuWorld + 1] : 33;
+  text(a === b ? 'LEVEL ' + a : 'LEVELS ' + a + '-' + b, 160, 76, E(2, 2, 2), o3);
+  const legend = [['L', 'SPACE-RANGER BLASTERS'], ['E', 'RUBBER CHICKEN (WIDE)'], ['C', 'MAGNETIC COMPASS (CATCH)'], ['S', 'HOURGLASS (SLOW)'], ['P', 'GOLD GUY (EXTRA PADDLE)']];
+  legend.forEach(([k, s], i) => { X.drawImage(capSprite(k, (G.t >> 3) % 4), 76, 88 + i * 9); text(s, 98, 89 + i * 9, WHITE, { f: 3 }); });
+  const bl = [['g', 'GROG'], ['i', 'INSULT'], ['s', 'STEEL'], ['a', 'ARMOR']];
+  bl.forEach(([t, s], i) => { const k = { t, col: t === 'a' ? COL.b : t === 'g' ? [3, 2, 0] : [3, 1, 1], hp: 2, max: 3, era: 0, note: 1 }; X.drawImage(brickSprite(k), 64 + i * 50, 136); text(s, 81 + i * 50, 137, E(2, 2, 2), { f: 3 }); });
+  text('HIGH SCORE ' + pad7(G.hi), 160, 150, E(3, 3, 1), { c: 1, sh: BLACK });
+  if ((G.t >> 4) & 1) text('PRESS SPACE OR CLICK TO START', 160, 164, WHITE, { c: 1, sh: BLACK });
+  text('MOUSE / ARROWS: MOVE    SPACE / CLICK: LAUNCH + FIRE', 160, 178, E(1, 3, 3), o3);
+  text('A LUCASARTS TRIBUTE  ·  33 LEVELS  ·  7 WORLDS', 160, 188, E(1, 1, 3), o3);
+}
+function drawVictory() {
+  X.save(); X.beginPath(); X.rect(FX0, FY0, FW, H - FY0); X.clip();
+  drawBG(4, FX0, Math.sin(G.t * 0.008) * 0.5, G.t);
+  for (const p of parts) P(p.x, p.y, p.c);
+  X.restore();
+  const cx = FX0 + FW / 2, o3 = { f: 3, c: 1 };
+  panel(FX0 + 10, 28, FW - 20, 132, E(3, 3, 1), 3);
+  text('VICTORY!', cx, 36, E(3, 3, 1), { s: 2, c: 1, sh: E(2, 0, 0) });
+  const lines = ['LECHUCK HAS BEEN BLASTED BACK', 'TO THE UNDERWORLD, BRICK ISLAND', 'IS FREE, AND GROG FLOWS AGAIN.', '', 'YOU ARE A MIGHTY PIRATE.'];
+  lines.forEach((l, i) => text(l, cx, 58 + i * 7, WHITE, o3));
+  text('FINAL SCORE', cx, 100, E(3, 1, 1), o3); text(pad7(G.score), cx, 107, WHITE, { s: 1, c: 1, sh: BLACK });
+  if (G.score >= G.hi) text('NEW HIGH SCORE!', cx, 118, (G.t >> 3) & 1 ? E(3, 3, 1) : E(3, 1, 1), o3);
+  text('WITH THANKS TO THE MAKERS OF MONKEY ISLAND,', cx, 130, E(1, 3, 3), o3);
+  text('DAY OF THE TENTACLE, FATE OF ATLANTIS, X-WING,', cx, 136, E(1, 3, 3), o3);
+  text('LOOM AND SAM & MAX', cx, 142, E(1, 3, 3), o3);
+  if (G.st > 240 && (G.t >> 4) & 1) text('PRESS SPACE', cx, 151, E(3, 3, 1), o3);
+}
+function render() {
+  CX = X;
+  const sx = shake > 0 ? Math.round((Math.random() - 0.5) * 3) : 0, sy = shake > 0 ? Math.round((Math.random() - 0.5) * 3) : 0;
+  X.setTransform(1, 0, 0, 1, sx, sy);
+  R(-4, -4, W + 8, H + 8, BLACK);
+  if (G.state === 'menu') drawMenu();
+  else {
+    if (G.state === 'victory') drawVictory(); else drawField();
+    drawFrame(FX0); drawHUD(); drawOverlays();
+  }
+  X.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+// ============================================================ INPUT
+function action() {
+  switch (G.state) {
+    case 'menu': sfx('select'); newGame(); break;
+    case 'intro': if (G.st > 20) setState('play'); break;
+    case 'play': if (G.paused) { G.paused = false; sfx('pause'); } else if (ball && ball.stuck) launch(); else fireLaser(); break;
+    case 'clear': if (G.st > 60) G.st = 999; break;
+    case 'over': if (G.st > 90) toMenu(); break;
+    case 'victory': if (G.st > 240) toMenu(); break;
+  }
+}
+function pickWorld(d) { G.menuWorld = (G.menuWorld + d + 7) % 7; sfx('select'); }
+window.addEventListener('keydown', e => {
+  Snd.init();
+  const k = e.key;
+  if ([' ', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(k)) e.preventDefault();
+  const left = k === 'ArrowLeft' || k === 'a' || k === 'A', right = k === 'ArrowRight' || k === 'd' || k === 'D';
+  if (left) { input.left = true; input.useMouse = false; }
+  if (right) { input.right = true; input.useMouse = false; }
+  if (k === ' ') input.fire = true;
+  if (e.repeat) return;
+  if (G.state === 'menu') {
+    if (left) pickWorld(-1); else if (right) pickWorld(1);
+    else if (k >= '1' && k <= '7') { G.menuWorld = +k - 1; sfx('select'); }
+  }
+  if (k === ' ' || k === 'Enter') action();
+  else if (k === 'm' || k === 'M') Snd.toggle();
+  else if ((k === 'p' || k === 'P') && G.state === 'play') { G.paused = !G.paused; sfx('pause'); }
+  else if (k === 'Escape' && G.paused) toMenu();
+});
+window.addEventListener('keyup', e => {
+  const k = e.key;
+  if (k === 'ArrowLeft' || k === 'a' || k === 'A') input.left = false;
+  if (k === 'ArrowRight' || k === 'd' || k === 'D') input.right = false;
+  if (k === ' ') input.fire = false;
+});
+function pointerX(clientX) { const r = screen.getBoundingClientRect(); return (clientX - r.left) / r.width * W; }
+function pointerY(clientY) { const r = screen.getBoundingClientRect(); return (clientY - r.top) / r.height * H; }
+window.addEventListener('mousemove', e => { input.mouseX = pointerX(e.clientX); input.useMouse = true; });
+screen.addEventListener('mousedown', e => {
+  e.preventDefault(); Snd.init(); input.mouseDown = true;
+  input.mouseX = pointerX(e.clientX); input.useMouse = true;
+  if (G.state === 'menu') { const y = pointerY(e.clientY), x = input.mouseX; if (y > 51 && y < 85 && (x < 130 || x > 190)) { pickWorld(x < 130 ? -1 : 1); return; } }
+  action();
+});
+window.addEventListener('mouseup', () => { input.mouseDown = false; });
+screen.addEventListener('touchstart', e => { e.preventDefault(); Snd.init(); input.mouseX = pointerX(e.touches[0].clientX); input.useMouse = true; input.mouseDown = true; action(); }, { passive: false });
+screen.addEventListener('touchmove', e => { e.preventDefault(); input.mouseX = pointerX(e.touches[0].clientX); input.useMouse = true; }, { passive: false });
+screen.addEventListener('touchend', () => { input.mouseDown = false; });
+screen.addEventListener('contextmenu', e => e.preventDefault());
+window.addEventListener('blur', () => { input.left = input.right = input.fire = input.mouseDown = false; if (G.state === 'play') G.paused = true; });
+
+// ============================================================ MAIN LOOP (fixed 60 Hz simulation)
+let lastT = performance.now(), acc = 0;
+function frame(now) {
+  acc += Math.min(100, now - lastT); lastT = now;
+  while (acc >= 1000 / 60) { update(); acc -= 1000 / 60; }
+  render();
+  requestAnimationFrame(frame);
+}
+toMenu();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

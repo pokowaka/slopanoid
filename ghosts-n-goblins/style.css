@@ -1,0 +1,43 @@
+/* GHOSTS 'N GOBLINS · THE CURSED PC GAMING MUSEUM — cabinet styling */
+:root { --scan: 3px; --gold: #f0c848; --blood: #b01020; --ink: #e8e0ff; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #07040c; color: var(--ink); font-family: "Courier New", monospace; overflow: hidden; }
+body { background: radial-gradient(ellipse at 50% 20%, #2a0e24 0%, #0a0510 55%, #040206 100%); }
+#cabinet { display: flex; flex-direction: column; height: 100%; }
+#marquee { text-align: center; padding: 8px 0 6px; background: linear-gradient(#3a0a14, #160408); border-bottom: 3px solid #5a1020; box-shadow: 0 4px 18px #000; }
+#marquee .m1 { display: block; font-size: 26px; font-weight: bold; letter-spacing: 6px; color: #ff4a2a; text-shadow: 0 0 10px #ff2000, 3px 3px 0 #200000; }
+#marquee .m2 { display: block; font-size: 12px; letter-spacing: 5px; color: var(--gold); }
+#main { flex: 1; display: flex; gap: 14px; padding: 12px; min-height: 0; justify-content: center; align-items: flex-start; }
+#stage { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+#bezel { position: relative; padding: 18px; border-radius: 22px; background: linear-gradient(145deg, #2a2230, #0e0a12); box-shadow: inset 0 0 0 2px #3a3040, 0 10px 40px #000, inset 0 0 30px #000; }
+#bezel.crt-off { padding: 4px; border-radius: 4px; }
+#screen { display: block; image-rendering: pixelated; image-rendering: crisp-edges; width: 960px; height: 600px; background: #000; cursor: crosshair; }
+#bezel.crt-on #screen { border-radius: 14px; filter: saturate(1.12) contrast(1.06); }
+#bezel .scanlines, #bezel .vignette { position: absolute; inset: 18px; pointer-events: none; border-radius: 14px; }
+#bezel .scanlines { background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) calc(var(--scan) * 0.5), rgba(0,0,0,0.28) calc(var(--scan) * 0.5), rgba(0,0,0,0.28) var(--scan)); mix-blend-mode: multiply; }
+#bezel .vignette { background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.55) 100%); box-shadow: inset 0 0 40px rgba(120,160,255,0.08); }
+#bezel.crt-off .scanlines, #bezel.crt-off .vignette { display: none; }
+#help { font-size: 12px; color: #b8b0c8; text-align: center; line-height: 1.5; }
+#help b { color: var(--gold); }
+#side { width: 262px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+.panel { background: linear-gradient(#1e1422, #120a16); border: 2px solid #4a2a3a; border-radius: 8px; padding: 10px; box-shadow: 0 4px 14px #000; }
+.lbl { font-size: 10px; letter-spacing: 3px; color: #a07080; margin-bottom: 6px; }
+.big { font-size: 15px; font-weight: bold; color: #ffe8a0; }
+.sm { font-size: 12px; color: #d0c8e0; margin-top: 3px; }
+.gold { color: var(--gold); }
+.placard { background: linear-gradient(#e2cc98, #c8ae78); border-color: #6a4a20; color: #3a2410; }
+.placard .lbl { color: #6a4a20; }
+.placard .big { color: #5a1a10; }
+.placard .sm { color: #3a2410; }
+.placard .gold { color: #8a4a10; }
+.row { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; border-bottom: 1px dashed #3a2430; }
+.row b { color: #fff0c0; }
+.tip { font-size: 11px; color: #a8a0c0; margin-top: 8px; line-height: 1.4; }
+.buttons { display: flex; flex-direction: column; gap: 6px; }
+button { font-family: inherit; font-size: 12px; font-weight: bold; letter-spacing: 1px; color: #ffe8c0; background: linear-gradient(#5a1a26, #2a0a12); border: 2px solid #8a2a3a; border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+button:hover { background: linear-gradient(#7a2a36, #3a0e18); border-color: var(--gold); }
+button:active { transform: translateY(1px); }
+.warp { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.warp span { font-size: 10px; letter-spacing: 2px; color: #a07080; width: 100%; }
+.warp button { width: 34px; padding: 5px 0; }
+@media (max-width: 900px) { #side { display: none; } }

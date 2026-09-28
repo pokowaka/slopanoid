@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghosts 'n Goblins · The Cursed PC Gaming Museum</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="cabinet">
+  <header id="marquee">
+    <span class="m1">GHOSTS 'N GOBLINS</span>
+    <span class="m2">THE CURSED PC GAMING MUSEUM</span>
+  </header>
+  <div id="main">
+    <div id="stage">
+      <div id="bezel" class="crt-on">
+        <canvas id="screen" width="320" height="200"></canvas>
+        <div class="scanlines"></div>
+        <div class="vignette"></div>
+      </div>
+      <div id="help">
+        <b>A/D ←/→</b> move · <b>W/S ↑/↓</b> aim up / crouch / climb · <b>SPACE/Z</b> jump ·
+        <b>J/X/LMB</b> attack · <b>E/C/RMB</b> eject armor / possess / cast gold magic ·
+        <b>P</b> pause · <b>ENTER</b> start
+      </div>
+    </div>
+    <aside id="side">
+      <div class="panel placard">
+        <div class="lbl">MUSEUM PLACARD</div>
+        <div id="plStage" class="big">INSERT COIN</div>
+        <div id="plSub" class="sm">&nbsp;</div>
+        <div id="plYear" class="sm gold">&nbsp;</div>
+      </div>
+      <div class="panel">
+        <div class="lbl">KNIGHT STATUS</div>
+        <div class="row"><span>ARMOR</span><b id="stArmor">-</b></div>
+        <div class="row"><span>WEAPON</span><b id="stWeapon">-</b></div>
+        <div class="row"><span>ANVIL</span><b id="stAnvil">-</b></div>
+        <div class="tip" id="stTip">Eject your armor with E: it becomes an anvil that crushes, weighs plates and bounces you high. In boxers you are fast, double-jump, see ghost platforms and can possess monsters.</div>
+      </div>
+      <div class="panel buttons">
+        <button id="btnCrt">CRT BEZEL [V]</button>
+        <button id="btnMute">SOUND ON [M]</button>
+        <button id="btnPause">PAUSE [P]</button>
+        <div class="warp">
+          <span>STAGE WARP</span>
+          <button data-warp="0">1</button><button data-warp="1">2</button><button data-warp="2">3</button><button data-warp="3">4</button><button data-warp="4">5</button><button data-warp="5">6</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+<script src="gfx.js"></script>
+<script src="sprites.js"></script>
+<script src="audio.js"></script>
+<script src="stages.js"></script>
+<script src="entities.js"></script>
+<script src="game.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
