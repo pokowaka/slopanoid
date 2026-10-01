@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Arkanoid: The Secret of Brick Island</title>
+<style>
+  body { 
+    margin: 0; background: #000; overflow: hidden; 
+    display: flex; justify-content: center; align-items: center; 
+  }
+  canvas { 
+    width: 100vw; height: 100vh; 
+    object-fit: contain; 
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="320" height="200"></canvas>
+<script>
+// EGA 64-color Hardware Palette Registers
+const EGA64 = [];
+for(let i=0; i<64; i++) {
+  let r = ((i & 32) ? 2 : 0) + ((i & 4) ? 1 : 0);
+  let g = ((i & 16) ? 2 : 0) + ((i & 2) ? 1 : 0);
+  let b = ((i & 8) ? 2 : 0) + ((i & 1) ? 1 : 0);
+  EGA64.push(`rgb(${r*85},${g*85},${b*85})`);
+}
+const EGA = [EGA64[0], EGA64[1], EGA64[2], EGA64[3], EGA64[4], EGA64[5], EGA64[20], EGA64[7], EGA64[56], EGA64[57], EGA64[58], EGA64[59], EGA64[60], EGA64[61], EGA64[62], EGA64[63]];
+const THEMES = ["MONKEY ISLAND", "DAY OF TENTACLE", "FATE OF ATLANTIS", "SPACE FLIGHT", "THE LOOM OF FATE", "ROAD TO SAM & MAX", "LECHUCK'S REVENGE"];
+
+// Exactly 33 LucasArts Pixel-Art Level Matrices (16x14 grid)
+const MAPS = [
+  // 1-6: Monkey Island Motifs (Guybrush Hat & Cutlass, Rubber Chicken, Grog Mug, Monkey Head, Stan's Jacket, Ghost Ship)
+  ["0000444444440000","0004444444444000","0044444444444400","0000044444400000","0000000000000000","0000000000000077","0000000000007700","0000000000770000","0000000077000000","0000007700000000","0000078870000000","0000077770000000","0000000000000000","0000000000000000"].join(''),
+  ["0000005555000000","0000005555000000","0000000550000000","0000000550000000","0000000550000000","0000000550000000","0000008888000000","0000000550000000","0000000550000000","0000005555000000","0000055555555000","0000055555555000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000077777700000","0000788888700000","0000799998770000","0000799998707000","0000799998700700","0000799998700700","0000799998707000","0000799998770000","0000788888700000","0000077777700000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0006666666660000","0066666666666000","0661166661166000","0661166661166000","0666666666666000","0666226622666000","0666222222666000","0066222222660000","0066666666600000","0000666666000000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000003333000000","0000313331300000","0003113311300000","0031113111300000","0311111111300000","3121111213000000","3122112213000000","3122222213000000","3122222213000000","3112222113000000","3111221113000000","3111111113000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000020000000","0000000222000000","0000002222200000","0000022222220000","0000222222222000","0002222222222200","0022222222222220","0000000200000000","8888888888888800","0888888888888000","0088888888800000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  // 7-12: Day of the Tentacle Motifs (Purple Tentacle, Green Tentacle Guitar, Chron-o-John, Dr. Fred Lab, Super Battery, Tentacle Flag)
+  ["0000000550000000","0000005555000000","0000055555500000","0000551551550000","0000555555550000","0000555555550000","0000555555550000","0000555555550000","0000055555500000","0000055550000000","0000055000000000","0005555000000000","0005550000000000","0000000000000000"].join(''),
+  ["0000000330000000","0000003333000000","0000033333300000","0000331331330000","0000333333330000","0000333333330000","0000333333330000","0000333333334444","0003333333484000","0003333348400000","0000333484000000","0003333440000000","0003330000000000","0000000000000000"].join(''),
+  ["0000000880000000","0000008888000000","0000088888800000","0000844448000000","0000844448000000","0000844448000000","0000844448000000","0000844448000000","0000844448000000","0000888888000000","0000088880000000","0000088000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000000888880000","0000000811180000","0000000811180000","0000000888880000","0000000088800000","0000007777700000","0000077777770000","0000777777777000","0007777777777700","0007777777777700","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000880000000","0000008888000000","0000088888800000","0000855558000000","0000855558000000","0000855558000000","0000855558000000","0000888888000000","0000088880000000","0000088000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000005555000000","0000555555550000","0005511551155000","0055111111115500","0055111111115500","0055551111555500","0005555115555000","0000555555550000","0000055550000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  // 13-18: Fate of Atlantis Motifs (Orichalcum Bead, Horned Idol, Three World Disks, U-Boat Hull, Lava Chasm, Mask of Nur-Ab-Sal)
+  ["0000000000000000","0000000660000000","0000006666000000","0000066666600000","0000666666660000","000666A666660000","00066A6A66660000","000666A666660000","0000666666660000","0000066666600000","0000006666000000","0000000660000000","0000000000000000","0000000000000000"].join(''),
+  ["0000006666000000","0000666666660000","0006688668866000","0066888888886600","0066668888666600","0066666666666600","0066A666666A6600","00666A6666A66600","0006666AA6666000","0000666666660000","0000006666660000","0000000666600000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000066660000000","0000666666000000","000066AA66000000","000066AA66000000","0000666666000000","0000066660000000","0000000000000000","0666600006666000","6666660066666600","66AA660066AA6600","66AA660066AA6600","6666660066666600","0666600006666000"].join(''),
+  ["0000000000000000","0000000008800000","0000000008800000","0000000088880000","0000000088880000","0008888888888888","0888888888888888","0888888A88888888","0888888888888888","0088888888888880","0000000000000000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","4400000000000044","4444000000004444","4444440000444444","4444444444444444","4444444444444444","4444466444444444","4444666644444444","4444666644444444","4444466444444444","4444444444444444","4444444444444444","4444444444444444","4444444444444444"].join(''),
+  ["0000005555000000","0000555555550000","0005588558855000","0055888888885500","0055558888555500","0055555555555500","0055A555555A5500","00555A5555A55500","0005555AA5555000","0000555555550000","0000005555550000","0000000555500000","0000000000000000","0000000000000000"].join(''),
+  // 19-24: Sci-Fi / Space Motifs (Starfighter Cockpit, Asteroid Gateway, Life-Support Core, Hyperdrive Overload, Trench Turret, Bounty Hunter)
+  ["0000000000000000","0000000880000000","0000008888000000","0000088888800000","000088BB88000000","000088BB88000000","000088BB88000000","0008888888800000","0088888888880000","0888888888888000","8888888888888800","8888888888888880","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000077770000000","0000077777700000","000077B77B770000","0000777B7B777000","00007777B7777000","0000777B7B777000","000077B77B770000","0000007777770000","0000000777700000","0000000000000000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000000330000000","0000003333000000","0000033333300000","000033BB33000000","000033BB33000000","000033BB33000000","000033BB33000000","000033BB33000000","0000333333000000","0000033330000000","0000003300000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000088880000000","0000088888800000","000088BB88000000","0000888BB8880000","0000888BB8880000","0000888BB8880000","0000888BB8880000","0000888BB8880000","000088BB88000000","0000088888800000","0000088880000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0088000000008800","0088880000888800","0088888800888888","0088888888888888","008888B8888B8888","008888B8888B8888","008888B8888B8888","008888B8888B8888","0088888888888888","0088888800888888","0088880000888800","0088000000008800","0000000000000000"].join(''),
+  ["0000002222000000","0000222222220000","0002288228822000","0022888888882200","0022228888222200","0022222222222200","0022B222222B2200","00222B2222B22200","0002222BB2222000","0000222222220000","0000002222220000","0000000222200000","0000000000000000","0000000000000000"].join(''),
+  // 25-30: Loom Motifs (Distaff Spindle, The Great Loom, Swan Transcended, Weft Tapestry, Guild of Owls Eye, Void Rift)
+  ["0000000880000000","0000008888000000","0000088888800000","00008AA880000000","000008AA88000000","000008AA88000000","000008AA88000000","000008AA88000000","000008AA88000000","0000088888800000","0000088880000000","0000008800000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000066666600000","0000666666666600","006666AAAA666600","0066AAAAAAAA6600","0066AAAAAAAA6600","006666AAAA666600","0000666666666600","0000006666660000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0001000000001000","0011110000111100","0011111100111111","0011111111111111","001111AA111111AA","001111AA111111AA","0011111111111111","0000111111001111","0000111100001111","0000001000000001","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0033333333333300","003A3A3A3A3A3A00","0033333333333300","003A3A3A3A3A3A00","0033333333333300","003A3A3A3A3A3A00","0033333333333300","003A3A3A3A3A3A00","0033333333333300","003A3A3A3A3A3A00","0033333333333300","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000077770000000","0000077777700000","000077A77A770000","0000777A7A777000","00007777A7777000","0000777A7A777000","000077A77A770000","0000007777770000","0000000777700000","0000000000000000","0000000000000000","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0000088880000000","0000088888800000","000088AA88000000","0000888AA8880000","0000888AA8880000","0000888AA8880000","0000888AA8880000","0000888AA8880000","000088AA88000000","0000088888800000","0000088880000000","0000000000000000","0000000000000000"].join(''),
+  // 31-32: Sam & Max Motifs (The '60 DeSoto Cruiser, Max's Grinning Visage)
+  ["0000000000000000","0000000000000000","0000044444400000","0000444444444400","0044441111444400","0044111111114400","0044111111114400","4444444444444444","4444444444444444","4444444444444444","8844444444884444","8844444444884400","0000000000000000","0000000000000000"].join(''),
+  ["0000000000000000","0001100000011000","0011110000111100","0011110000111100","0011111111111100","0011111111111100","0011881111881100","0011881111881100","0011111111111100","0011118888111100","0011111111111100","0001111111111000","0000111111110000","0000000000000000"].join(''),
+  // 33: LeChuck's Boss Battle (Fiery Pirate Skull and Grog Blast Shields)
+  ["0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000099000000","0099009999000000","0099999999990000","9999999999990099","9977777777777777"].join('')
+];
+
+let canvas = document.getElementById('gameCanvas');
+let ctx = canvas.getContext('2d', {alpha: false});
+let keys = {};
+let mouseX = 160, mouseClicked = false;
+let lvl = 1, lives = 3, score = 0, hiScore = 20000, state = 'TITLE', paused = false;
+let balls = [], paddle = {}, bricks = [], powerups = [], particles = [], lasers = [], boss = null;
+let activeInsult = "", insultTimer = 0;
+let currentDraft = "", draftTimer = 0;
+const DRAFT_NOTES = ['C','D','E','F'];
+
+window.onkeydown = e => { 
+  keys[e.key]=1; keys[e.code]=1;
+  if(e.key === 'm' || e.key === 'M') { if(master) master.gain.value = master.gain.value > 0 ? 0 : 0.2; }
+  if(e.key === 'p' || e.key === 'P') paused = !paused;
+};
+window.onkeyup = e => { keys[e.key]=0; keys[e.code]=0; };
+window.onmousemove = e => { let r = canvas.getBoundingClientRect(); mouseX = (e.clientX - r.left)/r.width * 320; };
+window.onmousedown = e => mouseClicked = true;
+
+// --- HARDCODED DETERMINISTIC SEQUENCER ENGINE ---
+let au, master, noiseBuf;
+let seqStep = 0, nextNoteTime = 0;
+
+const SEQS = [
+  { bpm: 130, lead: "........3...1...5...6...3...1...", bass: "c...c...g...g...c...c...f...f...", pad: "C...C...F...F...C...C...F...F...", drum: "k.h.s.h.k.h.s.h.k.h.s.h.k.h.s.h." }, // Reggae
+  { bpm: 110, lead: "1.3.5.7.1.3.5.7.1.7.5.3.1.7.5.3.", bass: "c.......g.......c.......G.......", pad: "................................", drum: "k...s...k...s...k...s...k.k.s..." }, // March
+  { bpm: 80,  lead: "..................1...2.3.5.....", bass: "c...............a...............", pad: "C...............A...............", drum: "................................" }, // Ambient
+  { bpm: 150, lead: "1...3.5...1.3.5.2...4.6...2.4.6.", bass: "ccccccccccccccccdddddddddddddddd", pad: "................................", drum: "k.h.s.h.k.h.s.h.k.h.s.h.k.h.s.ss" }, // Space
+  { bpm: 100, lead: "1.2.3.4.5.6.7.1.2.1.7.6.5.4.3.2.", bass: "c.......e.......g.......c.......", pad: "..3.4.5...6.7.1...5.4.3...2.1.7.", drum: "........1.......3.......1......." }, // Loom
+  { bpm: 120, lead: "......5.5...3.....1.1...G.......", bass: "c.e.g.a.B.a.g.e.f.a.c.d.E.d.c.a.", pad: "................................", drum: "k...h.h.s...h.h.k...h.h.s...h.h." }, // Jazz
+  { bpm: 160, lead: "1...2...1...4...1...2...1...5...", bass: "cccccccccccccccccccccccccccccccc", pad: "C.......C.......C.......C.......", drum: "kkk.s.kkkkk.s.kkkkk.s.kkkkk.ss.." }  // Metal
+];
+
+function charToPitch(c) {
+  let m = "cdefgabCDEFGAB1234567".indexOf(c);
+  if(m >= 0 && m < 7) return 36 + [0,2,4,5,7,9,11][m]; 
+  if(m >= 7 && m < 14) return 48 + [0,2,4,5,7,9,11][m-7]; 
+  if(m >= 14 && m < 21) return 60 + [0,2,4,5,7,9,11][m-14]; 
+  return 0;
+}
+
+function initAu() {
+  if(au) return;
+  au = new (window.AudioContext || window.webkitAudioContext)();
+  master = au.createGain(); master.gain.value = 0.2; master.connect(au.destination);
+  noiseBuf = au.createBuffer(1, au.sampleRate*2, au.sampleRate);
+  let d = noiseBuf.getChannelData(0);
+  for(let i=0; i<d.length; i++) d[i] = Math.random()*2-1;
+}
+
+function playNote(midi, inst, time, dur) {
+  if(!au || midi===0) return;
+  let t0 = time, t1 = time + dur;
+  let f = 440 * Math.pow(2, (midi - 69) / 12);
+  let osc = au.createOscillator(), env = au.createGain();
+  osc.connect(env); env.connect(master);
+  
+  if (inst === 0) { // FM Steel Pan (Carrier/Modulator)
+    let m = au.createOscillator(), mg = au.createGain();
+    m.frequency.value = f * 2.5; mg.gain.value = f * 2;
+    m.connect(mg); mg.connect(osc.frequency);
+    osc.type = 'sine'; m.type = 'sine';
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(1, t0+0.01); env.gain.exponentialRampToValueAtTime(0.01, t1);
+    m.start(t0); m.stop(t1);
+  } else if (inst === 1) { // Fast Modulating Square
+    osc.type = 'square';
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(0.5, t0+0.01); env.gain.exponentialRampToValueAtTime(0.01, t1);
+    let lfo = au.createOscillator(), lg = au.createGain();
+    lfo.frequency.value = 15; lg.gain.value = f * 0.1; lfo.connect(lg); lg.connect(osc.frequency);
+    lfo.start(t0); lfo.stop(t1);
+  } else if (inst === 2) { // Ambient Sweep Pad
+    osc.type = 'sine';
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(0.5, t0+dur/2); env.gain.linearRampToValueAtTime(0, t1);
+  } else if (inst === 3) { // Sci-Fi Soaring Lead
+    osc.type = 'sawtooth';
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(0.5, t0+0.05); env.gain.linearRampToValueAtTime(0, t1);
+    let f1 = au.createBiquadFilter(); f1.type = 'lowpass'; f1.frequency.setValueAtTime(f, t0); f1.frequency.exponentialRampToValueAtTime(f*4, t0+dur/2);
+    osc.disconnect(); osc.connect(f1); f1.connect(env);
+  } else if (inst === 4) { // Loom Counterpoint Voice
+    osc.type = 'triangle';
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(0.5, t0+0.05); env.gain.exponentialRampToValueAtTime(0.1, t1);
+  } else if (inst === 5) { // Pitch-bending Saxophone
+    osc.type = 'square';
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(0.6, t0+0.05); env.gain.linearRampToValueAtTime(0, t1);
+    osc.frequency.setValueAtTime(f*0.9, t0); osc.frequency.linearRampToValueAtTime(f, t0+0.05);
+  } else if (inst === 6) { // Distorted Heavy Metal Guitar
+    osc.type = 'sawtooth';
+    let ws = au.createWaveShaper(), curve = new Float32Array(400);
+    for(let i=0;i<400;i++) { let x = i*2/400-1; curve[i] = (23)*x*20/(Math.PI + 20*Math.abs(x)); }
+    ws.curve = curve; ws.oversample = '4x'; osc.disconnect(); osc.connect(ws); ws.connect(env);
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(0.8, t0+0.01); env.gain.exponentialRampToValueAtTime(0.01, t1);
+  } else if (inst === 10) { // Fat Filtered Bass
+    osc.type = 'triangle';
+    env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(0.8, t0+0.02); env.gain.exponentialRampToValueAtTime(0.01, t1);
+  }
+  osc.start(t0); osc.stop(t1);
+}
+
+function playDrum(char, time, dur) {
+  if(!au) return;
+  let t0 = time, env = au.createGain(); env.connect(master);
+  if(char === 'k') {
+    let osc = au.createOscillator(); osc.connect(env);
+    osc.frequency.setValueAtTime(150, t0); osc.frequency.exponentialRampToValueAtTime(0.01, t0+0.1);
+    env.gain.setValueAtTime(1, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.1);
+    osc.start(t0); osc.stop(t0+0.1);
+  } else if (char === 's') {
+    let osc = au.createBufferSource(); osc.buffer = noiseBuf;
+    let f1 = au.createBiquadFilter(); f1.type = 'highpass'; f1.frequency.value = 1000;
+    osc.connect(f1); f1.connect(env);
+    env.gain.setValueAtTime(1, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.2);
+    osc.start(t0); osc.stop(t0+0.2);
+  } else if (char === 'h') {
+    let osc = au.createBufferSource(); osc.buffer = noiseBuf;
+    let f1 = au.createBiquadFilter(); f1.type = 'highpass'; f1.frequency.value = 5000;
+    osc.connect(f1); f1.connect(env);
+    env.gain.setValueAtTime(0.3, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.05);
+    osc.start(t0); osc.stop(t0+0.05);
+  }
+}
+
+function sfx(type) {
+  if(!au) return;
+  let t0 = au.currentTime;
+  let osc = au.createOscillator(), env = au.createGain();
+  osc.connect(env); env.connect(master);
+  if(type===0) {
+    osc.type = 'square'; osc.frequency.setValueAtTime(400, t0); osc.frequency.exponentialRampToValueAtTime(600, t0+0.1);
+    env.gain.setValueAtTime(0.5, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.1); osc.start(t0); osc.stop(t0+0.1);
+  } else if(type===1) {
+    osc.type = 'sine'; osc.frequency.setValueAtTime(800, t0); osc.frequency.exponentialRampToValueAtTime(400, t0+0.1);
+    env.gain.setValueAtTime(0.5, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.1); osc.start(t0); osc.stop(t0+0.1);
+  } else if(type===2) {
+    osc.type = 'triangle'; osc.frequency.setValueAtTime(200, t0);
+    env.gain.setValueAtTime(0.5, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.1); osc.start(t0); osc.stop(t0+0.1);
+  } else if(type===3) {
+    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, t0); osc.frequency.exponentialRampToValueAtTime(100, t0+0.2);
+    env.gain.setValueAtTime(0.3, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.2); osc.start(t0); osc.stop(t0+0.2);
+  } else if(type===4) {
+    let src = au.createBufferSource(); src.buffer = noiseBuf; src.connect(env);
+    env.gain.setValueAtTime(1, t0); env.gain.exponentialRampToValueAtTime(0.01, t0+0.4); src.start(t0); src.stop(t0+0.4);
+  } else if(type===5) {
+    osc.type = 'square'; osc.frequency.setValueAtTime(400, t0); osc.linearRampToValueAtTime(1200, t0+0.2);
+    env.gain.setValueAtTime(0.5, t0); env.linearRampToValueAtTime(0, t0+0.2); osc.start(t0); osc.stop(t0+0.2);
+  }
+}
+
+function audioStep() {
+  if(!au || au.state!=='running') return;
+  if(nextNoteTime === 0) nextNoteTime = au.currentTime + 0.1;
+  while(nextNoteTime < au.currentTime + 0.1) {
+    let th = Math.min(6, Math.floor((lvl-1)/6)); if(lvl===33) th = 6;
+    let seq = SEQS[th], t = nextNoteTime, idx = seqStep % 32;
+    
+    if(seq.lead[idx] !== '.') playNote(charToPitch(seq.lead[idx]), th, t, 0.2);
+    if(seq.bass[idx] !== '.') playNote(charToPitch(seq.bass[idx]), 10, t, 0.2);
+    if(seq.pad[idx] !== '.') playNote(charToPitch(seq.pad[idx]), th===4?4:(th===6?6:2), t, th===2?1.0:0.4);
+    
+    if(seq.drum[idx] !== '.') {
+       if(th===4) playNote(charToPitch(seq.drum[idx]), 4, t, 0.4); 
+       else playDrum(seq.drum[idx], t, 0.1);
+    }
+    
+    seqStep++; nextNoteTime += (60/seq.bpm)/4; 
+  }
+}
+
+// --- GAME LOGIC ---
+const INSULTS = ["You fight like a dairy farmer!", "I am rubber, you are glue!", "I'm shaking, I'm shaking.", "Look, a Three-Headed Monkey!", "You're as repulsive as a monkey!"];
+
+function loadLevel(n) {
+  if (n > 33) n = 33;
+  lvl = n;
+  bricks = []; balls = [{x: 160, y: 180, vx: 0, vy: 0, r: 2, stuck: true}];
+  paddle = {x: 160, y: 190, w: 40, h: 5, lasers: false, catch: false};
+  powerups = []; particles = []; lasers = []; boss = null;
+  currentDraft = ""; draftTimer = 0;
+  
+  let m = MAPS[n-1];
+  for(let y=0; y<14; y++) {
+    for(let x=0; x<16; x++) {
+      let c = m[y*16 + x];
+      if(c !== '0') {
+        let type = parseInt(c, 16);
+        let hp = (type===6)?2:(type===7)?3:(type===8)?999:1;
+        bricks.push({x: x*20, y: 20 + y*10, w: 20, h: 10, type, hp, maxHp: hp});
+      }
+    }
+  }
+  if(lvl === 33) boss = {x: 160, y: 30, w: 40, h: 30, hp: 50, maxHp: 50, vx: 1, timer: 0};
+}
+
+function applyPowerup(type) {
+  if (type === 'L') paddle.lasers = true;
+  if (type === 'E') paddle.w = 60;
+  if (type === 'C') paddle.catch = true;
+  if (type === 'S') balls.forEach(b => { b.vx *= 0.6; b.vy *= 0.6; });
+  if (type === 'P') lives++;
+  if (type === 'M') {
+     let nb = [];
+     balls.forEach(b => {
+        nb.push({x: b.x, y: b.y, vx: b.vx*0.8 - b.vy*0.6, vy: b.vx*0.6 + b.vy*0.8, r: b.r, stuck: false});
+        nb.push({x: b.x, y: b.y, vx: b.vx*0.8 + b.vy*0.6, vy: -b.vx*0.6 + b.vy*0.8, r: b.r, stuck: false});
+     });
+     balls = balls.concat(nb);
+  }
+}
+
+function castSpell(type) {
+  if (type===0) {
+     let max_y = -1;
+     bricks.forEach(b => { if(b.type!==8 && b.y > max_y) max_y = b.y; });
+     for(let i=bricks.length-1; i>=0; i--) if(bricks[i].y === max_y && bricks[i].type !== 8) hitBrick(i, true);
+  } else if (type===1) applyPowerup('M');
+  else if (type===2) applyPowerup('S');
+}
+
+function playLoomTone(idx) {
+  let noteStr = DRAFT_NOTES[Math.floor(idx)%4];
+  currentDraft += noteStr;
+  if(currentDraft.length > 15) currentDraft = currentDraft.slice(-15);
+  draftTimer = 180;
+  
+  let midi = [60,62,64,65][Math.floor(idx)%4];
+  playNote(midi, 4, au.currentTime, 1.0);
+  
+  if (currentDraft.endsWith("CDEC")) { currentDraft = "OPENING SPELL!"; castSpell(0); } 
+  else if (currentDraft.endsWith("EDCD")) { currentDraft = "EMPTYING SPELL!"; castSpell(1); } 
+  else if (currentDraft.endsWith("FECD")) { currentDraft = "NIGHT SPELL!"; castSpell(2); }
+}
+
+function hitBrick(idx, skipSpell=false) {
+  let br = bricks[idx];
+  if(br.type === 8) { sfx(2); return; }
+  br.hp--;
+  if(br.hp > 0) { sfx(2); return; }
+  
+  bricks.splice(idx, 1);
+  score += 10 * br.type;
+  if (score > hiScore) hiScore = score;
+  
+  if(!skipSpell) {
+     if(Math.random() < 0.2) {
+        let t = ['L', 'E', 'C', 'S', 'P', 'M'][Math.floor(Math.random()*6)];
+        powerups.push({x: br.x + br.w/2, y: br.y + br.h/2, type: t});
+     }
+     if (br.type === 9) {
+        sfx(4);
+        for(let i=bricks.length-1; i>=0; i--) {
+           if (Math.abs(bricks[i].x - br.x) <= 22 && Math.abs(bricks[i].y - br.y) <= 12) hitBrick(i, true);
+        }
+     } else if (br.type === 10) playLoomTone((br.x / 20) % 4);
+     else sfx(1);
+  }
+  
+  for(let p=0; p<5; p++) particles.push({x: br.x+10, y: br.y+5, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2, life: 20, c: EGA[br.type%16]});
+  if(Math.random() < 0.05) { activeInsult = INSULTS[Math.floor(Math.random()*INSULTS.length)]; insultTimer = 100; }
+}
+
+// Swept Slab Ray/AABB Algorithm
+function rayIntersectAABB(ox, oy, dx, dy, bx, by, bw, bh) {
+  let tMin = -Infinity, tMax = Infinity, hitNx = 0, hitNy = 0;
+  if (dx === 0) {
+    if (ox < bx || ox > bx+bw) return null;
+  } else {
+    let t1 = (bx - ox)/dx, t2 = (bx + bw - ox)/dx, n = -1;
+    if(t1 > t2) { let tmp=t1; t1=t2; t2=tmp; n=1; }
+    if(t1 > tMin) { tMin = t1; hitNx = n; hitNy = 0; }
+    if(t2 < tMax) tMax = t2;
+    if(tMin > tMax) return null;
+  }
+  if (dy === 0) {
+    if (oy < by || oy > by+bh) return null;
+  } else {
+    let t1 = (by - oy)/dy, t2 = (by + bh - oy)/dy, n = -1;
+    if(t1 > t2) { let tmp=t1; t1=t2; t2=tmp; n=1; }
+    if(t1 > tMin) { tMin = t1; hitNx = 0; hitNy = n; }
+    if(t2 < tMax) tMax = t2;
+    if(tMin > tMax) return null;
+  }
+  if(tMax < 0 || tMin > 1.0) return null;
+  return { t: tMin, nx: hitNx, ny: hitNy };
+}
+
+function updatePhysics(dt, launch) {
+  for(let i=balls.length-1; i>=0; i--) {
+    let b = balls[i];
+    if (b.stuck) {
+      b.x = paddle.x; b.y = paddle.y - b.r - 1;
+      if (launch) { b.stuck = false; b.vy = -3; b.vx = (Math.random()-0.5)*2; }
+      continue;
+    }
+    
+    for(let br of bricks) {
+      if(br.type === 11) {
+         let dx = (br.x + br.w/2) - b.x, dy = (br.y + br.h/2) - b.y;
+         let d2 = dx*dx + dy*dy;
+         if(d2 > 0 && d2 < 6000) { let f = 10 / d2; b.vx += dx * f; b.vy += dy * f; }
+      }
+    }
+    
+    let speed = Math.hypot(b.vx, b.vy);
+    if(speed > 5) { b.vx = (b.vx/speed)*5; b.vy = (b.vy/speed)*5; }
+    if(speed < 2.5) { b.vx = (b.vx/speed)*2.5; b.vy = (b.vy/speed)*2.5; }
+    
+    let subVx = b.vx * dt, subVy = b.vy * dt, minT = 1.0, hitN = null, hitB = -1;
+    
+    for(let j=0; j<bricks.length; j++) {
+       let br = bricks[j];
+       let hit = rayIntersectAABB(b.x, b.y, subVx, subVy, br.x - b.r, br.y - b.r, br.w + 2*b.r, br.h + 2*b.r);
+       if (hit && hit.t >= 0 && hit.t <= minT) { minT = hit.t; hitN = hit; hitB = j; }
+    }
+    
+    if (hitB >= 0) {
+       b.x += subVx * minT; b.y += subVy * minT;
+       if (hitN.nx !== 0) b.vx = Math.abs(b.vx) * hitN.nx;
+       if (hitN.ny !== 0) b.vy = Math.abs(b.vy) * hitN.ny;
+       hitBrick(hitB);
+    } else {
+       b.x += subVx; b.y += subVy;
+    }
+    
+    if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); sfx(0); }
+    if (b.x > 320 - b.r) { b.x = 320 - b.r; b.vx = -Math.abs(b.vx); sfx(0); }
+    if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy); sfx(0); }
+    if (b.y > 200 + b.r) {
+       balls.splice(i, 1);
+       if(balls.length === 0) {
+          lives--;
+          if(lives < 0) state = 'GAMEOVER';
+          else { balls.push({x: paddle.x, y: paddle.y-5, vx: 0, vy: 0, r: 2, stuck: true}); paddle.lasers = false; paddle.w = 40; }
+       }
+       continue;
+    }
+    
+    let pHit = rayIntersectAABB(b.x, b.y, subVx, subVy, paddle.x - paddle.w/2 - b.r, paddle.y - b.r, paddle.w + 2*b.r, paddle.h + 2*b.r);
+    if(pHit && pHit.t >= 0 && pHit.t <= 1.0 && pHit.ny === -1) {
+       b.y += subVy * pHit.t;
+       let hp = (b.x - paddle.x) / (paddle.w/2);
+       let a = hp * Math.PI/3; let s = Math.hypot(b.vx, b.vy);
+       b.vx = s * Math.sin(a); b.vy = -s * Math.cos(a);
+       if(paddle.catch) b.stuck = true; sfx(0);
+    }
+    
+    if(boss) {
+       let bHit = rayIntersectAABB(b.x, b.y, subVx, subVy, boss.x - boss.w/2 - b.r, boss.y - b.r, boss.w + 2*b.r, boss.h + 2*b.r);
+       if(bHit && bHit.t >= 0 && bHit.t <= 1.0) {
+          if (bHit.nx !== 0) b.vx = Math.abs(b.vx) * bHit.nx;
+          if (bHit.ny !== 0) b.vy = Math.abs(b.vy) * bHit.ny;
+          boss.hp--; sfx(1);
+       }
+    }
+  }
+}
+
+function update() {
+  if (state !== 'PLAYING') {
+    if (keys[' '] || keys['Space'] || mouseClicked) {
+      if(state === 'TITLE' || state === 'GAMEOVER') { score = 0; lives = 3; loadLevel(1); state = 'PLAYING'; initAu(); }
+    }
+    mouseClicked = false; return;
+  }
+  if(paused) return;
+  audioStep();
+  
+  if (keys['ArrowLeft'] || keys['a']) paddle.x -= 3;
+  if (keys['ArrowRight'] || keys['d']) paddle.x += 3;
+  if (Math.abs(mouseX - paddle.x) > 2) paddle.x += (mouseX - paddle.x) * 0.2;
+  paddle.x = Math.max(paddle.w/2, Math.min(320-paddle.w/2, paddle.x));
+  
+  let launch = keys[' '] || keys['Space'] || mouseClicked;
+  if (paddle.lasers && launch && Math.random()<0.1) {
+    lasers.push({x: paddle.x - paddle.w/2 + 5, y: paddle.y, vy: -4});
+    lasers.push({x: paddle.x + paddle.w/2 - 5, y: paddle.y, vy: -4});
+    sfx(3);
+  }
+  mouseClicked = false;
+  
+  for(let s=0; s<4; s++) updatePhysics(0.25, launch);
+  
+  for(let i=powerups.length-1; i>=0; i--) {
+    let p = powerups[i]; p.y += 1;
+    if (p.y > 200) powerups.splice(i, 1);
+    else if (p.y + 5 > paddle.y && p.y - 5 < paddle.y + paddle.h && Math.abs(p.x - paddle.x) < paddle.w/2 + 5) {
+      applyPowerup(p.type); sfx(5); powerups.splice(i, 1); score += 100;
+    }
+  }
+  
+  for(let i=lasers.length-1; i>=0; i--) {
+    let l = lasers[i]; l.y += l.vy;
+    if(l.y < 0 || l.y > 200) { lasers.splice(i,1); continue; }
+    if(l.bad) {
+      if(l.y > paddle.y && l.y < paddle.y+paddle.h && Math.abs(l.x - paddle.x) < paddle.w/2) {
+         if(paddle.lasers) paddle.lasers = false; else if(paddle.w > 40) paddle.w -= 20;
+         lasers.splice(i,1); sfx(4);
+      }
+      continue;
+    }
+    if(boss && l.y < boss.y + boss.h && Math.abs(l.x - boss.x) < boss.w/2) { boss.hp--; sfx(1); lasers.splice(i,1); continue; }
+    let hit = false;
+    for(let j=bricks.length-1; j>=0; j--) {
+      let b = bricks[j];
+      if (l.x > b.x && l.x < b.x+b.w && l.y > b.y && l.y < b.y+b.h) { hitBrick(j); hit = true; break; }
+    }
+    if(hit) lasers.splice(i,1);
+  }
+  
+  for(let i=particles.length-1; i>=0; i--) {
+    let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--;
+    if(p.life <= 0) particles.splice(i,1);
+  }
+  
+  if(boss) {
+    boss.x += boss.vx; if(boss.x < boss.w/2 || boss.x > 320 - boss.w/2) boss.vx *= -1;
+    boss.timer++; if(boss.timer > 60) { boss.timer = 0; lasers.push({x: boss.x, y: boss.y+boss.h, vy: 2, bad: true}); }
+    if(boss.hp <= 0) state = 'VICTORY';
+  }
+  
+  let bc = bricks.filter(b => b.type !== 8).length;
+  if(bc === 0 && !boss) loadLevel(lvl + 1);
+  if(keys['n'] || keys['N']) { keys['n']=0; keys['N']=0; loadLevel(lvl + 1); }
+}
+
+function drawPowerup(ctx, p) {
+  let px = p.x, py = p.y;
+  ctx.fillStyle = EGA[8]; ctx.fillRect(px - 8, py - 8, 16, 16);
+  ctx.fillStyle = EGA[15]; ctx.fillRect(px - 7, py - 7, 14, 14);
+  
+  if (p.type === 'L') {
+     ctx.fillStyle = EGA[4]; ctx.fillRect(px-4, py-2, 8, 3); ctx.fillRect(px-4, py-2, 2, 6);
+  } else if (p.type === 'E') {
+     ctx.fillStyle = EGA[14]; ctx.fillRect(px-2, py-4, 4, 8);
+     ctx.fillStyle = EGA[4]; ctx.fillRect(px-3, py-6, 2, 2);
+     ctx.fillStyle = EGA[8]; ctx.fillRect(px, py-2, 6, 2);
+  } else if (p.type === 'C') {
+     ctx.fillStyle = EGA[8]; ctx.fillRect(px-4, py-4, 8, 8);
+     ctx.fillStyle = EGA[15]; ctx.fillRect(px-2, py-2, 4, 4);
+     ctx.fillStyle = EGA[4]; ctx.fillRect(px-1, py-4, 2, 4);
+  } else if (p.type === 'S') {
+     ctx.fillStyle = EGA[14]; ctx.beginPath();
+     ctx.moveTo(px-4, py-5); ctx.lineTo(px+4, py-5); ctx.lineTo(px, py); ctx.lineTo(px+4, py+5); ctx.lineTo(px-4, py+5); ctx.fill();
+  } else if (p.type === 'P') {
+     ctx.fillStyle = EGA[14]; ctx.fillRect(px-2, py-5, 4, 4); ctx.fillRect(px-3, py-1, 6, 4); ctx.fillRect(px-2, py+3, 4, 3);
+  } else if (p.type === 'M') {
+     ctx.fillStyle = EGA[10]; let s = Math.abs(Math.sin(Date.now()*0.01))*2;
+     ctx.fillRect(px-5-s, py+1+s, 4, 4); ctx.fillRect(px+1+s, py+1+s, 4, 4); ctx.fillRect(px-2, py-5-s, 4, 4);
+  }
+}
+
+function drawBg(ctx, th) {
+  let time = Date.now();
+  if (th === 0) { 
+     ctx.fillStyle = EGA[1]; ctx.fillRect(0,0,320,200); ctx.fillStyle = EGA[15];
+     for(let i=0; i<30; i++) if((time + i*100)%2000 < 1000) ctx.fillRect((i*47)%320, (i*29)%100, 1, 1);
+     ctx.beginPath(); ctx.arc(280, 40, 15, 0, Math.PI*2); ctx.fill();
+     ctx.fillStyle = EGA[1]; ctx.beginPath(); ctx.arc(275, 35, 15, 0, Math.PI*2); ctx.fill();
+     ctx.fillStyle = EGA[0]; ctx.beginPath(); ctx.moveTo(0, 200); ctx.lineTo(0, 120); ctx.lineTo(60, 140);
+     ctx.lineTo(120, 110); ctx.lineTo(150, 160); ctx.lineTo(320, 180); ctx.lineTo(320, 200); ctx.fill();
+  } else if (th === 1) { 
+     ctx.fillStyle = EGA[5]; ctx.fillRect(0,0,320,200); ctx.fillStyle = EGA[13];
+     for(let i=0; i<320; i+=20) ctx.fillRect(i, 0, 2, 200);
+     if(Math.random()<0.02) { ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(0,0,320,200); }
+     ctx.fillStyle = EGA[6]; ctx.fillRect(140, 50, 40, 150);
+     ctx.fillStyle = EGA[14]; ctx.beginPath(); ctx.arc(160, 160 + Math.sin(time*0.002)*10, 10, 0, 7); ctx.fill(); 
+  } else if (th === 2) { 
+     ctx.fillStyle = EGA[6]; ctx.fillRect(0,0,320,200); ctx.fillStyle = EGA[8]; ctx.fillRect(0, 150, 320, 50); ctx.fillStyle = EGA[4]; ctx.fillRect(0, 180, 320, 20);
+     ctx.fillStyle = EGA[12];
+     for(let i=0; i<10; i++) { let bx = (i*43)%320, by = 180 + ((time + i*77)%200)/10 - 10; if(by < 185) ctx.fillRect(bx, by, 4, 4); }
+  } else if (th === 3) { 
+     ctx.fillStyle = EGA[0]; ctx.fillRect(0,0,320,200); ctx.fillStyle = EGA[15];
+     for(let i=0; i<50; i++) { let x = (i*137 + time*0.1) % 320, y = (i*97) % 200; ctx.fillRect(x, y, (i%3)*5+2, 1); }
+  } else if (th === 4) { 
+     ctx.fillStyle = EGA[1]; ctx.fillRect(0,0,320,200); ctx.fillStyle = EGA[3];
+     for(let i=0; i<320; i+=10) { ctx.fillRect(i, Math.sin(i*0.1 + time*0.005)*10 + 100, 2, 200); ctx.fillStyle = EGA[(Math.floor(time/100)+i)%16]; }
+  } else if (th === 5) { 
+     ctx.fillStyle = EGA[0]; ctx.fillRect(0,0,320,200); ctx.fillStyle = EGA[8]; ctx.fillRect(0,100,320,100); ctx.fillStyle = EGA[14];
+     for(let i=0; i<340; i+=40) ctx.fillRect(i - (time*0.1)%40, 150, 20, 2);
+     ctx.fillStyle = EGA[11]; let sx = 320 - (time*0.05)%600; ctx.fillRect(sx, 40, 40, 20);
+     ctx.fillStyle = EGA[8]; ctx.fillRect(sx+18, 60, 4, 40); 
+  } else if (th === 6) { 
+     ctx.fillStyle = EGA[4]; ctx.fillRect(0,0,320,200); ctx.fillStyle = EGA[10];
+     for(let i=0; i<320; i+=20) { let h = 30 + Math.sin(time*0.01 + i)*20; ctx.fillRect(i, 200 - h, 10, h); }
+  }
+}
+
+function draw(ctx) {
+  let th = Math.min(6, Math.floor((lvl-1)/6)); if(lvl===33) th=6;
+  drawBg(ctx, th);
+  
+  if (state === 'TITLE') {
+     ctx.fillStyle = EGA[14]; ctx.font = '20px monospace'; let t = "ARKANOID: BRICK ISLAND"; ctx.fillText(t, 160 - ctx.measureText(t).width/2, 80);
+     ctx.font = '10px monospace'; ctx.fillStyle = EGA[15]; t = "CLICK OR PRESS SPACE TO START"; ctx.fillText(t, 160 - ctx.measureText(t).width/2, 120);
+     return;
+  }
+  
+  bricks.forEach(b => {
+     let c1 = EGA[b.type+5] || EGA[b.type], c2 = EGA[b.type] || EGA[1];
+     if (b.type === 6) { c1 = EGA[7]; c2 = EGA[8]; }
+     if (b.type === 7) { c1 = EGA[8]; c2 = EGA[0]; }
+     if (b.type === 8) { c1 = EGA[15]; c2 = EGA[7]; }
+     if (b.type === 9) { c1 = EGA[14]; c2 = EGA[12]; }
+     if (b.type === 10) { c1 = EGA[5]; c2 = EGA[13]; }
+     if (b.type === 11) { c1 = EGA[1]; c2 = EGA[9]; }
+     ctx.fillStyle = c2; ctx.fillRect(b.x, b.y, b.w, b.h);
+     ctx.fillStyle = c1; ctx.fillRect(b.x+1, b.y+1, b.w-2, b.h-2);
+     
+     if (b.type === 6 && b.hp === 1) {
+        ctx.strokeStyle = EGA[0]; ctx.beginPath();
+        ctx.moveTo(b.x+4, b.y); ctx.lineTo(b.x+8, b.y+5); ctx.lineTo(b.x+2, b.y+b.h); ctx.stroke();
+     }
+     if (b.type === 7) {
+        if (b.hp <= 2) { ctx.strokeStyle = EGA[0]; ctx.beginPath(); ctx.moveTo(b.x+8, b.y); ctx.lineTo(b.x+12, b.y+4); ctx.lineTo(b.x+b.w, b.y+7); ctx.stroke(); }
+        if (b.hp === 1) { ctx.beginPath(); ctx.moveTo(b.x+3, b.y+b.h); ctx.lineTo(b.x+6, b.y+3); ctx.lineTo(b.x+15, b.y+b.h); ctx.stroke(); }
+     }
+  });
+  
+  if(boss) {
+    let bob = Math.sin(Date.now()*0.005) * 3, bx = boss.x, by = boss.y + bob;
+    ctx.fillStyle = EGA[8]; ctx.fillRect(bx-25, by-5, 50, 10); ctx.fillRect(bx-15, by-15, 30, 10);
+    ctx.fillStyle = EGA[4]; ctx.fillRect(bx-15, by-5, 30, 2);
+    ctx.fillStyle = EGA[7]; ctx.fillRect(bx-15, by+5, 30, 20);
+    ctx.fillStyle = EGA[10]; for(let i=0; i<6; i++) ctx.fillRect(bx-15 + i*5, by+20, 5, 10 + Math.random()*5);
+    ctx.fillStyle = EGA[0]; ctx.fillRect(bx-10, by+10, 6, 4); ctx.fillRect(bx+4, by+10, 6, 4);
+    ctx.fillStyle = EGA[10]; ctx.fillRect(bx-8, by+11, 2, 2); ctx.fillRect(bx+6, by+11, 2, 2);
+    if(boss.timer > 40) { ctx.fillStyle = EGA[0]; ctx.fillRect(bx-8, by+17, 16, 8); ctx.fillStyle = EGA[10]; ctx.fillRect(bx-4, by+19, 8, 4); } 
+    else { ctx.fillStyle = EGA[0]; ctx.fillRect(bx-5, by+19, 10, 2); }
+    ctx.fillStyle = EGA[0]; ctx.fillRect(bx - 20, by - 20, 40, 5);
+    ctx.fillStyle = EGA[12]; ctx.fillRect(bx - 20, by - 20, 40 * (boss.hp/boss.maxHp), 5);
+  }
+  
+  ctx.fillStyle = EGA[7]; ctx.fillRect(paddle.x - paddle.w/2, paddle.y, paddle.w, paddle.h);
+  if(paddle.w > 40) { ctx.fillStyle = EGA[14]; ctx.fillRect(paddle.x - paddle.w/2 - 5, paddle.y - 2, 5, paddle.h+4); ctx.fillRect(paddle.x + paddle.w/2, paddle.y - 2, 5, paddle.h+4); }
+  if(paddle.lasers) { ctx.fillStyle = EGA[12]; ctx.fillRect(paddle.x - paddle.w/2, paddle.y - 5, 5, 5); ctx.fillRect(paddle.x + paddle.w/2 - 5, paddle.y - 5, 5, 5); }
+  
+  ctx.fillStyle = EGA[15]; balls.forEach(b => ctx.fillRect(b.x - b.r, b.y - b.r, b.r*2, b.r*2));
+  
+  powerups.forEach(p => drawPowerup(ctx, p));
+  lasers.forEach(l => { 
+     if(l.bad) { ctx.fillStyle = EGA[10]; ctx.fillRect(l.x - 2, l.y - 2, 4, 4); ctx.fillStyle = EGA[15]; ctx.fillRect(l.x - 1, l.y - 1, 2, 2); } 
+     else { ctx.fillStyle = EGA[12]; ctx.fillRect(l.x - 1, l.y - 3, 2, 6); }
+  });
+  particles.forEach(p => { ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 2, 2); });
+  
+  ctx.fillStyle = EGA[15]; ctx.font = '10px monospace';
+  ctx.fillText(`SC:${score} HI:${hiScore} LVS:${lives} LVL:${lvl}`, 5, 10);
+  ctx.fillStyle = EGA[11];
+  ctx.fillText(`THM: ${THEMES[th]} PWR:${paddle.lasers?'LASR':(paddle.catch?'CATCH':(paddle.w>40?'EXP':'NONE'))}`, 5, 20);
+  
+  if (insultTimer > 0) { ctx.fillStyle = EGA[11]; ctx.fillText(activeInsult, 160 - ctx.measureText(activeInsult).width/2, 100 - (100-insultTimer)*0.5); insultTimer--; }
+  if (draftTimer > 0) { ctx.fillStyle = EGA[11]; ctx.fillText(currentDraft, 160 - ctx.measureText(currentDraft).width/2, 120); draftTimer--; }
+  
+  if (state === 'GAMEOVER') { ctx.fillStyle = EGA[12]; ctx.font = '20px monospace'; let t = "GAME OVER"; ctx.fillText(t, 160 - ctx.measureText(t).width/2, 100); }
+  if (state === 'VICTORY') { ctx.fillStyle = EGA[11]; ctx.font = '20px monospace'; let t = "YOU DEFEATED LECHUCK!"; ctx.fillText(t, 160 - ctx.measureText(t).width/2, 100); }
+}
+
+function loop() { update(); draw(ctx); requestAnimationFrame(loop); }
+loop();
+</script>
+</body>
+</html>

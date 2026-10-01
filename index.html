@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SLOPANOID · Autonomous Game Dev Benchmark</title>
-<meta name="description" content="An empirical multi-model benchmark testing whether frontier AI models can autonomously architect, compose, and code complete retro games in a single zero-shot prompt.">
+<title>SLOPANOID · Autonomous AI Game Dev Benchmark Hub</title>
+<meta name="description" content="Master portal for the Slopanoid Autonomous Game Dev Benchmark: comparing zero-shot Simple Prompt vs iterative multi-agent Gauntlet experiments across frontier AI models.">
 <style>
   :root {
     --bg: #090d16;
@@ -17,6 +17,7 @@
     --cyan: #0ea5e9;
     --cyan-light: #38bdf8;
     --emerald: #10b981;
+    --emerald-light: #34d399;
     --rose: #f43f5e;
     --purple: #8b5cf6;
     --text-primary: #f8fafc;
@@ -66,7 +67,7 @@
   .layout-wrapper {
     position: relative;
     z-index: 1;
-    max-width: 1200px;
+    max-width: 1240px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -99,52 +100,90 @@
     margin-bottom: 20px;
   }
 
-  .benchmark-tag .status-dot {
+  .status-dot {
     width: 8px;
     height: 8px;
-    background-color: var(--emerald);
     border-radius: 50%;
-    box-shadow: 0 0 8px var(--emerald);
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+    animation: pulse 2s infinite;
   }
 
-  h1.hero-title {
-    font-size: clamp(34px, 5.5vw, 62px);
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .hero-title {
+    font-size: clamp(34px, 5.5vw, 64px);
     font-weight: 900;
-    letter-spacing: -1px;
-    line-height: 1.1;
-    margin-bottom: 16px;
+    letter-spacing: -1.5px;
+    line-height: 1.08;
     color: #ffffff;
+    margin-bottom: 18px;
   }
 
-  h1.hero-title span.accent {
-    color: var(--amber);
-    text-shadow: 0 0 28px rgba(245, 158, 11, 0.4);
+  .hero-title .accent {
+    background: linear-gradient(135deg, var(--amber) 0%, #f97316 50%, var(--rose) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
-  p.hero-subtitle {
-    font-size: clamp(16px, 2vw, 19px);
+  .hero-subtitle {
+    font-size: clamp(16px, 1.8vw, 19px);
     color: var(--text-secondary);
-    max-width: 820px;
-    line-height: 1.6;
-    margin-bottom: 32px;
+    max-width: 800px;
+    margin: 0 auto 36px;
+    font-weight: 400;
   }
 
-  /* Key Metrics Bar */
+  /* Experiment Selector Bar */
+  .experiment-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .experiment-pill {
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-accent);
+    background: rgba(30, 41, 59, 0.6);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .experiment-pill:hover, .experiment-pill.active {
+    background: var(--amber);
+    color: #0b0f19;
+    border-color: var(--amber);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  }
+
+  /* Metric Highlights Grid */
   .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 16px;
     width: 100%;
-    margin-bottom: 12px;
+    margin-top: 10px;
   }
 
   .metric-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 18px 20px;
+    padding: 20px;
     text-align: left;
-    transition: transform 0.2s, border-color 0.2s;
+    transition: all 0.2s ease;
   }
 
   .metric-card:hover {
@@ -163,18 +202,16 @@
     gap: 6px;
   }
 
-  .metric-val span.sub {
-    font-size: 14px;
+  .metric-val .sub {
+    font-size: 13px;
     color: var(--text-muted);
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .metric-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
   }
 
   .metric-desc {
@@ -183,40 +220,30 @@
     margin-top: 4px;
   }
 
-  /* Section Styling */
-  section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
+  /* Section Headers */
   .section-header {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
     justify-content: space-between;
-    gap: 12px;
+    align-items: flex-end;
     border-bottom: 1px solid var(--border);
     padding-bottom: 14px;
+    margin-bottom: 24px;
   }
 
   .section-title-group h2 {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .section-title-group p {
     font-size: 14px;
     color: var(--text-secondary);
-    margin-top: 2px;
-  }
-
-  .section-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+    margin-top: 4px;
   }
 
   /* Buttons */
@@ -278,12 +305,12 @@
     padding: 6px 12px;
   }
 
-  /* Featured Model Evaluation Spotlight: opus-5.5 */
-  .spotlight-card {
+  /* Spotlight Box */
+  .spotlight-box {
     background: linear-gradient(180deg, #161e31 0%, #101625 100%);
     border: 1px solid #293854;
     border-radius: var(--radius-lg);
-    padding: 28px;
+    padding: 30px;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
@@ -292,85 +319,80 @@
     overflow: hidden;
   }
 
-  .spotlight-card::before {
+  .spotlight-box::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan), var(--purple));
+    height: 4px;
+    background: linear-gradient(90deg, var(--amber) 0%, var(--rose) 50%, var(--cyan) 100%);
   }
 
   .spotlight-top {
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 16px;
-  }
-
-  .model-badge-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 20px;
   }
 
   .model-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 4px;
     background: rgba(16, 185, 129, 0.15);
-    color: var(--emerald);
+    color: var(--emerald-light);
     border: 1px solid rgba(16, 185, 129, 0.35);
+    padding: 4px 10px;
+    border-radius: 4px;
   }
 
-  .dir-path-badge {
+  .dir-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--amber);
-    background: #0d121c;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cyan-light);
+    background: rgba(14, 165, 233, 0.12);
+    border: 1px solid rgba(14, 165, 233, 0.25);
     padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    border: 1px solid #23304a;
+    border-radius: 4px;
   }
 
   .spotlight-heading h3 {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 800;
     color: #ffffff;
+    margin: 10px 0 6px;
   }
 
   .spotlight-heading p {
     font-size: 15px;
     color: var(--text-secondary);
-    max-width: 780px;
-    margin-top: 6px;
-    line-height: 1.6;
+    max-width: 850px;
   }
 
-  .spotlight-summary-pills {
+  .spotlight-pills {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     margin-top: 14px;
   }
 
   .stat-pill {
-    font-size: 12px;
-    font-weight: 600;
-    color: #cbd5e1;
-    background: #1a2336;
-    padding: 5px 12px;
-    border-radius: var(--radius-sm);
+    background: rgba(30, 41, 59, 0.6);
     border: 1px solid #2d3b55;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 13px;
+    color: #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 9999px;
   }
 
   .stat-pill strong {
@@ -380,81 +402,57 @@
   /* Games Grid */
   .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
   }
 
   .game-card {
-    background: #0f1524;
-    border: 1px solid #1f2c42;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 22px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     transition: all 0.25s ease;
-    position: relative;
   }
 
   .game-card:hover {
-    border-color: #3b5074;
+    border-color: #3b82f6;
+    background: var(--bg-card-hover);
     transform: translateY(-3px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .game-card.featured {
+    border-color: var(--amber);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
   }
 
   .game-header {
     display: flex;
-    gap: 16px;
     align-items: flex-start;
+    gap: 14px;
     margin-bottom: 14px;
   }
 
   .game-icon-box {
     width: 48px;
     height: 48px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-  }
-
-  .icon-box-arkanoid { background: linear-gradient(135deg, #7f1d1d, #450a0a); }
-  .icon-box-xenon { background: linear-gradient(135deg, #075985, #082f49); }
-  .icon-box-gng { background: linear-gradient(135deg, #166534, #052e16); }
-  .icon-box-lemmings { background: linear-gradient(135deg, #6b21a8, #3b0764); }
-
-  .game-title-area {
-    flex: 1;
-  }
-
-  .game-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 2px;
+    background: #1e293b;
+    border: 1px solid var(--border-accent);
   }
 
   .game-title {
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 800;
     color: #ffffff;
-  }
-
-  .challenge-badge {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: #1c2638;
-    color: var(--cyan-light);
-    border: 1px solid #2a3a55;
   }
 
   .game-subtitle {
@@ -463,330 +461,150 @@
     font-weight: 600;
   }
 
-  .game-body {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    flex-grow: 1;
-  }
-
   .game-desc {
     font-size: 13px;
     color: var(--text-secondary);
-    line-height: 1.55;
+    margin-bottom: 14px;
+    line-height: 1.5;
   }
 
   .specs-list {
-    background: #0a0e19;
-    border: 1px solid #182233;
-    border-radius: var(--radius-sm);
-    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 6px;
     font-size: 12px;
+    color: #cbd5e1;
+    border-top: 1px solid #1a2436;
+    padding-top: 10px;
   }
 
   .spec-item {
     display: flex;
-    align-items: baseline;
     gap: 8px;
-    color: #cbd5e1;
   }
 
   .spec-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
     font-weight: 700;
     color: var(--cyan);
-    min-width: 90px;
+    min-width: 80px;
     flex-shrink: 0;
-    text-transform: uppercase;
   }
 
   .game-footer-actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     margin-top: 18px;
-    padding-top: 16px;
+    padding-top: 14px;
     border-top: 1px solid #1c273a;
+    flex-wrap: wrap;
   }
 
-  /* Benchmark Multi-Model Matrix */
-  .matrix-wrapper {
+  /* Multi-Model Card Matrix */
+  .models-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 24px;
+  }
+
+  .model-showcase-box {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-
-  .matrix-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    text-align: left;
-  }
-
-  .matrix-table th {
-    background: #0d1322;
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .matrix-table td {
-    padding: 16px 18px;
-    border-bottom: 1px solid #162033;
-    color: #cbd5e1;
-    vertical-align: middle;
-  }
-
-  .matrix-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .matrix-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  .model-name-cell {
-    font-weight: 700;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .model-provider {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: normal;
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-
-  .status-verified {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--emerald);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-  }
-
-  .status-planned {
-    background: rgba(148, 163, 184, 0.1);
-    color: var(--text-secondary);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-  }
-
-  /* Benchmark Rules & Protocol Grid */
-  .rules-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-  }
-
-  .rule-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .rule-number {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--amber);
-  }
-
-  .rule-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #ffffff;
-  }
-
-  .rule-desc {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
-
-  /* Instructions for Re-running Experiment */
-  .instructions-box {
-    background: #0f1626;
-    border: 1px solid #1f2b40;
-    border-radius: var(--radius-md);
     padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
   }
 
-  .code-block {
-    background: #070a12;
-    border: 1px solid #182233;
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: #cbd5e1;
-    overflow-x: auto;
-    line-height: 1.6;
-  }
-
-  .code-block .comment {
-    color: var(--text-muted);
-  }
-
-  .code-block .keyword {
-    color: var(--amber);
-  }
-
-  /* Interactive Modal Player & Prompt Viewer */
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(5, 8, 15, 0.85);
-    backdrop-filter: blur(8px);
-    z-index: 999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .modal-backdrop.active {
+  .model-showcase-header {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
   }
 
-  .modal-container {
-    background: #111827;
-    border: 1px solid #2d3b55;
-    border-radius: var(--radius-lg);
-    width: 100%;
-    max-width: 960px;
-    height: 90vh;
-    max-height: 760px;
+  .model-name-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #ffffff;
+  }
+
+  .prototype-list {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+    gap: 10px;
   }
 
-  .modal-header {
-    background: #0c121e;
-    border-bottom: 1px solid #1f2c42;
-    padding: 14px 20px;
+  .prototype-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid #1e293b;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
   }
 
-  .modal-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .prototype-item:hover {
+    border-color: var(--border-accent);
+    background: rgba(30, 41, 59, 0.4);
   }
 
-  .modal-title {
-    font-size: 16px;
+  .prototype-title {
+    font-size: 14px;
     font-weight: 700;
     color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .modal-close-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 20px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 4px 8px;
-    border-radius: 4px;
+  .prototype-genre {
+    font-size: 12px;
+    color: var(--text-muted);
   }
 
-  .modal-close-btn:hover {
-    background: #1f2c42;
-    color: #ffffff;
-  }
-
-  .modal-body {
-    flex: 1;
-    overflow-y: auto;
-    position: relative;
-    background: #000;
-  }
-
-  .modal-body iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-  }
-
-  .modal-prompt-content {
-    background: #0a0e17;
-    color: #cbd5e1;
-    padding: 24px;
+  /* Audit Log Accordion */
+  .audit-box {
+    background: rgba(10, 15, 26, 0.8);
+    border: 1px solid #1e293b;
+    border-radius: var(--radius-md);
+    padding: 16px;
     font-family: var(--font-mono);
-    font-size: 13px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-    height: 100%;
-    overflow-y: auto;
+    font-size: 12px;
   }
+
+  .audit-run {
+    padding: 10px 0;
+    border-bottom: 1px solid #1c273a;
+  }
+
+  .audit-run:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .audit-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .audit-fail { color: var(--rose); }
+  .audit-pass { color: var(--emerald-light); }
 
   /* Footer */
   footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
     border-top: 1px solid var(--border);
     padding-top: 32px;
     margin-top: 24px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-
-  footer a {
-    color: var(--cyan-light);
-    text-decoration: none;
-  }
-
-  footer a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 768px) {
-    .games-grid {
-      grid-template-columns: 1fr;
-    }
-    .modal-container {
-      height: 96vh;
-    }
   }
 </style>
 </head>
@@ -800,536 +618,349 @@
   <header class="hero">
     <div class="benchmark-tag">
       <span class="status-dot"></span>
-      Autonomous Game Dev Benchmark · Single Turn Experiment
+      Slopanoid Autonomous Game Dev Benchmark
     </div>
     <h1 class="hero-title">
-      SLOPANOID <span class="accent">BENCHMARK</span>
+      FRONTIER AI <span class="accent">RETRO GAME</span> BENCHMARK
     </h1>
     <p class="hero-subtitle">
-      An empirical experiment testing whether frontier AI models can autonomously architect, design, compose, and code complete retro games in a <strong>single one-shot prompt</strong> with zero human micro-management, zero external assets, and zero external libraries.
+      Evaluating whether frontier AI models can autonomously architect, compose, and code complete, highly complex retro games in zero-human-intervention conditions.
     </p>
 
-    <!-- KEY EXPERIMENT METRICS -->
+    <!-- Navigation Pills -->
+    <div class="experiment-selector">
+      <a href="#gauntlet-section" class="experiment-pill active">
+        🛡️ The Gauntlet (Multi-Agent Clean-Room)
+      </a>
+      <a href="#simple-prompt-section" class="experiment-pill">
+        ⚡ Simple Prompt (Zero-Shot Baseline)
+      </a>
+      <a href="#tooling-section" class="experiment-pill">
+        🛠️ Reusable CLI Harness
+      </a>
+    </div>
+
+    <!-- BENCHMARK CORE PILLARS -->
     <div class="metrics-grid">
       <div class="metric-card">
-        <div class="metric-val">4 <span class="sub">Archetypes</span></div>
-        <div class="metric-label">Benchmark Games</div>
-        <div class="metric-desc">Arkanoid, Xenon 2, Ghosts 'n Goblins, Lemmings</div>
+        <div class="metric-val">33 <span class="sub">Levels</span></div>
+        <div class="metric-label">Pixel-Art Mosaics</div>
+        <div class="metric-desc">LucasArts lore coordinate matrices, zero truncated arrays</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">OPL2 <span class="sub">FM Synth</span></div>
+        <div class="metric-label">Simulated Web Audio</div>
+        <div class="metric-desc">7 distinct procedural/tracked compositions with no audio drift</div>
       </div>
       <div class="metric-card">
         <div class="metric-val">0 <span class="sub">Files</span></div>
         <div class="metric-label">Zero External Assets</div>
-        <div class="metric-desc">100% Procedural canvas gfx &amp; Web Audio synthesis</div>
+        <div class="metric-desc">Single self-contained HTML file with Canvas 2D &amp; pure JS</div>
       </div>
       <div class="metric-card">
-        <div class="metric-val">100% <span class="sub">Vanilla</span></div>
-        <div class="metric-label">Zero Dependencies</div>
-        <div class="metric-desc">No Phaser, Tone.js, Howler, Three.js or frameworks</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-val">3 <span class="sub">Queued</span></div>
-        <div class="metric-label">Target Models</div>
-        <div class="metric-desc">Gemini 3.8 Flash, Gemini 4 Argon, Fable 5.1</div>
+        <div class="metric-val">100% <span class="sub">Clean-Room</span></div>
+        <div class="metric-label">Strict Isolation</div>
+        <div class="metric-desc">No access to existing repository code during the build</div>
       </div>
     </div>
   </header>
 
-  <!-- ACTIVE EVALUATION RUN: opus-5.5 -->
-  <section id="opus-5-5-showcase">
+  <!-- ========================================== -->
+  <!-- SECTION 1: THE GAUNTLET (MULTI-AGENT LOOP) -->
+  <!-- ========================================== -->
+  <section id="gauntlet-section">
     <div class="section-header">
       <div class="section-title-group">
-        <h2>Active Evaluation: Claude Opus 5.5 (<code style="color: var(--amber);">opus-5.5/</code>)</h2>
-        <p>Complete test suite generated in a single turn per challenge by Anthropic's Claude Opus 5.5.</p>
+        <h2>🛡️ The Gauntlet Experiment (<code style="color: var(--amber);">gauntlet/</code>)</h2>
+        <p>Autonomous multi-agent loop: <strong>The Builder</strong> drafts de novo code while <strong>The Critic</strong> ruthlessly inspects for bugs, lore accuracy, and audio fidelity.</p>
       </div>
       <div class="section-actions">
-        <a href="opus-5.5/index.html" class="btn btn-primary" id="btn-launch-opus-arcade">
-          🕹️ Launch Opus 5.5 Arcade Cabinet
+        <a href="gauntlet/gemini-3.8/arkanoid/index.html" class="btn btn-primary">
+          🕹️ Play Gauntlet Golden Master
         </a>
       </div>
     </div>
 
-    <div class="spotlight-card">
+    <!-- SPOTLIGHT: GEMINI 3.8 GAUNTLET CHAMPION -->
+    <div class="spotlight-box">
       <div class="spotlight-top">
         <div class="spotlight-heading">
-          <div class="model-badge-row">
-            <span class="model-tag">Verified Pass</span>
-            <span class="dir-path-badge">📁 opus-5.5/</span>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <span class="model-tag">🏆 Gauntlet Certified Master</span>
+            <span class="dir-badge">📁 gauntlet/gemini-3.8/arkanoid/</span>
           </div>
-          <h3>Claude Opus 5.5 Autonomous Run</h3>
+          <h3>Gemini 3.8 Flash · Arkanoid: The Secret of Brick Island</h3>
           <p>
-            The <code style="color: var(--amber);">opus-5.5/</code> directory contains all 4 benchmark games generated from the verbatim prompts below.
-            Opus 5.5 achieved a <strong>100% execution pass rate</strong>: compiling complex Web Audio OPL2 FM synths and Amiga Paula-style MOD tracker sequencing alongside 320&times;200 software framebuffers and multi-stage physics loops without human correction.
+            Generated via an isolated multi-agent Gauntlet loop. The Critic rejected Run 1 for non-deterministic audio and discrete collision clamping. In Run 2, The Builder delivered a 100% flawless build featuring textbook swept Minkowski Slab AABB collision detection, 7 deterministic OPL2 FM songs, interactive <em>Loom</em> draft spell-weaving, and an animated LeChuck boss!
           </p>
-          <div class="spotlight-summary-pills">
-            <span class="stat-pill"><strong>Games Playable:</strong> 4 / 4</span>
-            <span class="stat-pill"><strong>Assets Used:</strong> 0 KB External</span>
-            <span class="stat-pill"><strong>Audio Architecture:</strong> Web Audio OPL2 / MOD Tracker</span>
-            <span class="stat-pill"><strong>Human Intervention:</strong> Zero Edits</span>
+          <div class="spotlight-pills">
+            <span class="stat-pill"><strong>Iterations:</strong> 2 Runs (Run 1 Failed · Run 2 Certified)</span>
+            <span class="stat-pill"><strong>Audio:</strong> 32-Step OPL2 FM Sequencer (7 Soundtracks)</span>
+            <span class="stat-pill"><strong>Physics:</strong> Swept Slab Ray/AABB (Zero Tunneling)</span>
+            <span class="stat-pill"><strong>Levels:</strong> 33 Unique Pixel-Art LucasArts Mosaics</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="gauntlet/gemini-3.8/arkanoid/index.html" class="btn btn-primary" style="font-size: 15px; padding: 12px 24px;">
+            ▶️ Play Arkanoid Golden Master
+          </a>
+          <a href="gauntlet/gemini-3.8/arkanoid/PROMPT.md" class="btn btn-secondary">
+            📄 View Gauntlet Prompt
+          </a>
+        </div>
+      </div>
+
+      <!-- AUDIT LOG DETAIL -->
+      <div class="audit-box">
+        <div class="audit-run">
+          <div class="audit-header audit-fail">❌ Run 1: GAUNTLET FAILURE (Rejected by The Critic)</div>
+          <div style="color: var(--text-secondary);">
+            - Sequencer used <code>Math.random()</code> note picking instead of deterministic compositions.<br>
+            - Discrete penetration clamping caused velocity-zeroing (<code>dx = 0</code>) inside bricks.<br>
+            - Missing Loom draft spell-weaving mechanic; LeChuck boss was a static rectangle without animation.
+          </div>
+        </div>
+        <div class="audit-run">
+          <div class="audit-header audit-pass">✅ Run 2: GAUNTLET CERTIFICATION APPROVED (100% Golden Master)</div>
+          <div style="color: var(--text-secondary);">
+            - Deterministic 32-step lookahead Web Audio tracker with FM steel pans, filtered bass, and WaveShaper guitar.<br>
+            - Swept Minkowski AABB ray intersection with explicit normal reflections (<code>nx, ny = ±1</code>).<br>
+            - Interactive Loom spell-weaving (<code>CDEC</code> Opening, <code>EDCD</code> Emptying, <code>FECD</code> Night), 3-stage armored brick cracking, and animated flaming-beard LeChuck boss!
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- SECTION 2: SIMPLE PROMPT (ZERO-SHOT BASELINES) -->
+  <!-- ============================================== -->
+  <section id="simple-prompt-section">
+    <div class="section-header">
+      <div class="section-title-group">
+        <h2>⚡ Simple Prompt Baseline (<code style="color: var(--cyan);">simple-prompt/</code>)</h2>
+        <p>The original single one-shot challenge comparing Claude Opus 5.5, Gemini 3.8 Flash, and Fable 5.1 across all 4 benchmark games.</p>
+      </div>
+      <div class="section-actions">
+        <a href="simple-prompt/index.html" class="btn btn-secondary">
+          🌐 Open Simple-Prompt Master Showcase
+        </a>
+      </div>
+    </div>
+
+    <div class="models-container">
+
+      <!-- CLAUDE OPUS 5.5 -->
+      <div class="model-showcase-box">
+        <div class="model-showcase-header">
+          <div>
+            <div class="model-name-title">Claude Opus 5.5</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Anthropic · Single Turn One-Shot</div>
+          </div>
+          <a href="simple-prompt/opus-5.5/index.html" class="btn btn-sm btn-outline">Showcase Hub</a>
+        </div>
+        <div class="prototype-list">
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🧱 Arkanoid: Secret of Brick Island</div>
+              <div class="prototype-genre">33 Levels · AdLib FM Synth · Insult Sword Fighting</div>
+            </div>
+            <a href="simple-prompt/opus-5.5/arkanoid/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🚀 Xenon 2: Megablast</div>
+              <div class="prototype-genre">8-Ch Amiga MOD Tracker · TB-303 Acid Filter Sweeps</div>
+            </div>
+            <a href="simple-prompt/opus-5.5/xenon2/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🛡️ Ghosts 'n Goblins: Museum</div>
+              <div class="prototype-genre">CPS-1 Platformer · Tactical Armor Ejection · 5 Weapons</div>
+            </div>
+            <a href="simple-prompt/opus-5.5/ghosts-n-goblins/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🐹 Lemmings: Beat Tribe</div>
+              <div class="prototype-genre">Interactive Music Sequencer · 5 Genre Worlds</div>
+            </div>
+            <a href="simple-prompt/opus-5.5/lemmings/index.html" class="btn btn-sm btn-primary">Play</a>
           </div>
         </div>
       </div>
 
-      <!-- 4 GAMES CARDS IN OPUS 5.5 -->
-      <div class="games-grid">
-
-        <!-- GAME 1: ARKANOID -->
-        <article class="game-card" id="card-arkanoid">
+      <!-- GEMINI 3.8 FLASH -->
+      <div class="model-showcase-box">
+        <div class="model-showcase-header">
           <div>
-            <div class="game-header">
-              <div class="game-icon-box icon-box-arkanoid">🧱</div>
-              <div class="game-title-area">
-                <div class="game-title-row">
-                  <h3 class="game-title">Arkanoid</h3>
-                  <span class="challenge-badge">LucasArts Tribute</span>
-                </div>
-                <div class="game-subtitle">The Secret of Brick Island</div>
-              </div>
-            </div>
-
-            <div class="game-body">
-              <p class="game-desc">
-                An expansive 33-level brick breaker across 7 classic adventure universes, powered by an authentic procedural OPL2/AdLib FM synthesizer with carrier-modulator synthesis.
-              </p>
-              <div class="specs-list">
-                <div class="spec-item"><span class="spec-label">Audio Synth</span> 7 world soundtracks (Monkey Island reggae, Tentacle march, Atlantis crypt, Loom 4-voice counterpoint)</div>
-                <div class="spec-item"><span class="spec-label">Mechanics</span> Insult sword fighting, Chron-o-John portals, Orichalcum fireballs, LeChuck multi-phase boss</div>
-                <div class="spec-item"><span class="spec-label">Rendering</span> 320&times;200 virtual viewport with 64-color EGA palette registers</div>
-              </div>
-            </div>
+            <div class="model-name-title">Gemini 3.8 Flash</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Google · Single Turn One-Shot</div>
           </div>
-
-          <div class="game-footer-actions">
-            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/arkanoid/index.html', 'Arkanoid: The Secret of Brick Island (Opus 5.5)')">
-              ▶ Play in Hub
-            </button>
-            <a href="opus-5.5/arkanoid/index.html" target="_blank" class="btn btn-secondary btn-sm">
-              Launch Tab ↗
-            </a>
-            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/arkanoid/PROMPT.md', 'Arkanoid One-Shot Prompt')">
-              📜 Read Prompt
-            </button>
-          </div>
-        </article>
-
-        <!-- GAME 2: XENON 2 -->
-        <article class="game-card" id="card-xenon2">
-          <div>
-            <div class="game-header">
-              <div class="game-icon-box icon-box-xenon">🚀</div>
-              <div class="game-title-area">
-                <div class="game-title-row">
-                  <h3 class="game-title">Xenon 2</h3>
-                  <span class="challenge-badge">Amiga Demoscene</span>
-                </div>
-                <div class="game-subtitle">Megablast · Bitmap Brothers Tribute</div>
-              </div>
+          <a href="simple-prompt/gemini-3.8/index.html" class="btn btn-sm btn-outline">Showcase Hub</a>
+        </div>
+        <div class="prototype-list">
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🧱 Arkanoid</div>
+              <div class="prototype-genre">LucasArts Tribute · 33 Levels · Web Audio FM</div>
             </div>
-
-            <div class="game-body">
-              <p class="game-desc">
-                A vertical shmup celebrating The Bitmap Brothers' chrome aesthetic and Bomb the Bass's soundtrack, featuring pure software rasterization and real-time audio filters.
-              </p>
-              <div class="specs-list">
-                <div class="spec-item"><span class="spec-label">Audio Synth</span> 8-channel Amiga MOD tracker sequencing Bomb the Bass with TB-303 acid resonant filter sweeps</div>
-                <div class="spec-item"><span class="spec-label">Crispin Shop</span> Modular ship upgrade system: cannons, wing-pods, and tailguns mount directly onto the sprite</div>
-                <div class="spec-item"><span class="spec-label">Rendering</span> Software pixel buffers, specular metallic gradients, and organic boss animations</div>
-              </div>
+            <a href="simple-prompt/gemini-3.8/arkanoid/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🚀 Xenon 2</div>
+              <div class="prototype-genre">Bitmap Brothers Style · Modular Upgrades</div>
             </div>
+            <a href="simple-prompt/gemini-3.8/xenon2/index.html" class="btn btn-sm btn-primary">Play</a>
           </div>
-
-          <div class="game-footer-actions">
-            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/xenon2/index.html', 'Xenon 2: Megablast (Opus 5.5)')">
-              ▶ Play in Hub
-            </button>
-            <a href="opus-5.5/xenon2/index.html" target="_blank" class="btn btn-secondary btn-sm">
-              Launch Tab ↗
-            </a>
-            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/xenon2/PROMPT.md', 'Xenon 2 One-Shot Prompt')">
-              📜 Read Prompt
-            </button>
-          </div>
-        </article>
-
-        <!-- GAME 3: GHOSTS 'N GOBLINS -->
-        <article class="game-card" id="card-gng">
-          <div>
-            <div class="game-header">
-              <div class="game-icon-box icon-box-gng">⚔️</div>
-              <div class="game-title-area">
-                <div class="game-title-row">
-                  <h3 class="game-title">Ghosts 'n Goblins</h3>
-                  <span class="challenge-badge">Arcade Platformer</span>
-                </div>
-                <div class="game-subtitle">The Cursed PC Gaming Museum</div>
-              </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🛡️ Ghosts 'n Goblins</div>
+              <div class="prototype-genre">Sir Arthur Arcade Platformer · EGA Graphics</div>
             </div>
-
-            <div class="game-body">
-              <p class="game-desc">
-                Hardcore arcade action platformer following Sir Arthur through haunted graveyards with innovative tactical armor mechanics and monster possession mechanics.
-              </p>
-              <div class="specs-list">
-                <div class="spec-item"><span class="spec-label">Tactical Eject</span> Shatter armor into an anvil to enter Strawberry Boxer Shorts mode (+35% speed &amp; double jump)</div>
-                <div class="spec-item"><span class="spec-label">Possession</span> Leap your soul into non-boss enemies to fly as Gargoyle, spit acid as Zombie, or fling bones</div>
-                <div class="spec-item"><span class="spec-label">Arsenal</span> 5 swap weapons (Lances, Daggers, Torches, Axes, Crossbows) and Golden Armor screen-clears</div>
-              </div>
+            <a href="simple-prompt/gemini-3.8/ghosts-n-goblins/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🐹 Lemmings</div>
+              <div class="prototype-genre">Psygnosis Tribute · Procedural Audio Stems</div>
             </div>
+            <a href="simple-prompt/gemini-3.8/lemmings/index.html" class="btn btn-sm btn-primary">Play</a>
           </div>
-
-          <div class="game-footer-actions">
-            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/ghosts-n-goblins/index.html', 'Ghosts \'n Goblins: The Cursed PC Gaming Museum (Opus 5.5)')">
-              ▶ Play in Hub
-            </button>
-            <a href="opus-5.5/ghosts-n-goblins/index.html" target="_blank" class="btn btn-secondary btn-sm">
-              Launch Tab ↗
-            </a>
-            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/ghosts-n-goblins/PROMPT.md', 'Ghosts \'n Goblins One-Shot Prompt')">
-              📜 Read Prompt
-            </button>
-          </div>
-        </article>
-
-        <!-- GAME 4: LEMMINGS -->
-        <article class="game-card" id="card-lemmings">
-          <div>
-            <div class="game-header">
-              <div class="game-icon-box icon-box-lemmings">🎵</div>
-              <div class="game-title-area">
-                <div class="game-title-row">
-                  <h3 class="game-title">Lemmings</h3>
-                  <span class="challenge-badge">Sequencer Puzzle</span>
-                </div>
-                <div class="game-subtitle">Beat Tribe · Playing Is Composing</div>
-              </div>
-            </div>
-
-            <div class="game-body">
-              <p class="game-desc">
-                A Psygnosis puzzle tribute where every level is an interactive step sequencer: terrain is the score, lemmings are the playheads, and saving the tribe builds the track.
-              </p>
-              <div class="specs-list">
-                <div class="spec-item"><span class="spec-label">Quantization</span> Footsteps quantized to song clock; terrain plays scale degrees under walking lemmings</div>
-                <div class="spec-item"><span class="spec-label">Instruments</span> Diggers drum, Builders arpeggiate, Blockers drone, Bashers sweep bass, Bombers crash</div>
-                <div class="spec-item"><span class="spec-label">Stem System</span> 5 genre worlds (chiptune, acid, synthwave, jungle, orchestral) with results song replay</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="game-footer-actions">
-            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/lemmings/index.html', 'Lemmings: Beat Tribe (Opus 5.5)')">
-              ▶ Play in Hub
-            </button>
-            <a href="opus-5.5/lemmings/index.html" target="_blank" class="btn btn-secondary btn-sm">
-              Launch Tab ↗
-            </a>
-            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/lemmings/PROMPT.md', 'Lemmings One-Shot Prompt')">
-              📜 Read Prompt
-            </button>
-          </div>
-        </article>
-
+        </div>
       </div>
+
+      <!-- FABLE 5.1 -->
+      <div class="model-showcase-box">
+        <div class="model-showcase-header">
+          <div>
+            <div class="model-name-title">Fable 5.1</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Open Model · Single Turn One-Shot</div>
+          </div>
+          <a href="simple-prompt/fable-5.1/index.html" class="btn btn-sm btn-outline">Showcase Hub</a>
+        </div>
+        <div class="prototype-list">
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🧱 Arkanoid</div>
+              <div class="prototype-genre">LucasArts Retro Clone · Canvas 2D</div>
+            </div>
+            <a href="simple-prompt/fable-5.1/arkanoid/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🚀 Xenon 2</div>
+              <div class="prototype-genre">Vertical Shmup · Procedural Chiptune Audio</div>
+            </div>
+            <a href="simple-prompt/fable-5.1/xenon2/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🛡️ Ghosts 'n Goblins</div>
+              <div class="prototype-genre">Side-scroller · Retro Palette Renderer</div>
+            </div>
+            <a href="simple-prompt/fable-5.1/ghosts-n-goblins/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+          <div class="prototype-item">
+            <div>
+              <div class="prototype-title">🐹 Lemmings</div>
+              <div class="prototype-genre">Puzzle Platformer · Procedural Synthesis</div>
+            </div>
+            <a href="simple-prompt/fable-5.1/lemmings/index.html" class="btn btn-sm btn-primary">Play</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <!-- MULTI-MODEL BENCHMARK MATRIX & ROADMAP -->
-  <section id="multi-model-roadmap">
+  <!-- ======================================= -->
+  <!-- SECTION 3: REUSABLE AUTOMATION TOOLING -->
+  <!-- ======================================= -->
+  <section id="tooling-section">
     <div class="section-header">
       <div class="section-title-group">
-        <h2>Multi-Model Benchmark Matrix</h2>
-        <p>Evaluating frontier models under identical single-prompt zero-asset constraints against the Claude Opus 5.5 baseline.</p>
+        <h2>🛠️ Reusable Experiment Harness (<code style="color: var(--emerald);">scripts/gauntlet_harness.py</code>)</h2>
+        <p>Built for repeatable execution, clean-room physical isolation, automated rule verification, and output certification.</p>
       </div>
     </div>
 
-    <div class="matrix-wrapper">
-      <table class="matrix-table">
-        <thead>
-          <tr>
-            <th>Model / Architecture</th>
-            <th>Provider</th>
-            <th>Benchmark Status</th>
-            <th>Playable Games</th>
-            <th>Audio Synthesis Engine</th>
-            <th>Target Directory</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <div class="model-name-cell">
-                <span>Gemini 3.8 Flash</span>
-              </div>
-            </td>
-            <td><span class="model-provider">Google DeepMind</span></td>
-            <td><span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5);">● Verified (100%)</span></td>
-            <td>4 / 4 Complete</td>
-            <td>OPL2 FM, MOD, PSG &amp; Chiptune</td>
-            <td><a href="gemini-3.8/index.html" style="color: var(--cyan); font-family: var(--font-mono);">gemini-3.8/</a></td>
-          </tr>
-          <tr>
-            <td>
-              <div class="model-name-cell">
-                <span>Gemini 4 Argon</span>
-              </div>
-            </td>
-            <td><span class="model-provider">Google DeepMind</span></td>
-            <td><span class="status-badge status-planned">○ Queued</span></td>
-            <td>0 / 4 Scheduled</td>
-            <td>OPL2 FM &amp; Amiga MOD Tracker</td>
-            <td><code style="font-family: var(--font-mono); color: var(--text-muted);">gemini-4-argon/</code></td>
-          </tr>
-          <tr>
-            <td>
-              <div class="model-name-cell">
-                <span>Fable 5.1</span>
-              </div>
-            </td>
-            <td><span class="model-provider">Fable Studio</span></td>
-            <td><span class="status-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5);">● Verified (100%)</span></td>
-            <td>4 / 4 Complete</td>
-            <td>OPL2 FM, ProTracker MOD &amp; TB-303</td>
-            <td><a href="fable-5.1/index.html" style="color: var(--cyan); font-family: var(--font-mono);">fable-5.1/</a></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="spotlight-box" style="padding: 24px;">
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">
+        To test any future game prompt or model through the Gauntlet, use the unified CLI harness:
+      </p>
+      <pre style="background: #090d16; padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 13px; color: var(--emerald-light); overflow-x: auto;">
+# 1. Lock down existing baseline repositories (chmod 000 clean-room isolation)
+./scripts/gauntlet_harness.py isolate
+
+# 2. Prepare environment and validate prompt file
+./scripts/gauntlet_harness.py prepare gauntlet/&lt;model&gt;/&lt;game&gt;/PROMPT.md
+
+# 3. Validate generated single-file game against benchmark rules (Canvas, AudioContext, 0 external assets)
+./scripts/gauntlet_harness.py validate gauntlet/&lt;model&gt;/&lt;game&gt;/index.html
+
+# 4. Save certified Golden Master and restore normal repo permissions
+./scripts/gauntlet_harness.py save gauntlet/&lt;model&gt;/&lt;game&gt;/PROMPT.md --code-file output.html
+./scripts/gauntlet_harness.py restore</pre>
     </div>
   </section>
 
-  <!-- BENCHMARK CONSTRAINTS & PROTOCOL -->
-  <section id="benchmark-protocol">
-    <div class="section-header">
-      <div class="section-title-group">
-        <h2>The 5 Golden Rules of the Benchmark</h2>
-        <p>Strict experimental controls designed to push AI models to the limits of autonomous synthesis.</p>
-      </div>
-    </div>
-
-    <div class="rules-grid">
-      <div class="rule-card">
-        <span class="rule-number">RULE 01</span>
-        <h3 class="rule-title">Pure One-Shot Prompt</h3>
-        <p class="rule-desc">
-          Zero human iteration or debugging. The model is given a single multi-page specification. Its very first output must run directly in a browser without edits.
-        </p>
-      </div>
-
-      <div class="rule-card">
-        <span class="rule-number">RULE 02</span>
-        <h3 class="rule-title">Zero External Assets</h3>
-        <p class="rule-desc">
-          No external spritesheets, images, audio samples, or fonts. 100% of graphics are drawn via canvas math and 100% of audio is synthesized via Web Audio nodes.
-        </p>
-      </div>
-
-      <div class="rule-card">
-        <span class="rule-number">RULE 03</span>
-        <h3 class="rule-title">Zero Dependencies</h3>
-        <p class="rule-desc">
-          Pure Vanilla JavaScript, HTML5 Canvas, and Web Audio API. Third-party game engines (Phaser, Three.js) or audio libraries (Tone.js, Howler) are strictly banned.
-        </p>
-      </div>
-
-      <div class="rule-card">
-        <span class="rule-number">RULE 04</span>
-        <h3 class="rule-title">Demoscene Authenticity</h3>
-        <p class="rule-desc">
-          Strict adherence to classic PC / Amiga hardware constraints: 320&times;200 software framebuffers, EGA/VGA palettes, and authentic OPL2 FM / Amiga MOD tracker engines.
-        </p>
-      </div>
-
-      <div class="rule-card">
-        <span class="rule-number">RULE 05</span>
-        <h3 class="rule-title">Full Game Depth</h3>
-        <p class="rule-desc">
-          Not trivial tech demos. Each game must feature multi-level progression, unique audio arrangements per world, full boss fights, power-up systems, and win/loss states.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW TO RE-RUN THE EXPERIMENT -->
-  <section id="how-to-re-run">
-    <div class="section-header">
-      <div class="section-title-group">
-        <h2>How to Re-Run the Experiment with a New Model</h2>
-        <p>Instructions for testing an AI model against the 4 Slopanoid challenges.</p>
-      </div>
-    </div>
-
-    <div class="instructions-box">
-      <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #cbd5e1;">
-        <li>
-          <strong>Create the target model directory:</strong> e.g., <code style="color: var(--amber); font-family: var(--font-mono);">mkdir gemini-3.8-flash</code>, <code style="color: var(--amber); font-family: var(--font-mono);">mkdir gemini-4-argon</code>, or <code style="color: var(--amber); font-family: var(--font-mono);">mkdir fable-5.1</code>.
-        </li>
-        <li>
-          <strong>Select a challenge prompt:</strong> Copy one of the 4 verbatim prompts:
-          <ul style="margin-top: 6px; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-family: var(--font-mono); font-size: 12px; color: var(--cyan-light);">
-            <li>opus-5.5/arkanoid/PROMPT.md</li>
-            <li>opus-5.5/xenon2/PROMPT.md</li>
-            <li>opus-5.5/ghosts-n-goblins/PROMPT.md</li>
-            <li>opus-5.5/lemmings/PROMPT.md</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Submit as a single prompt in a clean context:</strong> Do not add follow-up nudges or bug fix instructions.
-        </li>
-        <li>
-          <strong>Save output directly:</strong> Write the generated single file or folder into <code style="color: var(--amber); font-family: var(--font-mono);">&lt;model-name&gt;/&lt;game&gt;/index.html</code>.
-        </li>
-        <li>
-          <strong>Evaluate against the 5 Golden Rules:</strong> Verify that audio plays without external assets, controls respond cleanly, and canvas scales crisply.
-        </li>
-      </ol>
-
-      <div class="code-block">
-<span class="comment"># Example workflow to test a new model:</span>
-<span class="keyword">mkdir</span> -p gemini-3.8-flash/arkanoid
-<span class="comment"># Feed opus-5.5/arkanoid/PROMPT.md to your model in a single one-shot turn</span>
-<span class="comment"># Save model response to:</span>
-gemini-3.8-flash/arkanoid/index.html
-<span class="comment"># Verify locally:</span>
-open gemini-3.8-flash/arkanoid/index.html
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
   <footer>
-    <div>
-      <strong>Slopanoid Benchmark</strong> · Open-source autonomous game generation research.
-    </div>
-    <div style="display: flex; gap: 16px;">
-      <a href="opus-5.5/index.html">Opus 5.5 Arcade</a>
-      <a href="README.md">README</a>
-      <a href="LICENSE">License (MIT)</a>
-    </div>
+    <p>Slopanoid Autonomous Game Dev Benchmark · Pair Programmed with Jetski AI</p>
   </footer>
 
 </div>
 
-<!-- INTERACTIVE MODAL FOR GAME PLAYER & PROMPT VIEWER -->
-<div class="modal-backdrop" id="interactive-modal">
-  <div class="modal-container">
-    <div class="modal-header">
-      <div class="modal-title-wrap">
-        <span id="modal-icon">🎮</span>
-        <h3 class="modal-title" id="modal-title">Interactive Viewer</h3>
-      </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <a id="modal-external-link" href="#" target="_blank" class="btn btn-outline btn-sm" style="display: none;">
-          Open in New Tab ↗
-        </a>
-        <button class="modal-close-btn" onclick="closeModal()" title="Close (Esc)">&times;</button>
-      </div>
-    </div>
-    <div class="modal-body" id="modal-body">
-      <!-- Content populated dynamically -->
-    </div>
-  </div>
-</div>
-
+<!-- Animated Background Canvas -->
 <script>
-  // Interactive modal logic
-  const modal = document.getElementById('interactive-modal');
-  const modalTitle = document.getElementById('modal-title');
-  const modalIcon = document.getElementById('modal-icon');
-  const modalBody = document.getElementById('modal-body');
-  const modalExternalLink = document.getElementById('modal-external-link');
+  (function() {
+    const canvas = document.getElementById('canvas-grid');
+    const ctx = canvas.getContext('2d');
+    let w, h, dots = [];
 
-  function openGameModal(url, title) {
-    modalTitle.textContent = title;
-    modalIcon.textContent = '🕹️';
-    modalExternalLink.href = url;
-    modalExternalLink.style.display = 'inline-flex';
-    modalBody.innerHTML = `<iframe src="${url}" allow="autoplay" title="${title}"></iframe>`;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function openPromptModal(url, title) {
-    modalTitle.textContent = title;
-    modalIcon.textContent = '📜';
-    modalExternalLink.href = url;
-    modalExternalLink.style.display = 'inline-flex';
-    modalExternalLink.textContent = 'View Raw File ↗';
-    modalBody.innerHTML = `<div class="modal-prompt-content" id="prompt-text">Loading prompt specifications...</div>`;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    // Attempt to fetch prompt text; fallback gracefully if running file:// protocol
-    fetch(url)
-      .then(response => {
-        if (!response.ok) throw new Error('File fetch failed');
-        return response.text();
-      })
-      .then(text => {
-        const promptEl = document.getElementById('prompt-text');
-        if (promptEl) promptEl.textContent = text;
-      })
-      .catch(err => {
-        const promptEl = document.getElementById('prompt-text');
-        if (promptEl) {
-          promptEl.innerHTML = `<strong>Note:</strong> Browsers restrict direct fetch() on the <code>file://</code> protocol.<br><br>` +
-            `Click <strong><a href="${url}" target="_blank" style="color: var(--amber);">Open in New Tab ↗</a></strong> to view the full markdown specification directly, ` +
-            `or run a local HTTP server with <code>python3 -m http.server</code>.`;
-        }
-      });
-  }
-
-  function closeModal() {
-    modal.classList.remove('active');
-    modalBody.innerHTML = '';
-    document.body.style.overflow = '';
-  }
-
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
-      closeModal();
-    }
-  });
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-
-  // Background subtle canvas grid particles
-  const canvas = document.getElementById('canvas-grid');
-  const ctx = canvas.getContext('2d');
-  let dots = [];
-
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    dots = Array.from({ length: 45 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      radius: Math.random() * 1.5 + 0.5,
-      vy: Math.random() * 0.3 + 0.1,
-      opacity: Math.random() * 0.5 + 0.2
-    }));
-  }
-
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-
-  function animateCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const d of dots) {
-      d.y += d.vy;
-      if (d.y > canvas.height) {
-        d.y = 0;
-        d.x = Math.random() * canvas.width;
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      dots = [];
+      const count = Math.floor((w * h) / 14000);
+      for (let i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          size: Math.random() * 1.5 + 0.5,
+          alpha: Math.random() * 0.5 + 0.2
+        });
       }
-      ctx.fillStyle = `rgba(148, 163, 184, ${d.opacity})`;
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
-      ctx.fill();
     }
-    requestAnimationFrame(animateCanvas);
-  }
-  requestAnimationFrame(animateCanvas);
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#f59e0b';
+      for (let i = 0; i < dots.length; i++) {
+        const d = dots[i];
+        d.x += d.vx;
+        d.y += d.vy;
+        if (d.x < 0) d.x = w;
+        if (d.x > w) d.x = 0;
+        if (d.y < 0) d.y = h;
+        if (d.y > h) d.y = 0;
+
+        ctx.globalAlpha = d.alpha;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+  })();
 </script>
 
 </body>
