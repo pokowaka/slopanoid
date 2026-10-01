@@ -17,7 +17,7 @@ Our goal is to run this identical 4-game challenge across frontier AI models und
 | :--- | :--- | :--- | :--- |
 | **Gemini 3.8 Flash** | ✅ *Verified (100%)* | **4 / 4** | [`gemini-3.8/`](gemini-3.8/index.html) |
 | **Gemini 4 Argon** | ⏳ *Queued* | 0 / 4 | `gemini-4-argon/` *(upcoming)* |
-| **Fable 5.1** | ⏳ *Queued* | 0 / 4 | `fable-5.1/` *(upcoming)* |
+| **Fable 5.1** | 🚀 *In Progress* | **0 / 4** | [`fable-5.1/`](fable-5.1/index.html) |
 
 ---
 
