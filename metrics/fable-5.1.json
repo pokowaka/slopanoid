@@ -1,0 +1,1474 @@
+[
+ {
+  "conv": "737c7f6d-66d3-4525-bdba-c539025e81c7",
+  "model": "\"claude-fable-5-1@default\"",
+  "llm_calls": 27,
+  "transcript_steps": 55,
+  "start": "2026-10-01T05:28:29Z",
+  "end": "2026-10-01T05:54:41Z",
+  "duration_s": 1572.0,
+  "totals": {
+   "out": 131952,
+   "in_uncached": 179814,
+   "in_cached": 3472013,
+   "in_total": 3651827
+  },
+  "max_ctx": 163238,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 170,
+    "in_uncached": 7970,
+    "in_cached": 15094,
+    "ctx": 21257
+   },
+   {
+    "idx": 1,
+    "out": 44450,
+    "in_uncached": 4170,
+    "in_cached": 22159,
+    "ctx": 23885
+   },
+   {
+    "idx": 2,
+    "out": 3075,
+    "in_uncached": 55912,
+    "in_cached": 15094,
+    "ctx": 68441
+   },
+   {
+    "idx": 3,
+    "out": 19796,
+    "in_uncached": 3428,
+    "in_cached": 70779,
+    "ctx": 71610
+   },
+   {
+    "idx": 4,
+    "out": 9644,
+    "in_uncached": 20048,
+    "in_cached": 74081,
+    "ctx": 91500
+   },
+   {
+    "idx": 5,
+    "out": 15787,
+    "in_uncached": 9896,
+    "in_cached": 94003,
+    "ctx": 101238
+   },
+   {
+    "idx": 6,
+    "out": 23622,
+    "in_uncached": 16039,
+    "in_cached": 103773,
+    "ctx": 117119
+   },
+   {
+    "idx": 7,
+    "out": 3586,
+    "in_uncached": 23874,
+    "in_cached": 119686,
+    "ctx": 140835
+   },
+   {
+    "idx": 8,
+    "out": 279,
+    "in_uncached": 3842,
+    "in_cached": 143434,
+    "ctx": 144517
+   },
+   {
+    "idx": 9,
+    "out": 156,
+    "in_uncached": 559,
+    "in_cached": 147146,
+    "ctx": 144894
+   },
+   {
+    "idx": 10,
+    "out": 269,
+    "in_uncached": 766,
+    "in_cached": 147555,
+    "ctx": 145292
+   },
+   {
+    "idx": 11,
+    "out": 171,
+    "in_uncached": 879,
+    "in_cached": 147861,
+    "ctx": 145659
+   },
+   {
+    "idx": 12,
+    "out": 326,
+    "in_uncached": 866,
+    "in_cached": 148590,
+    "ctx": 146175
+   },
+   {
+    "idx": 13,
+    "out": 2143,
+    "in_uncached": 1331,
+    "in_cached": 148911,
+    "ctx": 146743
+   },
+   {
+    "idx": 14,
+    "out": 930,
+    "in_uncached": 5422,
+    "in_cached": 149782,
+    "ctx": 150488
+   },
+   {
+    "idx": 15,
+    "out": 228,
+    "in_uncached": 3661,
+    "in_cached": 152385,
+    "ctx": 151711
+   },
+   {
+    "idx": 16,
+    "out": 188,
+    "in_uncached": 758,
+    "in_cached": 155637,
+    "ctx": 152006
+   },
+   {
+    "idx": 17,
+    "out": 1068,
+    "in_uncached": 1142,
+    "in_cached": 156274,
+    "ctx": 152695
+   },
+   {
+    "idx": 18,
+    "out": 1784,
+    "in_uncached": 2524,
+    "in_cached": 156583,
+    "ctx": 154145
+   },
+   {
+    "idx": 19,
+    "out": 259,
+    "in_uncached": 3771,
+    "in_cached": 158484,
+    "ctx": 156766
+   },
+   {
+    "idx": 20,
+    "out": 201,
+    "in_uncached": 1773,
+    "in_cached": 160891,
+    "ctx": 157123
+   },
+   {
+    "idx": 21,
+    "out": 340,
+    "in_uncached": 501,
+    "in_cached": 162514,
+    "ctx": 157422
+   },
+   {
+    "idx": 22,
+    "out": 127,
+    "in_uncached": 670,
+    "in_cached": 162865,
+    "ctx": 157861
+   },
+   {
+    "idx": 23,
+    "out": 15,
+    "in_uncached": 929,
+    "in_cached": 163355,
+    "ctx": 158319
+   },
+   {
+    "idx": 24,
+    "out": 634,
+    "in_uncached": 2822,
+    "in_cached": 163662,
+    "ctx": 159737
+   },
+   {
+    "idx": 25,
+    "out": 2637,
+    "in_uncached": 3173,
+    "in_cached": 164297,
+    "ctx": 160551
+   },
+   {
+    "idx": 26,
+    "out": 67,
+    "in_uncached": 3088,
+    "in_cached": 167118,
+    "ctx": 163238
+   }
+  ]
+ },
+ {
+  "conv": "1a381c0b-cdf3-4008-9e7a-a0f5f138db0e",
+  "model": "\"claude-fable-5-1@default\"",
+  "llm_calls": 48,
+  "transcript_steps": 100,
+  "start": "2026-10-01T05:28:29Z",
+  "end": "2026-10-01T06:10:21Z",
+  "duration_s": 2512.0,
+  "totals": {
+   "out": 195120,
+   "in_uncached": 278396,
+   "in_cached": 8917667,
+   "in_total": 9196063
+  },
+  "max_ctx": 234877,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 169,
+    "in_uncached": 8068,
+    "in_cached": 15094,
+    "ctx": 21327
+   },
+   {
+    "idx": 1,
+    "out": 308,
+    "in_uncached": 5246,
+    "in_cached": 22167,
+    "ctx": 24170
+   },
+   {
+    "idx": 2,
+    "out": 53545,
+    "in_uncached": 4617,
+    "in_cached": 23331,
+    "ctx": 24584
+   },
+   {
+    "idx": 3,
+    "out": 23914,
+    "in_uncached": 66524,
+    "in_cached": 15094,
+    "ctx": 78222
+   },
+   {
+    "idx": 4,
+    "out": 14090,
+    "in_uncached": 24164,
+    "in_cached": 81493,
+    "ctx": 102229
+   },
+   {
+    "idx": 5,
+    "out": 3246,
+    "in_uncached": 14340,
+    "in_cached": 105532,
+    "ctx": 116412
+   },
+   {
+    "idx": 6,
+    "out": 2005,
+    "in_uncached": 5895,
+    "in_cached": 119747,
+    "ctx": 121126
+   },
+   {
+    "idx": 7,
+    "out": 672,
+    "in_uncached": 6253,
+    "in_cached": 123118,
+    "ctx": 124171
+   },
+   {
+    "idx": 8,
+    "out": 644,
+    "in_uncached": 3203,
+    "in_cached": 127647,
+    "ctx": 125318
+   },
+   {
+    "idx": 9,
+    "out": 10856,
+    "in_uncached": 2497,
+    "in_cached": 130043,
+    "ctx": 126616
+   },
+   {
+    "idx": 10,
+    "out": 24145,
+    "in_uncached": 12027,
+    "in_cached": 131494,
+    "ctx": 137565
+   },
+   {
+    "idx": 11,
+    "out": 28818,
+    "in_uncached": 24395,
+    "in_cached": 143396,
+    "ctx": 161803
+   },
+   {
+    "idx": 12,
+    "out": 1059,
+    "in_uncached": 29068,
+    "in_cached": 167666,
+    "ctx": 190714
+   },
+   {
+    "idx": 13,
+    "out": 463,
+    "in_uncached": 2202,
+    "in_cached": 196609,
+    "ctx": 192304
+   },
+   {
+    "idx": 14,
+    "out": 821,
+    "in_uncached": 2048,
+    "in_cached": 197793,
+    "ctx": 193164
+   },
+   {
+    "idx": 15,
+    "out": 796,
+    "in_uncached": 2639,
+    "in_cached": 199274,
+    "ctx": 194667
+   },
+   {
+    "idx": 16,
+    "out": 532,
+    "in_uncached": 3060,
+    "in_cached": 200662,
+    "ctx": 196161
+   },
+   {
+    "idx": 17,
+    "out": 6225,
+    "in_uncached": 1668,
+    "in_cached": 202709,
+    "ctx": 196759
+   },
+   {
+    "idx": 18,
+    "out": 235,
+    "in_uncached": 6480,
+    "in_cached": 204254,
+    "ctx": 203079
+   },
+   {
+    "idx": 19,
+    "out": 607,
+    "in_uncached": 904,
+    "in_cached": 210602,
+    "ctx": 203674
+   },
+   {
+    "idx": 20,
+    "out": 235,
+    "in_uncached": 2038,
+    "in_cached": 210969,
+    "ctx": 204909
+   },
+   {
+    "idx": 21,
+    "out": 164,
+    "in_uncached": 1287,
+    "in_cached": 212113,
+    "ctx": 205242
+   },
+   {
+    "idx": 22,
+    "out": 246,
+    "in_uncached": 510,
+    "in_cached": 213242,
+    "ctx": 205505
+   },
+   {
+    "idx": 23,
+    "out": 164,
+    "in_uncached": 592,
+    "in_cached": 213564,
+    "ctx": 205849
+   },
+   {
+    "idx": 24,
+    "out": 197,
+    "in_uncached": 510,
+    "in_cached": 213998,
+    "ctx": 206112
+   },
+   {
+    "idx": 25,
+    "out": 192,
+    "in_uncached": 661,
+    "in_cached": 214320,
+    "ctx": 206510
+   },
+   {
+    "idx": 26,
+    "out": 120,
+    "in_uncached": 656,
+    "in_cached": 214705,
+    "ctx": 206801
+   },
+   {
+    "idx": 27,
+    "out": 3059,
+    "in_uncached": 907,
+    "in_cached": 215173,
+    "ctx": 207230
+   },
+   {
+    "idx": 28,
+    "out": 164,
+    "in_uncached": 3783,
+    "in_cached": 215481,
+    "ctx": 210382
+   },
+   {
+    "idx": 29,
+    "out": 341,
+    "in_uncached": 477,
+    "in_cached": 219139,
+    "ctx": 210645
+   },
+   {
+    "idx": 30,
+    "out": 207,
+    "in_uncached": 1238,
+    "in_cached": 219428,
+    "ctx": 211390
+   },
+   {
+    "idx": 31,
+    "out": 179,
+    "in_uncached": 1074,
+    "in_cached": 219957,
+    "ctx": 211695
+   },
+   {
+    "idx": 32,
+    "out": 196,
+    "in_uncached": 525,
+    "in_cached": 220873,
+    "ctx": 211973
+   },
+   {
+    "idx": 33,
+    "out": 413,
+    "in_uncached": 2609,
+    "in_cached": 221210,
+    "ctx": 213394
+   },
+   {
+    "idx": 34,
+    "out": 175,
+    "in_uncached": 2826,
+    "in_cached": 221594,
+    "ctx": 213906
+   },
+   {
+    "idx": 35,
+    "out": 17,
+    "in_uncached": 673,
+    "in_cached": 224232,
+    "ctx": 214250
+   },
+   {
+    "idx": 36,
+    "out": 1008,
+    "in_uncached": 525,
+    "in_cached": 224595,
+    "ctx": 214404
+   },
+   {
+    "idx": 37,
+    "out": 1459,
+    "in_uncached": 2727,
+    "in_cached": 224920,
+    "ctx": 216298
+   },
+   {
+    "idx": 38,
+    "out": 3767,
+    "in_uncached": 3049,
+    "in_cached": 226128,
+    "ctx": 217855
+   },
+   {
+    "idx": 39,
+    "out": 603,
+    "in_uncached": 5491,
+    "in_cached": 229019,
+    "ctx": 222482
+   },
+   {
+    "idx": 40,
+    "out": 3042,
+    "in_uncached": 3256,
+    "in_cached": 232873,
+    "ctx": 223644
+   },
+   {
+    "idx": 41,
+    "out": 1039,
+    "in_uncached": 6484,
+    "in_cached": 235113,
+    "ctx": 228126
+   },
+   {
+    "idx": 42,
+    "out": 510,
+    "in_uncached": 3551,
+    "in_cached": 239171,
+    "ctx": 229263
+   },
+   {
+    "idx": 43,
+    "out": 231,
+    "in_uncached": 951,
+    "in_cached": 242564,
+    "ctx": 229924
+   },
+   {
+    "idx": 44,
+    "out": 14,
+    "in_uncached": 672,
+    "in_cached": 243232,
+    "ctx": 230253
+   },
+   {
+    "idx": 45,
+    "out": 226,
+    "in_uncached": 695,
+    "in_cached": 243746,
+    "ctx": 230613
+   },
+   {
+    "idx": 46,
+    "out": 3823,
+    "in_uncached": 1080,
+    "in_cached": 243916,
+    "ctx": 231004
+   },
+   {
+    "idx": 47,
+    "out": 179,
+    "in_uncached": 4251,
+    "in_cached": 244667,
+    "ctx": 234877
+   }
+  ]
+ },
+ {
+  "conv": "52257b09-c925-49d5-a216-f9bfb92b30d0",
+  "model": "\"claude-fable-5-1@default\"",
+  "llm_calls": 40,
+  "transcript_steps": 83,
+  "start": "2026-10-01T05:28:29Z",
+  "end": "2026-10-01T06:13:12Z",
+  "duration_s": 2683.0,
+  "totals": {
+   "out": 224550,
+   "in_uncached": 392718,
+   "in_cached": 6732892,
+   "in_total": 7125610
+  },
+  "max_ctx": 255678,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 175,
+    "in_uncached": 8101,
+    "in_cached": 15094,
+    "ctx": 21354
+   },
+   {
+    "idx": 1,
+    "out": 11270,
+    "in_uncached": 3707,
+    "in_cached": 22159,
+    "ctx": 23334
+   },
+   {
+    "idx": 2,
+    "out": 23424,
+    "in_uncached": 13993,
+    "in_cached": 23370,
+    "ctx": 34710
+   },
+   {
+    "idx": 3,
+    "out": 22500,
+    "in_uncached": 23782,
+    "in_cached": 37136,
+    "ctx": 58230
+   },
+   {
+    "idx": 4,
+    "out": 27425,
+    "in_uncached": 22762,
+    "in_cached": 60787,
+    "ctx": 80826
+   },
+   {
+    "idx": 5,
+    "out": 26210,
+    "in_uncached": 27687,
+    "in_cached": 83418,
+    "ctx": 108347
+   },
+   {
+    "idx": 6,
+    "out": 37739,
+    "in_uncached": 26472,
+    "in_cached": 110974,
+    "ctx": 134653
+   },
+   {
+    "idx": 7,
+    "out": 14995,
+    "in_uncached": 160222,
+    "in_cached": 15094,
+    "ctx": 172488
+   },
+   {
+    "idx": 8,
+    "out": 309,
+    "in_uncached": 15257,
+    "in_cached": 175185,
+    "ctx": 187579
+   },
+   {
+    "idx": 9,
+    "out": 571,
+    "in_uncached": 789,
+    "in_cached": 190311,
+    "ctx": 188061
+   },
+   {
+    "idx": 10,
+    "out": 664,
+    "in_uncached": 1596,
+    "in_cached": 190751,
+    "ctx": 189058
+   },
+   {
+    "idx": 11,
+    "out": 391,
+    "in_uncached": 1989,
+    "in_cached": 191671,
+    "ctx": 190114
+   },
+   {
+    "idx": 12,
+    "out": 3510,
+    "in_uncached": 1164,
+    "in_cached": 193011,
+    "ctx": 190574
+   },
+   {
+    "idx": 13,
+    "out": 239,
+    "in_uncached": 3644,
+    "in_cached": 194051,
+    "ctx": 194182
+   },
+   {
+    "idx": 14,
+    "out": 13593,
+    "in_uncached": 2043,
+    "in_cached": 197559,
+    "ctx": 195437
+   },
+   {
+    "idx": 15,
+    "out": 8806,
+    "in_uncached": 4160,
+    "in_cached": 197934,
+    "ctx": 209804
+   },
+   {
+    "idx": 16,
+    "out": 469,
+    "in_uncached": 10920,
+    "in_cached": 200596,
+    "ctx": 219006
+   },
+   {
+    "idx": 17,
+    "out": 409,
+    "in_uncached": 1754,
+    "in_cached": 210900,
+    "ctx": 219911
+   },
+   {
+    "idx": 18,
+    "out": 817,
+    "in_uncached": 1748,
+    "in_cached": 211985,
+    "ctx": 220758
+   },
+   {
+    "idx": 19,
+    "out": 626,
+    "in_uncached": 2398,
+    "in_cached": 213063,
+    "ctx": 222134
+   },
+   {
+    "idx": 20,
+    "out": 469,
+    "in_uncached": 2232,
+    "in_cached": 214550,
+    "ctx": 223191
+   },
+   {
+    "idx": 21,
+    "out": 193,
+    "in_uncached": 2042,
+    "in_cached": 216087,
+    "ctx": 224185
+   },
+   {
+    "idx": 22,
+    "out": 855,
+    "in_uncached": 1923,
+    "in_cached": 217251,
+    "ctx": 224907
+   },
+   {
+    "idx": 23,
+    "out": 1526,
+    "in_uncached": 2818,
+    "in_cached": 218322,
+    "ctx": 226410
+   },
+   {
+    "idx": 24,
+    "out": 739,
+    "in_uncached": 3685,
+    "in_cached": 220029,
+    "ctx": 228542
+   },
+   {
+    "idx": 25,
+    "out": 445,
+    "in_uncached": 2647,
+    "in_cached": 222666,
+    "ctx": 229789
+   },
+   {
+    "idx": 26,
+    "out": 813,
+    "in_uncached": 1809,
+    "in_cached": 224453,
+    "ctx": 230602
+   },
+   {
+    "idx": 27,
+    "out": 1383,
+    "in_uncached": 2160,
+    "in_cached": 225758,
+    "ctx": 231936
+   },
+   {
+    "idx": 28,
+    "out": 6697,
+    "in_uncached": 3438,
+    "in_cached": 227075,
+    "ctx": 234084
+   },
+   {
+    "idx": 29,
+    "out": 2498,
+    "in_uncached": 8013,
+    "in_cached": 229227,
+    "ctx": 240834
+   },
+   {
+    "idx": 30,
+    "out": 236,
+    "in_uncached": 2736,
+    "in_cached": 237137,
+    "ctx": 243430
+   },
+   {
+    "idx": 31,
+    "out": 6414,
+    "in_uncached": 756,
+    "in_cached": 239738,
+    "ctx": 243906
+   },
+   {
+    "idx": 32,
+    "out": 156,
+    "in_uncached": 6836,
+    "in_cached": 240109,
+    "ctx": 250418
+   },
+   {
+    "idx": 33,
+    "out": 2613,
+    "in_uncached": 2378,
+    "in_cached": 246795,
+    "ctx": 251776
+   },
+   {
+    "idx": 34,
+    "out": 157,
+    "in_uncached": 3554,
+    "in_cached": 247101,
+    "ctx": 254487
+   },
+   {
+    "idx": 35,
+    "out": 371,
+    "in_uncached": 1230,
+    "in_cached": 250505,
+    "ctx": 255161
+   },
+   {
+    "idx": 36,
+    "out": 3662,
+    "in_uncached": 1591,
+    "in_cached": 250812,
+    "ctx": 255678
+   },
+   {
+    "idx": 37,
+    "out": 306,
+    "in_uncached": 3445,
+    "in_cached": 22159,
+    "ctx": 22968
+   },
+   {
+    "idx": 38,
+    "out": 805,
+    "in_uncached": 4042,
+    "in_cached": 22159,
+    "ctx": 23418
+   },
+   {
+    "idx": 39,
+    "out": 70,
+    "in_uncached": 1195,
+    "in_cached": 25910,
+    "ctx": 24273
+   }
+  ]
+ },
+ {
+  "conv": "cd9fd059-ee0d-4b17-8eee-d8cb2f42be17",
+  "model": "\"claude-fable-5-1@default\"",
+  "llm_calls": 85,
+  "transcript_steps": 175,
+  "start": "2026-10-01T05:28:29Z",
+  "end": "2026-10-01T06:25:48Z",
+  "duration_s": 3439.0,
+  "totals": {
+   "out": 267930,
+   "in_uncached": 665967,
+   "in_cached": 9983760,
+   "in_total": 10649727
+  },
+  "max_ctx": 240195,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 165,
+    "in_uncached": 8211,
+    "in_cached": 15094,
+    "ctx": 21462
+   },
+   {
+    "idx": 1,
+    "out": 344,
+    "in_uncached": 4910,
+    "in_cached": 22166,
+    "ctx": 24478
+   },
+   {
+    "idx": 2,
+    "out": 48708,
+    "in_uncached": 4177,
+    "in_cached": 23470,
+    "ctx": 24928
+   },
+   {
+    "idx": 3,
+    "out": 12426,
+    "in_uncached": 25195,
+    "in_cached": 15094,
+    "ctx": 73696
+   },
+   {
+    "idx": 4,
+    "out": 57416,
+    "in_uncached": 12644,
+    "in_cached": 40197,
+    "ctx": 86214
+   },
+   {
+    "idx": 5,
+    "out": 5918,
+    "in_uncached": 95289,
+    "in_cached": 15094,
+    "ctx": 143723
+   },
+   {
+    "idx": 6,
+    "out": 227,
+    "in_uncached": 6170,
+    "in_cached": 110257,
+    "ctx": 149734
+   },
+   {
+    "idx": 7,
+    "out": 425,
+    "in_uncached": 1471,
+    "in_cached": 116301,
+    "ctx": 150548
+   },
+   {
+    "idx": 8,
+    "out": 246,
+    "in_uncached": 1996,
+    "in_cached": 116654,
+    "ctx": 151303
+   },
+   {
+    "idx": 9,
+    "out": 7541,
+    "in_uncached": 2689,
+    "in_cached": 118197,
+    "ctx": 152645
+   },
+   {
+    "idx": 10,
+    "out": 269,
+    "in_uncached": 9657,
+    "in_cached": 118896,
+    "ctx": 160279
+   },
+   {
+    "idx": 11,
+    "out": 486,
+    "in_uncached": 2270,
+    "in_cached": 128427,
+    "ctx": 161422
+   },
+   {
+    "idx": 12,
+    "out": 1817,
+    "in_uncached": 4038,
+    "in_cached": 128822,
+    "ctx": 162700
+   },
+   {
+    "idx": 13,
+    "out": 824,
+    "in_uncached": 3861,
+    "in_cached": 131183,
+    "ctx": 164789
+   },
+   {
+    "idx": 14,
+    "out": 573,
+    "in_uncached": 1938,
+    "in_cached": 134677,
+    "ctx": 166129
+   },
+   {
+    "idx": 15,
+    "out": 573,
+    "in_uncached": 1960,
+    "in_cached": 135868,
+    "ctx": 167127
+   },
+   {
+    "idx": 16,
+    "out": 980,
+    "in_uncached": 1878,
+    "in_cached": 137188,
+    "ctx": 168133
+   },
+   {
+    "idx": 17,
+    "out": 534,
+    "in_uncached": 2585,
+    "in_cached": 138401,
+    "ctx": 169733
+   },
+   {
+    "idx": 18,
+    "out": 459,
+    "in_uncached": 2161,
+    "in_cached": 140046,
+    "ctx": 170664
+   },
+   {
+    "idx": 19,
+    "out": 252,
+    "in_uncached": 2027,
+    "in_cached": 141520,
+    "ctx": 171616
+   },
+   {
+    "idx": 20,
+    "out": 1739,
+    "in_uncached": 2223,
+    "in_cached": 142666,
+    "ctx": 172457
+   },
+   {
+    "idx": 21,
+    "out": 894,
+    "in_uncached": 4525,
+    "in_cached": 143799,
+    "ctx": 175025
+   },
+   {
+    "idx": 22,
+    "out": 2514,
+    "in_uncached": 4312,
+    "in_cached": 146540,
+    "ctx": 176664
+   },
+   {
+    "idx": 23,
+    "out": 475,
+    "in_uncached": 4599,
+    "in_cached": 149218,
+    "ctx": 179568
+   },
+   {
+    "idx": 24,
+    "out": 360,
+    "in_uncached": 1478,
+    "in_cached": 153248,
+    "ctx": 180372
+   },
+   {
+    "idx": 25,
+    "out": 200,
+    "in_uncached": 1130,
+    "in_cached": 154292,
+    "ctx": 180993
+   },
+   {
+    "idx": 26,
+    "out": 984,
+    "in_uncached": 1213,
+    "in_cached": 155086,
+    "ctx": 181716
+   },
+   {
+    "idx": 27,
+    "out": 197,
+    "in_uncached": 2574,
+    "in_cached": 155622,
+    "ctx": 183302
+   },
+   {
+    "idx": 28,
+    "out": 7324,
+    "in_uncached": 7117,
+    "in_cached": 157283,
+    "ctx": 186498
+   },
+   {
+    "idx": 29,
+    "out": 619,
+    "in_uncached": 18958,
+    "in_cached": 158393,
+    "ctx": 196582
+   },
+   {
+    "idx": 30,
+    "out": 258,
+    "in_uncached": 6809,
+    "in_cached": 171724,
+    "ctx": 197598
+   },
+   {
+    "idx": 31,
+    "out": 384,
+    "in_uncached": 1755,
+    "in_cached": 177970,
+    "ctx": 198360
+   },
+   {
+    "idx": 32,
+    "out": 1714,
+    "in_uncached": 3575,
+    "in_cached": 178791,
+    "ctx": 199795
+   },
+   {
+    "idx": 33,
+    "out": 564,
+    "in_uncached": 4645,
+    "in_cached": 180109,
+    "ctx": 201929
+   },
+   {
+    "idx": 34,
+    "out": 258,
+    "in_uncached": 1835,
+    "in_cached": 184080,
+    "ctx": 202905
+   },
+   {
+    "idx": 35,
+    "out": 1612,
+    "in_uncached": 1868,
+    "in_cached": 185318,
+    "ctx": 203709
+   },
+   {
+    "idx": 36,
+    "out": 346,
+    "in_uncached": 3099,
+    "in_cached": 186173,
+    "ctx": 205631
+   },
+   {
+    "idx": 37,
+    "out": 346,
+    "in_uncached": 1380,
+    "in_cached": 188798,
+    "ctx": 206333
+   },
+   {
+    "idx": 38,
+    "out": 258,
+    "in_uncached": 1514,
+    "in_cached": 189618,
+    "ctx": 207041
+   },
+   {
+    "idx": 39,
+    "out": 1382,
+    "in_uncached": 1802,
+    "in_cached": 190524,
+    "ctx": 207803
+   },
+   {
+    "idx": 40,
+    "out": 214,
+    "in_uncached": 2443,
+    "in_cached": 191390,
+    "ctx": 209278
+   },
+   {
+    "idx": 41,
+    "out": 29962,
+    "in_uncached": 1495,
+    "in_cached": 193708,
+    "ctx": 210140
+   },
+   {
+    "idx": 42,
+    "out": 17026,
+    "in_uncached": 210197,
+    "in_cached": 15094,
+    "ctx": 240195
+   },
+   {
+    "idx": 43,
+    "out": 240,
+    "in_uncached": 6222,
+    "in_cached": 22166,
+    "ctx": 24889
+   },
+   {
+    "idx": 44,
+    "out": 238,
+    "in_uncached": 7106,
+    "in_cached": 22166,
+    "ctx": 25453
+   },
+   {
+    "idx": 45,
+    "out": 509,
+    "in_uncached": 17890,
+    "in_cached": 28628,
+    "ctx": 35146
+   },
+   {
+    "idx": 46,
+    "out": 364,
+    "in_uncached": 20205,
+    "in_cached": 29510,
+    "ctx": 37277
+   },
+   {
+    "idx": 47,
+    "out": 183,
+    "in_uncached": 7202,
+    "in_cached": 47027,
+    "ctx": 40324
+   },
+   {
+    "idx": 48,
+    "out": 463,
+    "in_uncached": 12644,
+    "in_cached": 50079,
+    "ctx": 45985
+   },
+   {
+    "idx": 49,
+    "out": 360,
+    "in_uncached": 12293,
+    "in_cached": 54412,
+    "ctx": 48701
+   },
+   {
+    "idx": 50,
+    "out": 3680,
+    "in_uncached": 5849,
+    "in_cached": 63186,
+    "ctx": 50325
+   },
+   {
+    "idx": 51,
+    "out": 5684,
+    "in_uncached": 7412,
+    "in_cached": 67065,
+    "ctx": 55089
+   },
+   {
+    "idx": 52,
+    "out": 20530,
+    "in_uncached": 8287,
+    "in_cached": 72715,
+    "ctx": 61264
+   },
+   {
+    "idx": 53,
+    "out": 1107,
+    "in_uncached": 21496,
+    "in_cached": 80161,
+    "ctx": 81887
+   },
+   {
+    "idx": 54,
+    "out": 200,
+    "in_uncached": 1844,
+    "in_cached": 101532,
+    "ctx": 83397
+   },
+   {
+    "idx": 55,
+    "out": 401,
+    "in_uncached": 1231,
+    "in_cached": 102764,
+    "ctx": 83848
+   },
+   {
+    "idx": 56,
+    "out": 524,
+    "in_uncached": 1407,
+    "in_cached": 103576,
+    "ctx": 84666
+   },
+   {
+    "idx": 57,
+    "out": 963,
+    "in_uncached": 1612,
+    "in_cached": 104396,
+    "ctx": 85575
+   },
+   {
+    "idx": 58,
+    "out": 4874,
+    "in_uncached": 1589,
+    "in_cached": 105507,
+    "ctx": 86632
+   },
+   {
+    "idx": 59,
+    "out": 237,
+    "in_uncached": 5126,
+    "in_cached": 106971,
+    "ctx": 91599
+   },
+   {
+    "idx": 60,
+    "out": 951,
+    "in_uncached": 538,
+    "in_cached": 111970,
+    "ctx": 91948
+   },
+   {
+    "idx": 61,
+    "out": 562,
+    "in_uncached": 1915,
+    "in_cached": 112334,
+    "ctx": 93447
+   },
+   {
+    "idx": 62,
+    "out": 230,
+    "in_uncached": 2075,
+    "in_cached": 113459,
+    "ctx": 94454
+   },
+   {
+    "idx": 63,
+    "out": 479,
+    "in_uncached": 1389,
+    "in_cached": 114811,
+    "ctx": 94967
+   },
+   {
+    "idx": 64,
+    "out": 165,
+    "in_uncached": 1072,
+    "in_cached": 115764,
+    "ctx": 95544
+   },
+   {
+    "idx": 65,
+    "out": 1955,
+    "in_uncached": 1476,
+    "in_cached": 116679,
+    "ctx": 96391
+   },
+   {
+    "idx": 66,
+    "out": 1114,
+    "in_uncached": 4546,
+    "in_cached": 117001,
+    "ctx": 99226
+   },
+   {
+    "idx": 67,
+    "out": 3431,
+    "in_uncached": 2708,
+    "in_cached": 120110,
+    "ctx": 100438
+   },
+   {
+    "idx": 68,
+    "out": 188,
+    "in_uncached": 4285,
+    "in_cached": 122661,
+    "ctx": 104263
+   },
+   {
+    "idx": 69,
+    "out": 231,
+    "in_uncached": 1078,
+    "in_cached": 126249,
+    "ctx": 105627
+   },
+   {
+    "idx": 70,
+    "out": 1003,
+    "in_uncached": 617,
+    "in_cached": 127134,
+    "ctx": 107034
+   },
+   {
+    "idx": 71,
+    "out": 784,
+    "in_uncached": 1371,
+    "in_cached": 127558,
+    "ctx": 108122
+   },
+   {
+    "idx": 72,
+    "out": 295,
+    "in_uncached": 1207,
+    "in_cached": 128754,
+    "ctx": 109004
+   },
+   {
+    "idx": 73,
+    "out": 178,
+    "in_uncached": 700,
+    "in_cached": 129713,
+    "ctx": 109397
+   },
+   {
+    "idx": 74,
+    "out": 215,
+    "in_uncached": 528,
+    "in_cached": 130256,
+    "ctx": 110751
+   },
+   {
+    "idx": 75,
+    "out": 179,
+    "in_uncached": 601,
+    "in_cached": 130591,
+    "ctx": 112142
+   },
+   {
+    "idx": 76,
+    "out": 239,
+    "in_uncached": 916,
+    "in_cached": 130999,
+    "ctx": 113694
+   },
+   {
+    "idx": 77,
+    "out": 840,
+    "in_uncached": 976,
+    "in_cached": 131371,
+    "ctx": 115109
+   },
+   {
+    "idx": 78,
+    "out": 172,
+    "in_uncached": 1120,
+    "in_cached": 132154,
+    "ctx": 115996
+   },
+   {
+    "idx": 79,
+    "out": 358,
+    "in_uncached": 452,
+    "in_cached": 133187,
+    "ctx": 117344
+   },
+   {
+    "idx": 80,
+    "out": 175,
+    "in_uncached": 708,
+    "in_cached": 133446,
+    "ctx": 117800
+   },
+   {
+    "idx": 81,
+    "out": 161,
+    "in_uncached": 525,
+    "in_cached": 133997,
+    "ctx": 119151
+   },
+   {
+    "idx": 82,
+    "out": 200,
+    "in_uncached": 1164,
+    "in_cached": 134329,
+    "ctx": 119756
+   },
+   {
+    "idx": 83,
+    "out": 3183,
+    "in_uncached": 3320,
+    "in_cached": 134683,
+    "ctx": 121213
+   },
+   {
+    "idx": 84,
+    "out": 272,
+    "in_uncached": 5592,
+    "in_cached": 135693,
+    "ctx": 124446
+   }
+  ]
+ }
+]

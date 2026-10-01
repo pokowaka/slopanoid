@@ -240,107 +240,110 @@
 
   <header>
     <h1 class="logo-title">SLOPANOID ARCADE</h1>
-    <div class="tagline">Fable 5.1 Scaffolding &amp; Evaluation Suite</div>
+    <div class="tagline">Fable 5.1 Evaluation Suite</div>
   </header>
 
   <div class="status-box">
-    <div class="status-badge">Scaffolding Initialized</div>
+    <div class="status-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.35);">4 / 4 Complete · All 4 Games Clean-Room Verified &amp; Playable</div>
     <p>
-      The <strong>fable-5.1/</strong> directory is scaffolded and ready for benchmark execution.
-      Each game subdirectory contains the exact canonical <code>PROMPT.md</code> specification. Run the prompt against <strong>Fable 5.1</strong> in a single zero-shot turn in an isolated context and save the generated game files to the corresponding directory.
+      All four games were generated from scratch by <strong>Fable 5.1</strong> in parallel, air-gapped sandboxes containing only the canonical <code>PROMPT.md</code> (both <code>opus-5.5/</code> and <code>gemini-3.8/</code> were removed from the filesystem during the run). Zero external assets, zero libraries. Every agent wrote and ran its own headless verification harness before reporting. Total wall time 57 min; cost and token figures are in <a href="../metrics/README.md" style="color: var(--cyan);">metrics/</a>.
     </p>
   </div>
 
   <main class="games-grid">
 
-    <!-- GAME 1 -->
     <article class="game-card">
       <div>
         <div class="card-top">
           <div class="game-icon">🧱</div>
           <div>
-            <h2 class="game-title">Arkanoid</h2>
+            <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Verified Playable</span>
+            <h2 class="game-title" style="margin-top: 4px;">Arkanoid</h2>
             <div class="game-sub">The Secret of Brick Island</div>
           </div>
         </div>
         <p class="game-desc">
-          LucasArts tribute featuring 33 mosaic levels, Web Audio OPL2 FM synthesizer with 7 soundtracks, insult sword fighting, and LeChuck boss fight.
+          LucasArts tribute: 33 mosaic levels across 7 worlds, 23 FM patches over a swing-capable look-ahead sequencer (reggae steelpan, 12-bar blues sax, 4-voice Loom counterpoint), insult sword fighting, DOTT era-cycling bricks, and a LeChuck boss. (2,371 lines / 112 KB, 26 min clean-room build.)
         </p>
       </div>
       <div class="button-group">
-        <a class="btn btn-primary" href="arkanoid/PROMPT.md">📜 Read Prompt</a>
-        <a class="btn btn-secondary" href="arkanoid/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-primary" href="arkanoid/index.html">▶ Play Arkanoid</a>
+        <a class="btn btn-secondary" href="arkanoid/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-outline" href="../gemini-3.8/arkanoid/index.html" target="_blank">Compare Gemini 3.8 ↗</a>
         <a class="btn btn-outline" href="../opus-5.5/arkanoid/index.html" target="_blank">Compare Opus 5.5 ↗</a>
       </div>
     </article>
 
-    <!-- GAME 2 -->
     <article class="game-card">
       <div>
         <div class="card-top">
           <div class="game-icon">🚀</div>
           <div>
-            <h2 class="game-title">Xenon 2</h2>
+            <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Verified Playable</span>
+            <h2 class="game-title" style="margin-top: 4px;">Xenon 2</h2>
             <div class="game-sub">Megablast · Bitmap Brothers Tribute</div>
           </div>
         </div>
         <p class="game-desc">
-          Vertical shmup with 320&times;200 software framebuffer, 8-channel Amiga MOD tracker sequencing Bomb the Bass with TB-303 filter sweeps, and Crispin's shop.
+          Vertical shmup on a 320&times;200 framebuffer with a real ProTracker-style 7&times;64&times;8 pattern engine, custom Zxx TB-303 cutoff automation, formant-synth "MEGA-BLAST!" vocals, Crispin's 16-item hardpoint shop with weapon synergies, chrono-rewind, and 5 procedural stages with organic bosses. (1,639 lines / 172 KB, 42 min.)
         </p>
       </div>
       <div class="button-group">
-        <a class="btn btn-primary" href="xenon2/PROMPT.md">📜 Read Prompt</a>
-        <a class="btn btn-secondary" href="xenon2/index.html">🎮 Scaffolding Page</a>
-        <a class="btn btn-outline" href="../opus-5.5/xenon2/index.html" target="_blank">Compare Opus 5.5 ↗</a>
+        <a class="btn btn-primary" href="xenon2/index.html">▶ Play Xenon 2</a>
+        <a class="btn btn-secondary" href="xenon2/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-outline" href="xenon2/README.md">📖 Architecture Doc</a>
+        <a class="btn btn-outline" href="../gemini-3.8/xenon2/index.html" target="_blank">Compare Gemini 3.8 ↗</a>
       </div>
     </article>
 
-    <!-- GAME 3 -->
     <article class="game-card">
       <div>
         <div class="card-top">
           <div class="game-icon">⚔️</div>
           <div>
-            <h2 class="game-title">Ghosts 'n Goblins</h2>
+            <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Verified Playable</span>
+            <h2 class="game-title" style="margin-top: 4px;">Ghosts 'n Goblins</h2>
             <div class="game-sub">The Cursed PC Gaming Museum</div>
           </div>
         </div>
         <p class="game-desc">
-          Hardcore action platformer with tactical armor ejection, Strawberry Boxer Shorts mode (+35% speed &amp; double jump), monster possession, and 5 weapons.
+          Hardcore platformer: ejected armor becomes a physical decoy anvil (crushes, platforms, weighs down pressure plates), Strawberry Boxer Shorts mode with double jump and Spectral Vision, 8-second soul possession of 10 enemy types, 5 weapons, Golden Armor thunder, 6 stages and a 3-phase Astaroth&rarr;LeChuck&rarr;HAL-9000 finale. (2,480 lines / 214 KB, 45 min.)
         </p>
       </div>
       <div class="button-group">
-        <a class="btn btn-primary" href="ghosts-n-goblins/PROMPT.md">📜 Read Prompt</a>
-        <a class="btn btn-secondary" href="ghosts-n-goblins/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-primary" href="ghosts-n-goblins/index.html">▶ Play Ghosts 'n Goblins</a>
+        <a class="btn btn-secondary" href="ghosts-n-goblins/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-outline" href="../gemini-3.8/ghosts-n-goblins/index.html" target="_blank">Compare Gemini 3.8 ↗</a>
         <a class="btn btn-outline" href="../opus-5.5/ghosts-n-goblins/index.html" target="_blank">Compare Opus 5.5 ↗</a>
       </div>
     </article>
 
-    <!-- GAME 4 -->
     <article class="game-card">
       <div>
         <div class="card-top">
           <div class="game-icon">🎵</div>
           <div>
-            <h2 class="game-title">Lemmings</h2>
+            <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Verified Playable</span>
+            <h2 class="game-title" style="margin-top: 4px;">Lemmings</h2>
             <div class="game-sub">Beat Tribe · Playing Is Composing</div>
           </div>
         </div>
         <p class="game-desc">
-          Psygnosis puzzle tribute where every level is an interactive step sequencer: terrain is score, lemmings are playheads, and saving the tribe unlocks audio stems.
+          Psygnosis puzzle tribute where terrain is the score: per-pixel destructible levels, skills as instruments, 5-stem unlock progression, The Silence hazard, and a results-screen replay of the song you played. Built simulator-first: all 16 levels proven solvable and deterministic by <code>node test.js</code>. (2,229 runtime lines / 149 KB, 57 min.)
         </p>
       </div>
       <div class="button-group">
-        <a class="btn btn-primary" href="lemmings/PROMPT.md">📜 Read Prompt</a>
-        <a class="btn btn-secondary" href="lemmings/index.html">🎮 Scaffolding Page</a>
-        <a class="btn btn-outline" href="../opus-5.5/lemmings/index.html" target="_blank">Compare Opus 5.5 ↗</a>
+        <a class="btn btn-primary" href="lemmings/index.html">▶ Play Lemmings</a>
+        <a class="btn btn-secondary" href="lemmings/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-outline" href="lemmings/README.md">📖 Architecture Doc</a>
+        <a class="btn btn-outline" href="../gemini-3.8/lemmings/index.html" target="_blank">Compare Gemini 3.8 ↗</a>
       </div>
     </article>
 
   </main>
 
   <footer>
-    <p>Hotkeys: Press <kbd>1</kbd>–<kbd>4</kbd> to jump to game scaffolding &middot; Return to <a href="../index.html">Main Benchmark Hub</a></p>
+    <p>Hotkeys: Press <kbd>1</kbd>–<kbd>4</kbd> to launch a game &middot; Return to <a href="../index.html">Main Benchmark Hub</a></p>
   </footer>
 </div>
 

@@ -3,137 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lemmings: Beat Tribe · Fable 5.1 Run (Scaffolding)</title>
+<title>Lemmings: Beat Tribe</title>
 <style>
-  :root {
-    --bg: #07090e;
-    --card: #111726;
-    --border: #1f2a3e;
-    --amber: #f59e0b;
-    --cyan: #38bdf8;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
-  }
-  .scaffold-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    max-width: 680px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .scaffold-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan));
-  }
-  .badge-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  h1 {
-    font-size: 24px;
-    margin-bottom: 4px;
-    color: #fff;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--cyan);
-    margin-bottom: 20px;
-  }
-  .info-box {
-    background: #090d16;
-    border: 1px solid #1a2436;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    color: #cbd5e1;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .btn {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid transparent;
-  }
-  .btn-primary {
-    background: var(--amber);
-    color: #090d16;
-  }
-  .btn-secondary {
-    background: #1e293b;
-    color: #fff;
-    border-color: #334155;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
+  html, body { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; font-family: monospace; color: #889; }
+  #bezel { position: relative; padding: 0; line-height: 0; }
+  body.crt #bezel { padding: 10px; background: #15161c; border-radius: 14px; box-shadow: 0 0 0 2px #2a2c36, 0 0 40px rgba(60, 220, 120, 0.12), inset 0 0 30px rgba(0, 0, 0, 0.8); }
+  body.crt #bezel::after { content: ''; position: absolute; left: 10px; top: 10px; right: 10px; bottom: 10px; pointer-events: none; border-radius: 6px; box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.45); }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges; cursor: none; display: block; background: #000; }
+  #help { position: fixed; left: 8px; bottom: 6px; font-size: 11px; opacity: 0.5; pointer-events: none; }
 </style>
 </head>
 <body>
-<div class="scaffold-card">
-  <div class="badge-row">
-    <span class="badge">Fable 5.1 Run</span>
-    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
-  </div>
-  <h1>Lemmings: Beat Tribe</h1>
-  <div class="subtitle">Benchmark Challenge 4 · Interactive Sequencer &amp; Psygnosis Puzzle Tribute</div>
-
-  <div class="info-box">
-    <p><strong>Status:</strong> Ready for Fable 5.1 one-shot generation.</p>
-    <p style="margin-top: 8px;">
-      Feed <code>fable-5.1/lemmings/PROMPT.md</code> in a clean zero-shot context window to Fable 5.1. Once generated, save the output files here to play and evaluate.
-    </p>
-  </div>
-
-  <div class="actions">
-    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
-    <a href="../../opus-5.5/lemmings/index.html" class="btn btn-secondary">🕹️ Compare with Opus 5.5 Run</a>
-    <a href="../index.html" class="btn btn-outline">&larr; Fable 5.1 Hub</a>
-  </div>
-</div>
+<div id="bezel"><canvas id="screen" width="320" height="200"></canvas></div>
+<div id="help">LEMMINGS: BEAT TRIBE — 1-8 skills · ←/→ A/D scroll · P pause · F fast-forward · N nuke (x2) · -/+ rate · T mixer · M mute · C CRT · Esc menu</div>
+<script src="sim.js"></script>
+<script src="levels.js"></script>
+<script src="solutions.js"></script>
+<script src="audio.js"></script>
+<script src="render.js"></script>
+<script src="game.js"></script>
 </body>
 </html>

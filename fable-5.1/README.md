@@ -1,12 +1,12 @@
 # Slopanoid: Fable 5.1 Benchmark Run
 
-Scaffolding for evaluating Fable Studio's **Fable 5.1** on the Slopanoid autonomous retro game dev benchmark.
+Results of evaluating Fable Studio's **Fable 5.1** on the Slopanoid autonomous retro game dev benchmark.
 
 ## Benchmark Status
 - **Model:** Fable 5.1
 - **Execution Mode:** Single Turn (One-Shot), zero human intervention
 - **Constraints:** Zero external assets (100% procedural Web Audio & HTML5 Canvas), zero external libraries
-- **Current Status:** Scaffolding Initialized (4/4 prompts staged)
+- **Current Status:** Complete — 4/4 games generated clean-room and verified (57 min wall time, see [`../metrics/`](../metrics/README.md))
 
 ---
 
