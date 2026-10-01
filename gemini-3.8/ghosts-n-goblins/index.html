@@ -1,139 +1,4932 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ghosts 'n Goblins · Gemini 3.8 Flash Run (Scaffolding)</title>
-<style>
-  :root {
-    --bg: #07090e;
-    --card: #111726;
-    --border: #1f2a3e;
-    --amber: #f59e0b;
-    --cyan: #38bdf8;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
-  }
-  .scaffold-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    max-width: 680px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .scaffold-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan));
-  }
-  .badge-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  h1 {
-    font-size: 24px;
-    margin-bottom: 4px;
-    color: #fff;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--cyan);
-    margin-bottom: 20px;
-  }
-  .info-box {
-    background: #090d16;
-    border: 1px solid #1a2436;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    color: #cbd5e1;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .btn {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid transparent;
-  }
-  .btn-primary {
-    background: var(--amber);
-    color: #090d16;
-  }
-  .btn-secondary {
-    background: #1e293b;
-    color: #fff;
-    border-color: #334155;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ghosts 'n Goblins: The Cursed PC Gaming Museum</title>
+  <style>
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  background-color: #060609;
+  color: #e0e0e8;
+  font-family: 'Courier New', Courier, monospace;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#arcade-cabinet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(180deg, #1b1b24 0%, #0d0d13 100%);
+  border: 6px solid #2e2e42;
+  border-radius: 12px;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(255, 255, 255, 0.05);
+  padding: 10px 14px 14px 14px;
+  max-width: 98vw;
+  max-height: 98vh;
+}
+
+#cabinet-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: #14141d;
+  border: 1px solid #3d3d58;
+  border-radius: 4px;
+}
+
+.arcade-title {
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #ffcc00;
+  text-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.retro-btn {
+  background: #242436;
+  color: #a0a0c0;
+  border: 1px solid #484868;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.retro-btn:hover {
+  background: #353550;
+  color: #ffffff;
+  border-color: #6a6a96;
+}
+
+.retro-btn.active {
+  background: #ffaa00;
+  color: #111;
+  border-color: #ffd040;
+  box-shadow: 0 0 8px rgba(255, 170, 0, 0.5);
+}
+
+#screen-container {
+  position: relative;
+  width: 960px;
+  height: 600px;
+  max-width: 92vw;
+  max-height: 72vh;
+  aspect-ratio: 16 / 10;
+  background: #000000;
+  border: 4px solid #1a1a24;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* CRT Scanline & Curved Monitor Bezel */
+#crt-overlay {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 1px,
+    rgba(0, 0, 0, 0.28) 2px,
+    rgba(0, 0, 0, 0.28) 3px
+  );
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.85);
+  border-radius: 6px;
+}
+
+#crt-overlay::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(0, 255, 120, 0.015) 0%, rgba(0, 0, 0, 0.45) 90%);
+}
+
+.crt-active #crt-overlay {
+  display: block;
+}
+
+/* Bottom status and touch/help panel */
+#cabinet-footer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: #727290;
+}
+
+.key-badge {
+  display: inline-block;
+  background: #1e1e2c;
+  color: #dcdcf0;
+  border: 1px solid #3c3c54;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: bold;
+  margin: 0 1px;
+}
+
+/* Touch Controls Bar (collapsible or shown for mobile/touch users) */
+#touch-controls {
+  display: none;
+  width: 100%;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 0 10px;
+}
+
+.touch-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  grid-template-rows: repeat(2, 38px);
+  gap: 4px;
+}
+
+.touch-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.touch-btn {
+  background: #252538;
+  color: #ffffff;
+  border: 2px solid #4a4a70;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.touch-btn:active {
+  background: #ffaa00;
+  color: #000;
+}
+
+.touch-btn-wide {
+  width: 65px;
+  height: 44px;
+}
+
+/* Modal overlays (Help, Stage Warp) */
+.modal-overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(8, 8, 14, 0.88);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border-radius: 6px;
+}
+
+.modal-card {
+  background: #141420;
+  border: 2px solid #5a5a80;
+  border-radius: 8px;
+  padding: 18px 24px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.modal-card h2 {
+  color: #ffcc00;
+  font-size: 16px;
+  margin-bottom: 12px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.modal-card p, .modal-card li {
+  font-size: 12px;
+  color: #c0c0d8;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.warp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.warp-item-btn {
+  background: #1e1e2e;
+  border: 1px solid #424260;
+  color: #e0e0f0;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.warp-item-btn:hover {
+  background: #343452;
+  border-color: #ffaa00;
+  color: #ffdd44;
+}
+
+.close-btn {
+  display: block;
+  margin: 12px auto 0 auto;
+  background: #3a3a54;
+  color: #fff;
+  border: 1px solid #606088;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+  </style>
 </head>
 <body>
-<div class="scaffold-card">
-  <div class="badge-row">
-    <span class="badge">Gemini 3.8 Flash Run</span>
-    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
-  </div>
-  <h1>Ghosts 'n Goblins: The Cursed Museum</h1>
-  <div class="subtitle">Benchmark Challenge 3 · Arcade Platformer &amp; Armor Ejection</div>
 
-  <div class="info-box">
-    <p><strong>Status:</strong> Ready for Gemini 3.8 Flash one-shot generation.</p>
-    <p style="margin-top: 8px;">
-      Feed <code>gemini-3.8/ghosts-n-goblins/PROMPT.md</code> in a clean zero-shot context window to Gemini 3.8 Flash. Once generated, save the output files here to play and evaluate.
-    </p>
+<div id="arcade-cabinet">
+  <div id="cabinet-header">
+    <div class="arcade-title">GHOSTS 'N GOBLINS: THE CURSED PC GAMING MUSEUM</div>
+    <div class="header-controls">
+      <button id="btn-warp" class="retro-btn" title="Stage Warp Selector">STAGE WARP [1-6]</button>
+      <button id="btn-crt" class="retro-btn active" title="Toggle CRT Scanlines & Curved Bezel">CRT [B]</button>
+      <button id="btn-sound" class="retro-btn active" title="Toggle Sound">SOUND [M]</button>
+      <button id="btn-help" class="retro-btn" title="Controls and Tactics">HELP [?]</button>
+    </div>
   </div>
 
-  <div class="actions">
-    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
-    <a href="../../opus-5.5/ghosts-n-goblins/index.html" class="btn btn-secondary">🕹️ Compare with Opus 5.5 Run</a>
-    <a href="../index.html" class="btn btn-outline">&larr; Gemini 3.8 Hub</a>
+  <div id="screen-container" class="crt-active">
+    <canvas id="game-canvas" width="320" height="200"></canvas>
+    <div id="crt-overlay"></div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal-overlay">
+      <div class="modal-card">
+        <h2>HOW TO PLAY & TACTICS</h2>
+        <ul>
+          <li><span class="key-badge">A</span> / <span class="key-badge">D</span> or <span class="key-badge">&larr;</span> / <span class="key-badge">&rarr;</span>: Walk Left / Right</li>
+          <li><span class="key-badge">W</span> or <span class="key-badge">&uarr;</span>: Aim Upward / Climb Ladders</li>
+          <li><span class="key-badge">S</span> or <span class="key-badge">&darr;</span>: Crouch / Climb Down</li>
+          <li><span class="key-badge">SPACE</span> or <span class="key-badge">Z</span>: Jump (Double-jump in Boxer Shorts!)</li>
+          <li><span class="key-badge">J</span> or <span class="key-badge">X</span> or <span class="key-badge">Left-Click</span>: Attack / Throw Weapon (Hold to charge Golden Magic!)</li>
+          <li><span class="key-badge">E</span> or <span class="key-badge">C</span> or <span class="key-badge">Right-Click</span>:
+            <br>&bull; In Steel/Golden Armor: <strong>TACTICAL EJECT!</strong> Drops a heavy crushing Anvil & spring-pad!
+            <br>&bull; In Boxer Shorts: <strong>SOUL POSSESSION!</strong> Possess monsters for 8 seconds!
+          </li>
+          <li><span class="key-badge">1</span> to <span class="key-badge">6</span>: Quick Warp to any stage!</li>
+        </ul>
+        <button id="btn-close-help" class="close-btn">RESUME GAME</button>
+      </div>
+    </div>
+
+    <!-- Stage Warp Modal -->
+    <div id="warp-modal" class="modal-overlay">
+      <div class="modal-card">
+        <h2>STAGE WARP SELECTOR</h2>
+        <p>Jump directly to any of the 6 Cursed PC Gaming Museum exhibits:</p>
+        <div class="warp-grid">
+          <button class="warp-item-btn" data-stage="1"><strong>Stage 1:</strong> LeChuck's Ghost Ship (Monkey Island)</button>
+          <button class="warp-item-btn" data-stage="2"><strong>Stage 2:</strong> Haunted Moat (King's Quest)</button>
+          <button class="warp-item-btn" data-stage="3"><strong>Stage 3:</strong> Jaffar Catacombs (Prince of Persia)</button>
+          <button class="warp-item-btn" data-stage="4"><strong>Stage 4:</strong> Crusher Foundry (Lemmings)</button>
+          <button class="warp-item-btn" data-stage="5"><strong>Stage 5:</strong> Phobos Necropolis (DOOM)</button>
+          <button class="warp-item-btn" data-stage="6"><strong>Stage 6:</strong> Throne of Astaroth-LeChuck (FINAL BOSS)</button>
+        </div>
+        <button id="btn-close-warp" class="close-btn">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cabinet-footer">
+    <div>
+      <span class="key-badge">A/D</span> Move &nbsp;|&nbsp;
+      <span class="key-badge">W/S</span> Up/Crouch &nbsp;|&nbsp;
+      <span class="key-badge">SPACE</span> Jump &nbsp;|&nbsp;
+      <span class="key-badge">J</span> Attack &nbsp;|&nbsp;
+      <span class="key-badge">E</span> Eject/Possess &nbsp;|&nbsp;
+      <span class="key-badge">1-6</span> Warp
+    </div>
+    <div id="fps-display">60 FPS | CPS-1 320x200</div>
+  </div>
+
+  <!-- Touch Controls Bar -->
+  <div id="touch-controls">
+    <div class="touch-dpad">
+      <div></div>
+      <button class="touch-btn" id="tb-up">&uarr;</button>
+      <div></div>
+      <button class="touch-btn" id="tb-left">&larr;</button>
+      <button class="touch-btn" id="tb-down">&darr;</button>
+      <button class="touch-btn" id="tb-right">&rarr;</button>
+    </div>
+    <div class="touch-actions">
+      <button class="touch-btn touch-btn-wide" id="tb-jump">JUMP</button>
+      <button class="touch-btn touch-btn-wide" id="tb-attack">ATTACK</button>
+      <button class="touch-btn touch-btn-wide" id="tb-eject" style="background:#552233;">EJECT / POSSESS</button>
+    </div>
   </div>
 </div>
+
+  <script>
+
+// ============================================================================
+// PROCEDURAL YM2151 / OPL3 FM + PSG SOUND ENGINE
+// ============================================================================
+
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.masterGain = null;
+    this.compressor = null;
+    this.isMuted = false;
+    this.initialized = false;
+
+    // Music Sequencer State
+    this.currentTrack = null;
+    this.seqStep = 0;
+    this.seqInterval = null;
+    this.tempo = 120; // BPM
+    this.isBoxerShortsMode = false;
+    this.activeVoices = [];
+
+    // Pre-allocated noise buffer
+    this.noiseBuffer = null;
+  }
+
+  init() {
+    if (this.initialized) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioContext();
+
+      // Master Compressor for punchy arcade loudness
+      this.compressor = this.ctx.createDynamicsCompressor();
+      this.compressor.threshold.setValueAtTime(-14, this.ctx.currentTime);
+      this.compressor.knee.setValueAtTime(25, this.ctx.currentTime);
+      this.compressor.ratio.setValueAtTime(6, this.ctx.currentTime);
+      this.compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
+      this.compressor.release.setValueAtTime(0.2, this.ctx.currentTime);
+
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.setValueAtTime(0.45, this.ctx.currentTime);
+
+      this.masterGain.connect(this.compressor);
+      this.compressor.connect(this.ctx.destination);
+
+      // Create 2-second white noise buffer for drums & explosions
+      const bufferSize = this.ctx.sampleRate * 2;
+      this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = this.noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      this.initialized = true;
+    } catch (e) {
+      console.warn("Web Audio not supported or blocked", e);
+    }
+  }
+
+  resume() {
+    if (!this.initialized) this.init();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.45, this.ctx.currentTime);
+    }
+    return !this.isMuted;
+  }
+
+  // --- Core FM Voice Synthesis (2-Operator YM2151 Simulation) ---
+  playFM(freq, duration, modRatio = 1.0, modIndex = 2.0, gainVal = 0.2, waveType = 'triangle', decaySpeed = 4.0) {
+    if (!this.initialized || this.isMuted || !freq || freq <= 0) return;
+    const t = this.ctx.currentTime;
+
+    const carrier = this.ctx.createOscillator();
+    carrier.type = waveType;
+    carrier.frequency.setValueAtTime(freq, t);
+
+    const modulator = this.ctx.createOscillator();
+    modulator.type = 'sine';
+    modulator.frequency.setValueAtTime(freq * modRatio, t);
+
+    const modGain = this.ctx.createGain();
+    modGain.gain.setValueAtTime(freq * modIndex, t);
+    modGain.gain.exponentialRampToValueAtTime(Math.max(1, freq * 0.05), t + duration);
+
+    modulator.connect(modGain);
+    modGain.connect(carrier.frequency);
+
+    const voiceGain = this.ctx.createGain();
+    voiceGain.gain.setValueAtTime(gainVal, t);
+    voiceGain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+    carrier.connect(voiceGain);
+    voiceGain.connect(this.masterGain);
+
+    carrier.start(t);
+    modulator.start(t);
+    carrier.stop(t + duration);
+    modulator.stop(t + duration);
+  }
+
+  // --- Core PSG Pulse Voice (Square wave with vibrato) ---
+  playPSG(freq, duration, gainVal = 0.15, hasVibrato = false) {
+    if (!this.initialized || this.isMuted || !freq || freq <= 0) return;
+    const t = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(freq, t);
+
+    if (hasVibrato) {
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.setValueAtTime(5.8, t);
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.setValueAtTime(freq * 0.03, t);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      lfo.start(t);
+      lfo.stop(t + duration);
+    }
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2400, t);
+    filter.frequency.exponentialRampToValueAtTime(600, t + duration);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(gainVal, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(t);
+    osc.stop(t + duration);
+  }
+
+  // --- Noise Voice ---
+  playNoise(duration, filterFreq = 1200, filterType = 'bandpass', gainVal = 0.25) {
+    if (!this.initialized || this.isMuted || !this.noiseBuffer) return;
+    const t = this.ctx.currentTime;
+
+    const noiseSource = this.ctx.createBufferSource();
+    noiseSource.buffer = this.noiseBuffer;
+    noiseSource.loop = true;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = filterType;
+    filter.frequency.setValueAtTime(filterFreq, t);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(gainVal, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+
+    noiseSource.start(t);
+    noiseSource.stop(t + duration);
+  }
+
+  // --- Percussion Elements ---
+  playKick(gainVal = 0.4) {
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(140, t);
+    osc.frequency.exponentialRampToValueAtTime(32, t + 0.12);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(gainVal, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(t);
+    osc.stop(t + 0.14);
+  }
+
+  playSnare(gainVal = 0.3) {
+    this.playNoise(0.12, 1400, 'bandpass', gainVal);
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, t);
+    osc.frequency.exponentialRampToValueAtTime(70, t + 0.08);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(gainVal * 0.7, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.09);
+  }
+
+  playHiHat(gainVal = 0.18, open = false) {
+    this.playNoise(open ? 0.18 : 0.045, 7500, 'highpass', gainVal);
+  }
+
+  // --- SFX SUITE (15+ Distinct Authentic Arcade Effects) ---
+
+  sfxLance() {
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(750, t);
+    osc.frequency.exponentialRampToValueAtTime(180, t + 0.09);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.09);
+  }
+
+  sfxDagger() {
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(1600, t);
+    osc.frequency.exponentialRampToValueAtTime(650, t + 0.05);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.22, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.05);
+  }
+
+  sfxTorch() {
+    this.playFM(340, 0.14, 2.5, 4.0, 0.25, 'triangle');
+    this.playNoise(0.18, 900, 'bandpass', 0.25);
+  }
+
+  sfxFireBurst() {
+    this.playNoise(0.5, 600, 'lowpass', 0.35);
+  }
+
+  sfxAxe() {
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(80, t + 0.16);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.32, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.16);
+  }
+
+  sfxCross() {
+    this.playFM(520, 0.22, 1.5, 3.5, 0.25, 'sine');
+  }
+
+  sfxArmorShatter() {
+    // Crashing metal plates + glass bell
+    this.playFM(1200, 0.35, 3.14, 5.0, 0.45, 'triangle');
+    this.playNoise(0.4, 2200, 'bandpass', 0.45);
+    this.playKick(0.5);
+  }
+
+  sfxArmorEject() {
+    // Mechanical eject clink + falling whistle
+    this.playFM(880, 0.12, 2.0, 4.0, 0.4, 'sine');
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(700, t);
+    osc.frequency.linearRampToValueAtTime(260, t + 0.18);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.18);
+  }
+
+  sfxAnvilThud() {
+    // Deep heavy sub-bass impact + crunch
+    this.playKick(0.7);
+    this.playNoise(0.25, 450, 'lowpass', 0.5);
+  }
+
+  sfxBoxerHop() {
+    // Comic spring "boing" pitch sweep
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(200, t);
+    osc.frequency.exponentialRampToValueAtTime(650, t + 0.12);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.13);
+  }
+
+  sfxDoubleJump() {
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(450, t);
+    osc.frequency.exponentialRampToValueAtTime(950, t + 0.14);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.14);
+  }
+
+  sfxPossessCast() {
+    // Ethereal shimmering upward pitch sweep
+    if (!this.initialized || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, t);
+    osc.frequency.exponentialRampToValueAtTime(1400, t + 0.25);
+
+    const lfo = this.ctx.createOscillator();
+    lfo.frequency.setValueAtTime(14, t);
+    const lfoGain = this.ctx.createGain();
+    lfoGain.gain.setValueAtTime(40, t);
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    lfo.start(t);
+    osc.start(t);
+    lfo.stop(t + 0.26);
+    osc.stop(t + 0.26);
+  }
+
+  sfxPossessHit() {
+    // Resonant gong / soul capture thrum
+    this.playFM(220, 0.45, 1.414, 4.0, 0.4, 'triangle');
+    this.playFM(440, 0.35, 2.0, 3.0, 0.3, 'sine');
+  }
+
+  sfxPossessWarning() {
+    // Warning pulse when 2 seconds remain
+    this.playFM(880, 0.08, 1.0, 2.0, 0.25, 'square');
+  }
+
+  sfxEnemyHit() {
+    this.playNoise(0.08, 900, 'bandpass', 0.3);
+    this.playFM(150, 0.08, 1.0, 2.0, 0.2, 'triangle');
+  }
+
+  sfxEnemyDeath() {
+    this.playNoise(0.2, 500, 'lowpass', 0.4);
+    this.playKick(0.4);
+  }
+
+  sfxChestOpen() {
+    // Ascending arpeggio chime
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    notes.forEach((freq, idx) => {
+      setTimeout(() => {
+        this.playFM(freq, 0.22, 2.0, 2.5, 0.3, 'sine');
+      }, idx * 60);
+    });
+  }
+
+  sfxMagicCharge() {
+    // Rising electric whine
+    this.playFM(440 + Math.random() * 80, 0.08, 3.0, 2.0, 0.15, 'sawtooth');
+  }
+
+  sfxMagicRelease() {
+    // Massive thunderstorm crack + screen clear sweep
+    this.playNoise(0.8, 400, 'lowpass', 0.6);
+    this.playFM(110, 0.7, 0.5, 6.0, 0.5, 'sawtooth');
+    this.playKick(0.7);
+  }
+
+  sfxFloorSmash() {
+    this.playNoise(0.25, 400, 'lowpass', 0.5);
+    this.playKick(0.6);
+  }
+
+  sfxSlicerClank() {
+    this.playFM(1400, 0.1, 4.2, 6.0, 0.4, 'triangle');
+    this.playNoise(0.08, 3500, 'highpass', 0.3);
+  }
+
+  sfxPistonSmash() {
+    this.playNoise(0.3, 800, 'lowpass', 0.5);
+    this.playKick(0.6);
+  }
+
+  sfxExplodingBlocker() {
+    this.playNoise(0.45, 600, 'lowpass', 0.55);
+    this.playKick(0.6);
+  }
+
+  sfxPlayerDeath() {
+    // Descending death chime
+    const notes = [440, 392, 349.2, 329.6, 261.6];
+    notes.forEach((freq, idx) => {
+      setTimeout(() => {
+        this.playPSG(freq, 0.25, 0.3, true);
+      }, idx * 110);
+    });
+  }
+
+  // --- MUSIC SEQUENCER & STAGE THEMES ---
+
+  // Note frequency helper (MIDI note number to Hz)
+  m2f(midi) {
+    if (!midi || midi <= 0) return 0;
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  startTrack(stageId) {
+    if (this.currentTrack === stageId && this.seqInterval) return;
+    this.stopMusic();
+    this.currentTrack = stageId;
+    this.seqStep = 0;
+
+    const baseTempoMs = 135; // ~111 BPM 16th notes
+    const tick = () => {
+      if (!this.initialized) return;
+      this.playSequencerStep();
+    };
+
+    // Calculate tempo: Boxer shorts mode is 28% faster!
+    const effectiveInterval = this.isBoxerShortsMode ? Math.round(baseTempoMs * 0.76) : baseTempoMs;
+    this.seqInterval = setInterval(tick, effectiveInterval);
+  }
+
+  setBoxerShortsMode(isBoxers) {
+    if (this.isBoxerShortsMode === isBoxers) return;
+    this.isBoxerShortsMode = isBoxers;
+    // Restart sequencer with new tempo
+    if (this.currentTrack !== null) {
+      const track = this.currentTrack;
+      const step = this.seqStep;
+      clearInterval(this.seqInterval);
+      const baseTempoMs = 135;
+      const effectiveInterval = this.isBoxerShortsMode ? Math.round(baseTempoMs * 0.76) : baseTempoMs;
+      this.seqInterval = setInterval(() => this.playSequencerStep(), effectiveInterval);
+      this.seqStep = step;
+    }
+  }
+
+  stopMusic() {
+    if (this.seqInterval) {
+      clearInterval(this.seqInterval);
+      this.seqInterval = null;
+    }
+    this.currentTrack = null;
+    this.seqStep = 0;
+  }
+
+  playSequencerStep() {
+    const s = this.seqStep;
+    const stage = this.currentTrack;
+    const isBoxers = this.isBoxerShortsMode;
+    const octaveShift = isBoxers ? 12 : 0; // Transpose 1 octave up in boxers!
+
+    // Pattern definitions (16-step or 32-step cycles)
+    // Notes in MIDI numbers (60 = C4, 62 = D4, etc., 0 = rest)
+
+    let melNote = 0;
+    let harmNote = 0;
+    let bassNote = 0;
+    let drum = 0; // 1 = kick, 2 = snare, 3 = hihat, 4 = kick+snare
+
+    if (stage === 'map') {
+      // World Map Fanfare: 16-step majestic flourish
+      const mapMel = [62, 0, 65, 0, 69, 0, 74, 0, 72, 70, 69, 67, 69, 0, 0, 0];
+      const mapBass = [38, 0, 38, 0, 41, 0, 41, 0, 43, 0, 43, 0, 38, 38, 38, 0];
+      melNote = mapMel[s % 16];
+      bassNote = mapBass[s % 16];
+      if (s % 4 === 0) drum = 1;
+      else if (s % 4 === 2) drum = 2;
+    } else if (stage === 1) {
+      // Stage 1: Monkey Island Ghost Sea Shanty Baroque (D minor)
+      const mel = [
+        62, 0, 65, 62, 69, 0, 67, 65, 64, 0, 65, 64, 62, 0, 61, 0,
+        62, 0, 65, 69, 74, 0, 72, 69, 67, 69, 70, 69, 67, 65, 64, 62
+      ];
+      const bass = [
+        38, 38, 41, 38, 43, 38, 41, 38, 36, 36, 40, 36, 37, 37, 39, 37,
+        38, 38, 41, 38, 43, 43, 41, 41, 35, 35, 38, 35, 36, 36, 37, 37
+      ];
+      melNote = mel[s % 32];
+      bassNote = bass[s % 32];
+      // Drums: Pirate groove
+      if (s % 4 === 0) drum = 1;
+      else if (s % 4 === 2) drum = 2;
+      else if (s % 2 === 1) drum = 3;
+    } else if (stage === 2) {
+      // Stage 2: Daventry Royal Gothic Waltz (3/4 time feel in 24 steps)
+      const mel = [
+        55, 0, 58, 62, 0, 65, 63, 0, 62, 60, 0, 58,
+        57, 0, 60, 63, 0, 67, 65, 0, 63, 62, 0, 58
+      ];
+      const bass = [
+        43, 0, 46, 50, 0, 46, 41, 0, 45, 48, 0, 45,
+        39, 0, 43, 46, 0, 43, 38, 0, 41, 45, 0, 41
+      ];
+      melNote = mel[s % 24];
+      bassNote = bass[s % 24];
+      if (s % 6 === 0) drum = 1;
+      else if (s % 6 === 2 || s % 6 === 4) drum = 3;
+    } else if (stage === 3) {
+      // Stage 3: Jaffar Catacombs / Prince of Persia (Fast harmonic minor arpeggios)
+      const mel = [
+        64, 65, 68, 69, 71, 72, 71, 69, 68, 65, 64, 65, 68, 0, 64, 0,
+        71, 72, 76, 72, 71, 69, 68, 65, 64, 68, 69, 71, 68, 65, 64, 0
+      ];
+      const bass = [
+        40, 40, 40, 40, 41, 41, 41, 41, 44, 44, 44, 44, 40, 40, 40, 40,
+        41, 41, 41, 41, 44, 44, 44, 44, 45, 45, 45, 45, 40, 40, 44, 40
+      ];
+      melNote = mel[s % 32];
+      bassNote = bass[s % 32];
+      if (s % 4 === 0) drum = 1;
+      else if (s % 4 === 2) drum = 2;
+      else drum = 3;
+    } else if (stage === 4) {
+      // Stage 4: Lemmings Mechanical Horror March
+      const mel = [
+        60, 60, 64, 64, 67, 67, 64, 0, 65, 65, 62, 62, 60, 0, 0, 0,
+        60, 60, 63, 63, 67, 67, 63, 0, 62, 62, 59, 59, 60, 0, 67, 0
+      ];
+      const bass = [
+        36, 0, 36, 0, 40, 0, 40, 0, 41, 0, 38, 0, 36, 36, 48, 36,
+        36, 0, 39, 0, 43, 0, 39, 0, 38, 0, 35, 0, 36, 36, 48, 36
+      ];
+      melNote = mel[s % 32];
+      bassNote = bass[s % 32];
+      if (s % 2 === 0) drum = 1;
+      else drum = 2;
+    } else if (stage === 5) {
+      // Stage 5: DOOM E1M1 Phobos Metal Tribute (FM heavy distortion riff)
+      const mel = [
+        40, 40, 52, 40, 40, 50, 40, 40, 48, 40, 40, 47, 40, 40, 48, 50,
+        40, 40, 52, 40, 40, 50, 40, 40, 48, 40, 40, 47, 40, 43, 45, 46
+      ];
+      const bass = [
+        28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+        28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 31, 33, 34
+      ];
+      melNote = mel[s % 32];
+      bassNote = bass[s % 32];
+      if (s % 4 === 0) drum = 1;
+      else if (s % 4 === 2) drum = 2;
+      else drum = 3;
+    } else if (stage === 6) {
+      // Stage 6: Final Boss Astaroth-LeChuck-9000 (Toccata & Fugue in D minor at 155 BPM)
+      const mel = [
+        74, 73, 74, 0, 73, 0, 74, 0, 69, 0, 70, 0, 65, 0, 66, 62,
+        61, 62, 64, 65, 67, 69, 70, 72, 74, 0, 73, 0, 74, 0, 77, 0
+      ];
+      const bass = [
+        38, 38, 38, 38, 37, 37, 37, 37, 35, 35, 35, 35, 34, 34, 34, 34,
+        33, 33, 33, 33, 35, 35, 37, 37, 38, 38, 38, 38, 34, 34, 37, 37
+      ];
+      melNote = mel[s % 32];
+      bassNote = bass[s % 32];
+      if (s % 2 === 0) drum = 1;
+      else drum = 2;
+    }
+
+    // Play synthesis channels
+    if (melNote > 0) {
+      const freq = this.m2f(melNote + octaveShift);
+      // In boxers mode: comical staccato harpsichord pluck! In normal mode: gothic organ/harpsichord
+      const dur = isBoxers ? 0.08 : 0.18;
+      const modIdx = isBoxers ? 3.5 : 2.0;
+      this.playFM(freq, dur, 2.0, modIdx, 0.22, 'triangle');
+    }
+
+    if (bassNote > 0) {
+      const bFreq = this.m2f(bassNote);
+      this.playFM(bFreq, 0.16, 0.5, 2.5, 0.32, 'triangle');
+    }
+
+    // Play drums
+    if (drum === 1) this.playKick(0.35);
+    else if (drum === 2) this.playSnare(0.28);
+    else if (drum === 3) this.playHiHat(0.12);
+    else if (drum === 4) { this.playKick(0.35); this.playSnare(0.25); }
+
+    this.seqStep++;
+  }
+}
+
+// Global sound singleton
+const sound = new SoundEngine();
+
+
+// ============================================================================
+// PROCEDURAL PIXEL-ART GRAPHICS & PARALLAX RENDERER
+// ============================================================================
+
+class Renderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.width = 320;
+    this.height = 200;
+
+    // Palette constants (CPS-1 / EGA-VGA aesthetic)
+    this.PAL = {
+      black: '#000000',
+      darkNavy: '#080816',
+      midnight: '#141428',
+      slate: '#24243e',
+      steelDark: '#4a5060',
+      steelMid: '#8a92a2',
+      steelLight: '#d2d8e4',
+      steelWhite: '#ffffff',
+      goldDark: '#785810',
+      goldMid: '#d8a820',
+      goldLight: '#ffe060',
+      rubyRed: '#e81838',
+      crimsonDark: '#701020',
+      skinDark: '#b87848',
+      skinMid: '#e4a068',
+      hairBrown: '#5c381c',
+      boxerWhite: '#f4f4fc',
+      strawberryRed: '#e81838',
+      zombieGreen: '#588850',
+      zombieDark: '#2c4e28',
+      boneWhite: '#e8e4d0',
+      boneShadow: '#888470',
+      gargoyleRed: '#c82430',
+      gargoyleDark: '#681018',
+      cyberCyan: '#00d8f0',
+      plasmaBlue: '#3070ff',
+      holyBlue: '#00a8ff',
+      holyLight: '#a0e8ff',
+      flameOrange: '#ff8800',
+      flameYellow: '#ffdd00',
+      nukageGreen: '#00ff40',
+      cursedPurple: '#8020a0'
+    };
+  }
+
+  clear() {
+    this.ctx.fillStyle = this.PAL.black;
+    this.ctx.fillRect(0, 0, this.width, this.height);
+  }
+
+  // --- PARALLAX BACKGROUND RENDERING (3 LAYERS PER STAGE) ---
+  drawBackground(stageNum, camX, camY, gameTime, lightningFlash) {
+    const ctx = this.ctx;
+    const w = this.width;
+    const h = this.height;
+
+    // Layer 0: Far Sky / Celestial / Mountains (Scrolls 0.08x)
+    const farX = -(camX * 0.08) % w;
+
+    if (stageNum === 1) {
+      // Stage 1: Monkey Island Ghost Caribbean Night
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#060618');
+      grad.addColorStop(0.7, '#0d1828');
+      grad.addColorStop(1, '#182b3a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Ghostly green crescent moon
+      ctx.fillStyle = '#b0ffc8';
+      ctx.beginPath();
+      ctx.arc(260 + farX * 0.2, 45, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#060618';
+      ctx.beginPath();
+      ctx.arc(268 + farX * 0.2, 43, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Twinkling stars
+      ctx.fillStyle = '#c0d0f0';
+      for (let i = 0; i < 25; i++) {
+        const sx = ((i * 47 + farX * 0.3) % w + w) % w;
+        const sy = (i * 29) % 90;
+        const twinkle = Math.sin(gameTime * 3 + i) > 0.3 ? 1.5 : 1;
+        ctx.fillRect(sx, sy, twinkle, twinkle);
+      }
+
+      // Distant silhouette of Monkey Island & pirate ship
+      ctx.fillStyle = '#0c1a24';
+      ctx.beginPath();
+      ctx.moveTo(0, 160);
+      for (let x = 0; x <= w; x += 30) {
+        const my = 130 + Math.sin((x - farX) * 0.02) * 15 + Math.cos((x - farX) * 0.05) * 8;
+        ctx.lineTo(x, my);
+      }
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.fill();
+
+    } else if (stageNum === 2) {
+      // Stage 2: Daventry Haunted Castle & Moat
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#120420');
+      grad.addColorStop(0.6, '#280c38');
+      grad.addColorStop(1, '#3c184c');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Gothic spires & Castle Daventry silhouette
+      ctx.fillStyle = '#1c0828';
+      for (let i = -1; i < 4; i++) {
+        const cx = i * 140 + farX * 0.5;
+        // Central tower
+        ctx.fillRect(cx + 40, 70, 30, 100);
+        // Tower spire cone
+        ctx.beginPath();
+        ctx.moveTo(cx + 40, 70);
+        ctx.lineTo(cx + 55, 30);
+        ctx.lineTo(cx + 70, 70);
+        ctx.fill();
+        // Flanking turrets
+        ctx.fillRect(cx + 20, 95, 16, 80);
+        ctx.fillRect(cx + 74, 95, 16, 80);
+      }
+
+    } else if (stageNum === 3) {
+      // Stage 3: Jaffar Spike Catacombs (Prince of Persia)
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#1c1008');
+      grad.addColorStop(0.7, '#2c1a0e');
+      grad.addColorStop(1, '#3a2414');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Persian dungeon arches in distance
+      ctx.fillStyle = '#180e08';
+      for (let i = -1; i < 6; i++) {
+        const ax = i * 80 + farX * 0.6;
+        ctx.fillRect(ax, 50, 12, 120);
+        ctx.beginPath();
+        ctx.arc(ax + 40, 65, 28, Math.PI, 0);
+        ctx.lineTo(ax + 68, 170);
+        ctx.lineTo(ax + 12, 170);
+        ctx.fill();
+      }
+
+    } else if (stageNum === 4) {
+      // Stage 4: Lemmings Crusher Foundry
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#180c06');
+      grad.addColorStop(0.7, '#381c08');
+      grad.addColorStop(1, '#582404');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Molten furnace glow at bottom
+      ctx.fillStyle = '#ff5500';
+      ctx.globalAlpha = 0.25 + Math.sin(gameTime * 4) * 0.08;
+      ctx.fillRect(0, 140, w, 60);
+      ctx.globalAlpha = 1.0;
+
+      // Heavy industrial steel trusses & factory pipes
+      ctx.fillStyle = '#1e1410';
+      for (let i = -1; i < 5; i++) {
+        const tx = i * 100 + farX * 0.5;
+        ctx.fillRect(tx, 0, 14, 180);
+        ctx.fillRect(tx - 40, 60, 94, 10);
+      }
+
+    } else if (stageNum === 5) {
+      // Stage 5: Phobos E1M1 Necropolis (DOOM)
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#240804');
+      grad.addColorStop(0.5, '#48180c');
+      grad.addColorStop(1, '#682410');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Phobos moon & Martian jagged peaks
+      ctx.fillStyle = '#e8d0a0';
+      ctx.beginPath();
+      ctx.arc(60 + farX * 0.15, 45, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#200c08';
+      ctx.beginPath();
+      ctx.moveTo(0, 140);
+      for (let x = 0; x <= w; x += 25) {
+        const peakY = 100 + Math.sin((x - farX * 0.4) * 0.03) * 20 + Math.cos((x - farX * 0.4) * 0.08) * 12;
+        ctx.lineTo(x, peakY);
+      }
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.fill();
+
+    } else if (stageNum === 6) {
+      // Stage 6: Throne of Astaroth-LeChuck-9000 (Final Boss Chamber)
+      ctx.fillStyle = '#0a0510';
+      ctx.fillRect(0, 0, w, h);
+
+      // Giant Demonic Mainframe Tubes & CRT Code Matrix
+      ctx.fillStyle = '#160824';
+      ctx.fillRect(20, 20, 280, 140);
+
+      // Pulsing green vacuum tubes
+      for (let i = 0; i < 8; i++) {
+        const tx = 40 + i * 32;
+        ctx.fillStyle = '#2a1438';
+        ctx.fillRect(tx, 30, 16, 40);
+        // Tube glow
+        ctx.fillStyle = Math.sin(gameTime * 6 + i) > 0 ? '#00ff88' : '#00aa55';
+        ctx.fillRect(tx + 4, 36, 8, 28);
+      }
+
+      // Scrolling green hexadecimal code in background
+      ctx.fillStyle = '#00ee44';
+      ctx.font = '8px monospace';
+      ctx.globalAlpha = 0.35;
+      const codeLines = ['0xDEADBEEF', 'LECHUCK-9000', 'CORRUPT_FLOPPY', 'CPU_OVERLOAD', 'ASTAROTH.SYS', 'VGA_PANIC'];
+      for (let j = 0; j < 5; j++) {
+        const cy = 90 + j * 12;
+        ctx.fillText(codeLines[(j + Math.floor(gameTime * 2)) % codeLines.length], 45, cy);
+        ctx.fillText(codeLines[(j + 3 + Math.floor(gameTime * 2)) % codeLines.length], 180, cy);
+      }
+      ctx.globalAlpha = 1.0;
+    }
+
+    // Layer 1: Mid-Ground Scenery (Scrolls 0.35x)
+    const midX = -(camX * 0.35) % w;
+
+    if (stageNum === 1) {
+      // Ghost ship rigging, rope nets, and distant wooden masts
+      ctx.fillStyle = '#182430';
+      for (let i = -1; i < 4; i++) {
+        const mx = i * 160 + midX;
+        ctx.fillRect(mx + 30, 40, 8, 140); // mast
+        ctx.fillRect(mx, 70, 70, 4);        // yardarm
+        ctx.fillRect(mx + 10, 110, 50, 3);
+        // Lantern hanging
+        ctx.fillStyle = '#20e060';
+        ctx.fillRect(mx + 60, 74, 4, 6);
+        ctx.fillStyle = '#182430';
+      }
+    } else if (stageNum === 2) {
+      // Daventry ramparts & gothic stone arches
+      ctx.fillStyle = '#2a1638';
+      for (let i = -1; i < 5; i++) {
+        const mx = i * 110 + midX;
+        ctx.fillRect(mx, 80, 24, 100);
+        ctx.fillRect(mx - 8, 72, 40, 8); // battlements
+        ctx.fillRect(mx + 2, 64, 8, 8);
+        ctx.fillRect(mx + 22, 64, 8, 8);
+      }
+    } else if (stageNum === 3) {
+      // Catacomb chains and iron cages
+      ctx.fillStyle = '#261810';
+      for (let i = -1; i < 6; i++) {
+        const mx = i * 90 + midX;
+        ctx.fillRect(mx + 20, 20, 2, 70); // chain
+        ctx.fillRect(mx + 12, 90, 18, 22); // hanging cage
+      }
+    } else if (stageNum === 4) {
+      // Steaming pipes and conveyor scaffoldings
+      ctx.fillStyle = '#2a1c14';
+      for (let i = -1; i < 5; i++) {
+        const mx = i * 120 + midX;
+        ctx.fillRect(mx, 30, 12, 140);
+        ctx.fillRect(mx - 30, 70, 80, 8);
+      }
+    } else if (stageNum === 5) {
+      // Techbase cooling towers & radar dishes
+      ctx.fillStyle = '#32140c';
+      for (let i = -1; i < 5; i++) {
+        const mx = i * 130 + midX;
+        ctx.fillRect(mx + 15, 60, 35, 110);
+        ctx.beginPath();
+        ctx.arc(mx + 32, 50, 16, Math.PI, 0);
+        ctx.fill();
+      }
+    }
+
+    // Dynamic Lightning Flash
+    if (lightningFlash > 0) {
+      ctx.fillStyle = `rgba(240, 250, 255, ${Math.min(1.0, lightningFlash)})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+  }
+
+  // --- PROCEDURAL ARTHUR SPRITE RENDERING ---
+  drawArthur(x, y, state, facing, animFrame, isAirborne, isCrouching, isClimbing, isDoubleJumping, chargeRatio, invincible, flashTimer) {
+    const ctx = this.ctx;
+
+    // Invulnerability blink (flash every 2 frames)
+    if (invincible && Math.floor(flashTimer * 15) % 2 === 0) {
+      return;
+    }
+
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    if (facing < 0) {
+      ctx.scale(-1, 1);
+    }
+
+    const PAL = this.PAL;
+    const isBoxers = (state === 'boxers');
+    const isGold = (state === 'golden');
+
+    // Double-jump somersault backflip spin
+    if (isDoubleJumping) {
+      const angle = (animFrame * 1.5) % (Math.PI * 2);
+      ctx.rotate(angle);
+      // Cyan trail particles
+      ctx.fillStyle = PAL.cyberCyan;
+      ctx.fillRect(-10, -6, 20, 12);
+      ctx.fillStyle = isBoxers ? PAL.boxerWhite : (isGold ? PAL.goldMid : PAL.steelMid);
+      ctx.fillRect(-6, -4, 12, 8);
+      ctx.restore();
+      return;
+    }
+
+    // Magic Charge Aura (Swirling sparks in Golden Armor)
+    if (chargeRatio > 0) {
+      const numSparks = Math.floor(chargeRatio * 8);
+      ctx.fillStyle = chargeRatio >= 1.0 ? PAL.flameYellow : PAL.holyLight;
+      for (let i = 0; i < numSparks; i++) {
+        const a = (animFrame * 0.3 + (i * Math.PI * 2) / numSparks);
+        const rad = 14 + Math.sin(animFrame * 0.5 + i) * 3;
+        const sx = Math.cos(a) * rad;
+        const sy = -12 + Math.sin(a) * rad;
+        ctx.fillRect(sx, sy, 2, 2);
+      }
+    }
+
+    // --- SPRITE GEOMETRY ---
+    // Standard Arthur: 18x24 pixels, origin at (0, 0) bottom center
+
+    if (isClimbing) {
+      // Ladder climbing pose (back to camera)
+      const rungStep = Math.floor(animFrame) % 2;
+      ctx.fillStyle = isBoxers ? PAL.skinDark : (isGold ? PAL.goldDark : PAL.steelDark);
+      ctx.fillRect(-6, -22, 12, 22);
+
+      if (isBoxers) {
+        // Strawberry Boxers visible on ladder
+        ctx.fillStyle = PAL.boxerWhite;
+        ctx.fillRect(-5, -12, 10, 6);
+        ctx.fillStyle = PAL.strawberryRed;
+        ctx.fillRect(-3, -10, 2, 2);
+        ctx.fillRect(1, -9, 2, 2);
+      }
+      ctx.restore();
+      return;
+    }
+
+    if (isCrouching) {
+      // Crouching squat pose (height reduced to 14px)
+      if (isBoxers) {
+        // Head & Beard
+        ctx.fillStyle = PAL.hairBrown;
+        ctx.fillRect(-5, -14, 10, 6);
+        ctx.fillStyle = PAL.skinMid;
+        ctx.fillRect(-4, -12, 8, 4);
+        // Boxers
+        ctx.fillStyle = PAL.boxerWhite;
+        ctx.fillRect(-6, -8, 12, 6);
+        ctx.fillStyle = PAL.strawberryRed;
+        ctx.fillRect(-3, -6, 2, 2);
+        ctx.fillRect(2, -6, 2, 2);
+        // Legs
+        ctx.fillStyle = PAL.skinMid;
+        ctx.fillRect(-5, -2, 4, 2);
+        ctx.fillRect(2, -2, 4, 2);
+      } else {
+        // Steel / Golden Armor crouch
+        const armorBase = isGold ? PAL.goldMid : PAL.steelMid;
+        const armorLight = isGold ? PAL.goldLight : PAL.steelLight;
+        ctx.fillStyle = armorBase;
+        ctx.fillRect(-7, -14, 14, 12);
+        ctx.fillStyle = armorLight;
+        ctx.fillRect(-6, -13, 12, 3);
+        // Visor slit
+        ctx.fillStyle = PAL.rubyRed;
+        ctx.fillRect(1, -11, 4, 2);
+      }
+      ctx.restore();
+      return;
+    }
+
+    // --- STANDING / RUNNING / JUMPING FULL SPRITE ---
+    const runFrame = isAirborne ? 1 : (Math.floor(animFrame) % 4);
+    const legOffset = isAirborne ? 2 : (runFrame === 1 ? 2 : (runFrame === 3 ? -2 : 0));
+    const armBob = isAirborne ? -2 : (runFrame === 2 ? 1 : 0);
+
+    if (isBoxers) {
+      // ======================================================================
+      // STRAWBERRY PRINT BOXER SHORTS ARTHUR
+      // ======================================================================
+      // Head & Rugged Beard
+      ctx.fillStyle = PAL.hairBrown;
+      ctx.fillRect(-5, -24, 10, 8); // hair
+      ctx.fillStyle = PAL.skinMid;
+      ctx.fillRect(-4, -21, 8, 5);  // face
+      ctx.fillStyle = PAL.hairBrown;
+      ctx.fillRect(-2, -18, 6, 3);  // thick retro beard
+      // Retro determined eye
+      ctx.fillStyle = PAL.steelWhite;
+      ctx.fillRect(1, -20, 3, 2);
+      ctx.fillStyle = PAL.black;
+      ctx.fillRect(2, -20, 2, 2);
+
+      // Bare muscular torso
+      ctx.fillStyle = PAL.skinMid;
+      ctx.fillRect(-5, -16, 10, 7);
+      ctx.fillStyle = PAL.skinDark;
+      ctx.fillRect(-4, -13, 3, 3); // pecs shadow
+      ctx.fillRect(1, -13, 3, 3);
+
+      // Arms (comical flailing during run!)
+      ctx.fillStyle = PAL.skinMid;
+      ctx.fillRect(-7, -15 + armBob, 3, 7);
+      ctx.fillRect(4, -15 - armBob, 3, 7);
+
+      // White Boxer Shorts with Strawberry Dots!
+      ctx.fillStyle = PAL.boxerWhite;
+      ctx.fillRect(-6, -9, 12, 6);
+      ctx.fillStyle = PAL.rubyRed;
+      ctx.fillRect(-1, -9, 2, 2); // red lace tie
+
+      // Red strawberries / polka dots on boxers!
+      ctx.fillStyle = PAL.strawberryRed;
+      ctx.fillRect(-4, -7, 2, 2);
+      ctx.fillRect(1, -7, 2, 2);
+      ctx.fillRect(-2, -5, 2, 2);
+      ctx.fillRect(3, -5, 2, 2);
+
+      // Bare knobby legs & feet
+      ctx.fillStyle = PAL.skinMid;
+      ctx.fillRect(-5, -3, 3, 3 + legOffset);
+      ctx.fillRect(2, -3, 3, 3 - legOffset);
+      ctx.fillStyle = PAL.skinDark;
+      ctx.fillRect(-6, 0 + legOffset, 4, 1);
+      ctx.fillRect(2, 0 - legOffset, 4, 1);
+
+    } else {
+      // ======================================================================
+      // STEEL OR GOLDEN ARMOR ARTHUR
+      // ======================================================================
+      const armorDark = isGold ? PAL.goldDark : PAL.steelDark;
+      const armorMid = isGold ? PAL.goldMid : PAL.steelMid;
+      const armorLight = isGold ? PAL.goldLight : PAL.steelLight;
+
+      // Flowing Crimson Cape (Golden Armor Only)
+      if (isGold) {
+        ctx.fillStyle = PAL.rubyRed;
+        const capeWobble = Math.sin(animFrame * 0.8) * 3;
+        ctx.beginPath();
+        ctx.moveTo(-5, -16);
+        ctx.lineTo(-12 + capeWobble, -6);
+        ctx.lineTo(-10 + capeWobble, 0);
+        ctx.lineTo(-4, -8);
+        ctx.fill();
+      }
+
+      // Helmet & Visor
+      ctx.fillStyle = armorMid;
+      ctx.fillRect(-6, -24, 11, 9);
+      ctx.fillStyle = armorLight;
+      ctx.fillRect(-5, -24, 8, 2); // helmet crest
+      ctx.fillStyle = armorDark;
+      ctx.fillRect(-6, -17, 11, 2); // chin guard
+
+      // Visor eye glow (red slit)
+      ctx.fillStyle = PAL.rubyRed;
+      ctx.fillRect(0, -20, 5, 2);
+
+      // Billowing Blue (or Gold) Plume atop helmet
+      ctx.fillStyle = isGold ? PAL.rubyRed : PAL.plasmaBlue;
+      ctx.fillRect(-7, -26, 4, 3);
+      ctx.fillRect(-9, -25, 3, 2);
+
+      // Breastplate & Pauldrons
+      ctx.fillStyle = armorMid;
+      ctx.fillRect(-6, -15, 12, 7);
+      ctx.fillStyle = armorLight;
+      ctx.fillRect(-5, -15, 4, 5); // chest reflection
+      ctx.fillStyle = PAL.goldMid;
+      ctx.fillRect(-1, -9, 3, 2);  // belt buckle
+
+      // Arms & Gauntlets
+      ctx.fillStyle = armorDark;
+      ctx.fillRect(-8, -14 + armBob, 3, 6);
+      ctx.fillRect(5, -14 - armBob, 3, 6);
+
+      // Greaves & Sabatons (Legs & Boots)
+      ctx.fillStyle = armorDark;
+      ctx.fillRect(-5, -8, 4, 8 + legOffset);
+      ctx.fillRect(1, -8, 4, 8 - legOffset);
+      ctx.fillStyle = armorLight;
+      ctx.fillRect(-6, -1 + legOffset, 5, 2);
+      ctx.fillRect(1, -1 - legOffset, 5, 2);
+    }
+
+    ctx.restore();
+  }
+
+  // --- PROCEDURAL ENEMY SPRITE RENDERING ---
+
+  drawZombie(x, y, frame, facing, isBurrowing) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    if (facing < 0) ctx.scale(-1, 1);
+
+    const PAL = this.PAL;
+
+    if (isBurrowing) {
+      // Burrowed mound in soil
+      ctx.fillStyle = '#4a3424';
+      ctx.fillRect(-8, -4, 16, 4);
+      ctx.fillStyle = PAL.zombieGreen;
+      ctx.fillRect(-4, -6, 8, 3);
+      ctx.restore();
+      return;
+    }
+
+    const step = Math.floor(frame) % 2;
+
+    // Head
+    ctx.fillStyle = PAL.zombieGreen;
+    ctx.fillRect(-4, -22, 9, 8);
+    // Glowing sunken eyes
+    ctx.fillStyle = PAL.flameYellow;
+    ctx.fillRect(1, -19, 2, 2);
+
+    // Tattered Pirate/Peasant Shirt
+    ctx.fillStyle = '#3a2e58';
+    ctx.fillRect(-5, -14, 10, 7);
+    ctx.fillStyle = PAL.zombieDark;
+    ctx.fillRect(-3, -11, 4, 3); // rib tear
+
+    // Outstretched Rotting Arms
+    ctx.fillStyle = PAL.zombieGreen;
+    ctx.fillRect(4, -13, 8, 3);
+    ctx.fillRect(-5, -13, 3, 3);
+
+    // Shambling Legs
+    ctx.fillStyle = '#20202e';
+    ctx.fillRect(-4, -7, 4, 7 + (step ? 1 : -1));
+    ctx.fillRect(1, -7, 4, 7 - (step ? 1 : -1));
+
+    ctx.restore();
+  }
+
+  drawSkeleton(x, y, frame, facing, isParrying) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    if (facing < 0) ctx.scale(-1, 1);
+
+    const PAL = this.PAL;
+    const step = Math.floor(frame) % 2;
+
+    // Skull
+    ctx.fillStyle = PAL.boneWhite;
+    ctx.fillRect(-4, -22, 8, 7);
+    // Hollow red eye sockets
+    ctx.fillStyle = PAL.rubyRed;
+    ctx.fillRect(0, -19, 2, 2);
+    // Teeth
+    ctx.fillStyle = PAL.boneShadow;
+    ctx.fillRect(-2, -15, 5, 2);
+
+    // Spine & Ribs
+    ctx.fillStyle = PAL.boneWhite;
+    ctx.fillRect(-1, -15, 3, 8); // spine
+    ctx.fillRect(-4, -13, 8, 2); // rib 1
+    ctx.fillRect(-3, -10, 7, 2); // rib 2
+
+    // Arms & Scimitar
+    if (isParrying) {
+      // Defensive parry stance (sword raised)
+      ctx.fillStyle = PAL.boneWhite;
+      ctx.fillRect(2, -16, 4, 3);
+      ctx.fillStyle = PAL.steelLight;
+      ctx.fillRect(5, -24, 2, 14); // vertical blade
+      ctx.fillStyle = PAL.flameYellow;
+      ctx.fillRect(6, -18, 3, 3); // spark
+    } else {
+      ctx.fillStyle = PAL.boneWhite;
+      ctx.fillRect(3, -12, 5, 2);
+      ctx.fillStyle = PAL.steelMid;
+      ctx.fillRect(7, -15, 2, 8); // sword held forward
+    }
+
+    // Femurs & Bony Legs
+    ctx.fillStyle = PAL.boneWhite;
+    ctx.fillRect(-3, -7, 2, 7 + (step ? 1 : -1));
+    ctx.fillRect(1, -7, 2, 7 - (step ? 1 : -1));
+
+    ctx.restore();
+  }
+
+  drawRedArremer(x, y, state, frame, facing) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    if (facing < 0) ctx.scale(-1, 1);
+
+    const PAL = this.PAL;
+    const wingFlap = Math.sin(frame * 0.8) > 0;
+
+    // Demon Body & Horns
+    ctx.fillStyle = PAL.gargoyleRed;
+    ctx.fillRect(-6, -20, 12, 12);
+    // Demon Horns
+    ctx.fillStyle = PAL.boneWhite;
+    ctx.fillRect(-7, -24, 3, 5);
+    ctx.fillRect(4, -24, 3, 5);
+
+    // Glowing Menacing Yellow Eyes
+    ctx.fillStyle = PAL.flameYellow;
+    ctx.fillRect(1, -17, 3, 2);
+
+    // Bat Wings
+    ctx.fillStyle = PAL.gargoyleDark;
+    if (state === 'perched') {
+      // Folded wings
+      ctx.fillRect(-10, -18, 5, 14);
+    } else {
+      // Flapping wings
+      if (wingFlap) {
+        ctx.beginPath();
+        ctx.moveTo(-4, -16);
+        ctx.lineTo(-16, -26);
+        ctx.lineTo(-8, -10);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(2, -16);
+        ctx.lineTo(14, -26);
+        ctx.lineTo(6, -10);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(-4, -14);
+        ctx.lineTo(-18, -12);
+        ctx.lineTo(-6, -6);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(2, -14);
+        ctx.lineTo(16, -12);
+        ctx.lineTo(4, -6);
+        ctx.fill();
+      }
+    }
+
+    // Talons / Claws
+    ctx.fillStyle = PAL.boneWhite;
+    ctx.fillRect(-5, -6, 4, 6);
+    ctx.fillRect(1, -6, 4, 6);
+
+    ctx.restore();
+  }
+
+  drawCyberImp(x, y, frame, facing) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    if (facing < 0) ctx.scale(-1, 1);
+
+    const PAL = this.PAL;
+    const step = Math.floor(frame) % 2;
+
+    // Spiked Demon Head
+    ctx.fillStyle = '#6e4428';
+    ctx.fillRect(-5, -22, 10, 8);
+    // Cybernetic Glowing Blue Eye
+    ctx.fillStyle = PAL.cyberCyan;
+    ctx.fillRect(1, -19, 3, 2);
+
+    // Muscular Spiked Torso
+    ctx.fillStyle = '#54321c';
+    ctx.fillRect(-6, -14, 12, 8);
+
+    // Cyber Plasma Arm Cannon
+    ctx.fillStyle = PAL.steelMid;
+    ctx.fillRect(4, -13, 8, 4);
+    ctx.fillStyle = PAL.plasmaBlue;
+    ctx.fillRect(10, -12, 3, 2);
+
+    // Legs
+    ctx.fillStyle = '#402414';
+    ctx.fillRect(-4, -6, 4, 6 + (step ? 1 : -1));
+    ctx.fillRect(1, -6, 4, 6 - (step ? 1 : -1));
+
+    ctx.restore();
+  }
+
+  drawLemmingBlocker(x, y, frame, countdown) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+
+    const PAL = this.PAL;
+
+    // Bright Green Mop of Hair
+    ctx.fillStyle = '#00ff44';
+    ctx.fillRect(-4, -18, 8, 5);
+
+    // Face
+    ctx.fillStyle = PAL.skinMid;
+    ctx.fillRect(-3, -14, 6, 4);
+
+    // Blue Tunic
+    ctx.fillStyle = '#2040c0';
+    ctx.fillRect(-4, -10, 8, 8);
+
+    // Outstretched White Gloves (STOP pose)
+    ctx.fillStyle = PAL.boxerWhite;
+    ctx.fillRect(-8, -9, 4, 4);
+    ctx.fillRect(4, -9, 4, 4);
+
+    // Floating Retro Countdown overhead
+    if (countdown > 0) {
+      ctx.fillStyle = countdown <= 1.0 ? PAL.rubyRed : PAL.flameYellow;
+      ctx.font = 'bold 9px monospace';
+      const countText = countdown <= 1.0 ? "OH NO!" : Math.ceil(countdown).toString();
+      ctx.fillText(countText, -8, -22);
+    }
+
+    ctx.restore();
+  }
+
+  drawVoodooSkull(x, y, frame) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+
+    const PAL = this.PAL;
+
+    // Voodoo Flame Halo
+    const flameSize = 10 + Math.sin(frame * 4) * 2;
+    ctx.fillStyle = PAL.cursedPurple;
+    ctx.beginPath();
+    ctx.arc(0, 0, flameSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Grinning Pirate Skull
+    ctx.fillStyle = PAL.boneWhite;
+    ctx.fillRect(-6, -6, 12, 10);
+    // Hollow Eyes
+    ctx.fillStyle = PAL.black;
+    ctx.fillRect(-4, -3, 3, 3);
+    ctx.fillRect(1, -3, 3, 3);
+    // Jaw & Teeth
+    ctx.fillStyle = PAL.boneShadow;
+    ctx.fillRect(-3, 4, 6, 3);
+
+    ctx.restore();
+  }
+
+  // --- FINAL BOSS: ASTAROTH-LECHUCK-9000 (MULTI-SEGMENT) ---
+  drawBoss(boss, gameTime) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(boss.x), Math.round(boss.y));
+
+    const PAL = this.PAL;
+    const isPhase2 = (boss.phase === 2);
+
+    // 1. Demonic Mainframe Base
+    ctx.fillStyle = isPhase2 ? '#240810' : '#141424';
+    ctx.fillRect(-45, 10, 90, 40);
+    ctx.fillStyle = PAL.steelMid;
+    ctx.fillRect(-40, 15, 80, 4);
+
+    // 2. Ribbed Demon Torso & CRT Computer Chest
+    ctx.fillStyle = isPhase2 ? '#481018' : '#282438';
+    ctx.fillRect(-30, -35, 60, 45);
+
+    // Rib bones
+    ctx.fillStyle = PAL.boneWhite;
+    for (let r = 0; r < 4; r++) {
+      ctx.fillRect(-28, -30 + r * 8, 12, 3);
+      ctx.fillRect(16, -30 + r * 8, 12, 3);
+    }
+
+    // Exposed Cursed 1.44MB Floppy Disk Core
+    if (boss.coreExposed || isPhase2) {
+      // Glowing Floppy Disk in chest
+      ctx.fillStyle = PAL.black;
+      ctx.fillRect(-12, -22, 24, 22);
+      ctx.fillStyle = '#1050a0'; // blue 3.5" disk body
+      ctx.fillRect(-10, -20, 20, 18);
+      // Metal sliding shutter
+      ctx.fillStyle = PAL.steelLight;
+      ctx.fillRect(-6, -20, 12, 7);
+      // Pulsing Cursed Energy Aura
+      ctx.strokeStyle = Math.sin(gameTime * 8) > 0 ? PAL.flameYellow : PAL.rubyRed;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-13, -23, 26, 24);
+    } else {
+      // CRT Monitor Face in chest (flickering green)
+      ctx.fillStyle = '#081a0e';
+      ctx.fillRect(-14, -22, 28, 20);
+      ctx.fillStyle = '#00ff44';
+      ctx.fillRect(-10, -18, 20, 3);
+      ctx.fillRect(-8, -12, 16, 2);
+    }
+
+    // 3. Pirate Demon Head & Hat
+    const headBob = Math.sin(gameTime * 3) * 2;
+    ctx.save();
+    ctx.translate(0, headBob);
+
+    // Massive Curved Demon Horns
+    ctx.fillStyle = PAL.boneWhite;
+    ctx.beginPath();
+    ctx.moveTo(-18, -48);
+    ctx.lineTo(-38, -68);
+    ctx.lineTo(-24, -42);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(18, -48);
+    ctx.lineTo(38, -68);
+    ctx.lineTo(24, -42);
+    ctx.fill();
+
+    // Pirate Bicorne Hat
+    ctx.fillStyle = '#101018';
+    ctx.beginPath();
+    ctx.moveTo(-32, -45);
+    ctx.lineTo(0, -60);
+    ctx.lineTo(32, -45);
+    ctx.lineTo(0, -52);
+    ctx.fill();
+    ctx.fillStyle = PAL.goldMid;
+    ctx.fillRect(-2, -58, 4, 4); // hat skull insignia
+
+    // Demonic Face
+    ctx.fillStyle = isPhase2 ? PAL.gargoyleRed : '#406050';
+    ctx.fillRect(-16, -48, 32, 18);
+
+    // Glowing Eyes (Laser charging glow in Phase 2)
+    ctx.fillStyle = isPhase2 ? PAL.flameYellow : PAL.rubyRed;
+    ctx.fillRect(-10, -42, 6, 4);
+    ctx.fillRect(4, -42, 6, 4);
+
+    // Flaming Green Voodoo Beard
+    ctx.fillStyle = '#20e060';
+    const flameWobble = Math.sin(gameTime * 6) * 3;
+    ctx.beginPath();
+    ctx.moveTo(-14, -30);
+    ctx.lineTo(0, -16 + flameWobble);
+    ctx.lineTo(14, -30);
+    ctx.fill();
+
+    ctx.restore();
+
+    // 4. Mechanical Crusher Hands on Pneumatic Pistons
+    // Left Fist
+    ctx.fillStyle = PAL.steelMid;
+    ctx.fillRect(boss.leftHandX - boss.x, boss.leftHandY - boss.y, 20, 16);
+    ctx.fillStyle = PAL.steelLight;
+    ctx.fillRect(boss.leftHandX - boss.x + 2, boss.leftHandY - boss.y + 2, 16, 4);
+
+    // Right Fist
+    ctx.fillStyle = PAL.steelMid;
+    ctx.fillRect(boss.rightHandX - boss.x, boss.rightHandY - boss.y, 20, 16);
+    ctx.fillStyle = PAL.steelLight;
+    ctx.fillRect(boss.rightHandX - boss.x + 2, boss.rightHandY - boss.y + 2, 16, 4);
+
+    ctx.restore();
+  }
+
+  // --- WEAPONS, ANVIL & PROJECTILES RENDERING ---
+  drawWeapon(wp, gameTime) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(wp.x), Math.round(wp.y));
+
+    const PAL = this.PAL;
+
+    if (wp.type === 'lance') {
+      // Long silver lance with pennant flag
+      ctx.fillStyle = PAL.steelLight;
+      ctx.fillRect(-8, -2, 16, 3);
+      ctx.fillStyle = PAL.steelWhite;
+      ctx.fillRect(6, -3, 4, 5); // spearhead
+      ctx.fillStyle = PAL.rubyRed;
+      ctx.fillRect(-4, -1, 4, 4); // flag
+    } else if (wp.type === 'dagger') {
+      // Spinning throwing knife
+      ctx.rotate(gameTime * 15);
+      ctx.fillStyle = PAL.steelWhite;
+      ctx.fillRect(-6, -2, 12, 3);
+      ctx.fillStyle = PAL.hairBrown;
+      ctx.fillRect(-6, -1, 3, 2);
+    } else if (wp.type === 'torch') {
+      // Flaming bottle in arc
+      ctx.rotate(gameTime * 8);
+      ctx.fillStyle = PAL.holyBlue;
+      ctx.fillRect(-3, -4, 6, 8);
+      ctx.fillStyle = PAL.flameYellow;
+      ctx.fillRect(-2, -7, 4, 4);
+    } else if (wp.type === 'blueFire') {
+      // Creeping blue holy fire on floor
+      const fW = 18;
+      const fH = 10 + Math.sin(gameTime * 12 + wp.x) * 3;
+      ctx.fillStyle = PAL.holyBlue;
+      ctx.beginPath();
+      ctx.moveTo(-fW / 2, 0);
+      ctx.lineTo(-fW / 4, -fH * 0.7);
+      ctx.lineTo(0, -fH);
+      ctx.lineTo(fW / 4, -fH * 0.6);
+      ctx.lineTo(fW / 2, 0);
+      ctx.fill();
+      ctx.fillStyle = PAL.holyLight;
+      ctx.fillRect(-2, -fH * 0.5, 4, 4);
+    } else if (wp.type === 'axe') {
+      // Heavy spinning two-headed battle axe
+      ctx.rotate(gameTime * 12);
+      ctx.fillStyle = PAL.hairBrown;
+      ctx.fillRect(-1, -8, 2, 16); // handle
+      ctx.fillStyle = PAL.steelLight;
+      ctx.fillRect(-6, -7, 12, 4); // axe head
+      ctx.fillRect(-7, -8, 14, 2);
+    } else if (wp.type === 'cross') {
+      // Golden crucifix blade with rotating motion blur
+      ctx.rotate(gameTime * 10);
+      ctx.fillStyle = PAL.goldLight;
+      ctx.fillRect(-8, -2, 16, 4);
+      ctx.fillRect(-2, -8, 4, 16);
+      ctx.fillStyle = PAL.holyLight;
+      ctx.fillRect(-1, -1, 2, 2);
+    } else if (wp.type === 'anvil') {
+      // ======================================================================
+      // TACTICAL EJECTED ARMOR ANVIL
+      // ======================================================================
+      ctx.fillStyle = PAL.steelDark;
+      ctx.fillRect(-9, -12, 18, 12);
+      ctx.fillStyle = PAL.steelLight;
+      ctx.fillRect(-7, -12, 14, 3); // top striking face
+      ctx.fillStyle = PAL.steelMid;
+      ctx.fillRect(-10, -4, 20, 4); // broad base
+      // Arthur's horned helmet sitting proudly on top!
+      ctx.fillStyle = PAL.steelLight;
+      ctx.fillRect(-4, -18, 8, 6);
+      ctx.fillStyle = PAL.rubyRed;
+      ctx.fillRect(-1, -16, 4, 2); // visor slit
+      ctx.fillStyle = PAL.plasmaBlue;
+      ctx.fillRect(-5, -20, 3, 3); // plume
+    } else if (wp.type === 'fireball' || wp.type === 'plasma') {
+      ctx.fillStyle = (wp.type === 'plasma') ? PAL.cyberCyan : PAL.flameOrange;
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (wp.type === 'bone') {
+      ctx.rotate(gameTime * 8);
+      ctx.fillStyle = PAL.boneWhite;
+      ctx.fillRect(-5, -2, 10, 3);
+    }
+
+    ctx.restore();
+  }
+
+  // --- TRAPS, OBSTACLES & PROPS RENDERING ---
+  drawTrap(trap, gameTime) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(trap.x), Math.round(trap.y));
+
+    const PAL = this.PAL;
+
+    if (trap.type === 'slicer') {
+      // Prince of Persia Chomping Iron Slicer Gate
+      // Top blade
+      ctx.fillStyle = PAL.steelLight;
+      ctx.fillRect(-4, -trap.openHeight, 8, trap.bladeLength);
+      // Serrated teeth on bottom of top blade
+      for (let t = -4; t < 4; t += 2) {
+        ctx.fillRect(t, -trap.openHeight + trap.bladeLength, 1, 3);
+      }
+      // Bottom blade
+      ctx.fillRect(-4, trap.openHeight - trap.bladeLength, 8, trap.bladeLength);
+      // Housing frame
+      ctx.fillStyle = PAL.steelDark;
+      ctx.fillRect(-6, -26, 12, 4);
+      ctx.fillRect(-6, 22, 12, 4);
+
+    } else if (trap.type === 'piston') {
+      // Lemmings Industrial Hydraulic Piston Crusher
+      // Crusher head
+      ctx.fillStyle = PAL.steelDark;
+      ctx.fillRect(-18, trap.currentY, 36, 16);
+      // Caution hazard stripes (yellow/black)
+      ctx.fillStyle = PAL.flameYellow;
+      for (let s = -16; s < 16; s += 8) {
+        ctx.fillRect(s, trap.currentY + 2, 4, 12);
+      }
+      // Hydraulic steel piston shaft extending from ceiling
+      ctx.fillStyle = PAL.steelMid;
+      ctx.fillRect(-6, 0, 12, trap.currentY);
+
+    } else if (trap.type === 'conveyor') {
+      // Animated Conveyor Belt
+      ctx.fillStyle = PAL.steelDark;
+      ctx.fillRect(0, 0, trap.width, 10);
+      // Animated chevron arrows
+      ctx.fillStyle = PAL.steelLight;
+      const offset = (gameTime * trap.speed * 20) % 12;
+      for (let ax = offset; ax < trap.width; ax += 12) {
+        ctx.fillRect(ax, 3, 4, 4);
+      }
+
+    } else if (trap.type === 'drawbridge') {
+      // Collapsing Wooden Drawbridge Planks
+      ctx.fillStyle = trap.isCrumbling ? '#844220' : '#5c381c';
+      ctx.fillRect(0, 0, trap.width, 6);
+      // Iron nails & planks
+      ctx.fillStyle = PAL.black;
+      for (let px = 8; px < trap.width; px += 16) {
+        ctx.fillRect(px, 0, 1, 6);
+      }
+
+    } else if (trap.type === 'pressurePlate') {
+      // Stone Floor Pressure Plate
+      ctx.fillStyle = trap.isDown ? '#505060' : '#888898';
+      const ph = trap.isDown ? 2 : 4;
+      ctx.fillRect(-10, -ph, 20, ph);
+
+    } else if (trap.type === 'ghostPlatform') {
+      // Invisible Ghost Platform (Revealed by Spectral Vision in Boxers!)
+      if (trap.visible) {
+        ctx.fillStyle = 'rgba(0, 216, 240, 0.45)';
+        ctx.fillRect(0, 0, trap.width, 8);
+        ctx.strokeStyle = PAL.cyberCyan;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0, 0, trap.width, 8);
+        // Mystic glowing runes
+        ctx.fillStyle = PAL.steelWhite;
+        for (let rx = 6; rx < trap.width; rx += 14) {
+          ctx.fillRect(rx, 2, 3, 3);
+        }
+      }
+    } else if (trap.type === 'chest') {
+      // Treasure / Armor Chest
+      const isGold = (trap.chestType === 'golden');
+      ctx.fillStyle = isGold ? PAL.goldMid : '#784820';
+      ctx.fillRect(-8, -12, 16, 12);
+      ctx.fillStyle = isGold ? PAL.goldLight : PAL.steelLight;
+      ctx.fillRect(-9, -13, 18, 3); // lid
+      ctx.fillStyle = PAL.flameYellow;
+      ctx.fillRect(-2, -8, 4, 4);  // lock clasp
+    }
+
+    ctx.restore();
+  }
+
+  // --- PARTICLES ENGINE ---
+  drawParticles(particles) {
+    const ctx = this.ctx;
+    for (const p of particles) {
+      ctx.fillStyle = p.color;
+      ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size || 2, p.size || 2);
+    }
+  }
+
+  // --- HEADS-UP DISPLAY (HUD) ---
+  drawHUD(score, highScore, stageNum, stageName, lives, armorState, currentWeapon, magicCharge, possessionTimer, possessedType, boss) {
+    const ctx = this.ctx;
+    ctx.save();
+
+    // Top HUD Bar Background
+    ctx.fillStyle = 'rgba(8, 8, 14, 0.9)';
+    ctx.fillRect(0, 0, this.width, 18);
+    ctx.fillStyle = '#2e2e42';
+    ctx.fillRect(0, 18, this.width, 1);
+
+    ctx.font = '7px monospace';
+
+    // Score & High Score
+    ctx.fillStyle = this.PAL.flameYellow;
+    ctx.fillText(`SCORE:${score.toString().padStart(6, '0')}`, 4, 8);
+    ctx.fillStyle = this.PAL.steelMid;
+    ctx.fillText(`HIGH:${highScore.toString().padStart(6, '0')}`, 95, 8);
+
+    // Stage Name
+    ctx.fillStyle = this.PAL.steelWhite;
+    ctx.fillText(`STG ${stageNum}: ${stageName.slice(0, 16)}`, 190, 8);
+
+    // Lives (Arthur Helmet Icons)
+    ctx.fillStyle = this.PAL.flameYellow;
+    ctx.fillText(`LIVES:`, 4, 16);
+    for (let l = 0; l < Math.min(lives, 5); l++) {
+      ctx.fillStyle = this.PAL.steelLight;
+      ctx.fillRect(35 + l * 9, 10, 6, 6);
+      ctx.fillStyle = this.PAL.rubyRed;
+      ctx.fillRect(38 + l * 9, 12, 2, 1);
+    }
+
+    // Armor & Twist Badge
+    let badgeText = "[STEEL ARMOR]";
+    let badgeColor = this.PAL.steelLight;
+    if (armorState === 'boxers') {
+      badgeText = "[BOXERS +35% SPD]";
+      badgeColor = this.PAL.rubyRed;
+    } else if (armorState === 'golden') {
+      badgeText = "[GOLDEN ARMOR]";
+      badgeColor = this.PAL.goldLight;
+    } else if (armorState === 'possessed') {
+      badgeText = `[POSSESSED: ${possessedType.toUpperCase()} ${possessionTimer.toFixed(1)}s]`;
+      badgeColor = this.PAL.cyberCyan;
+    }
+    ctx.fillStyle = badgeColor;
+    ctx.fillText(badgeText, 95, 16);
+
+    // Weapon Icon
+    ctx.fillStyle = this.PAL.flameYellow;
+    ctx.fillText(`WPN:${currentWeapon.toUpperCase()}`, 245, 16);
+
+    // Golden Armor Magic Charge Gauge
+    if (armorState === 'golden' && magicCharge > 0) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(110, 22, 100, 6);
+      ctx.fillStyle = magicCharge >= 1.0 ? this.PAL.flameYellow : this.PAL.holyLight;
+      ctx.fillRect(110, 22, Math.round(100 * magicCharge), 6);
+      ctx.strokeStyle = this.PAL.steelLight;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(110, 22, 100, 6);
+    }
+
+    // Boss Health Bar (Stage 6)
+    if (boss && stageNum === 6) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(60, 22, 200, 8);
+      const hpPct = Math.max(0, boss.hp / boss.maxHp);
+      ctx.fillStyle = boss.phase === 2 ? this.PAL.rubyRed : this.PAL.flameOrange;
+      ctx.fillRect(60, 22, Math.round(200 * hpPct), 8);
+      ctx.strokeStyle = this.PAL.goldMid;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(60, 22, 200, 8);
+      ctx.fillStyle = this.PAL.steelWhite;
+      ctx.fillText(`ASTAROTH-LECHUCK-9000: ${Math.round(hpPct * 100)}%`, 85, 29);
+    }
+
+    ctx.restore();
+  }
+
+  // --- PARCHMENT WORLD MAP SCREEN ---
+  drawWorldMap(currentStage, progress, gameTime) {
+    const ctx = this.ctx;
+    const w = this.width;
+    const h = this.height;
+
+    // Aged parchment background
+    ctx.fillStyle = '#d4b884';
+    ctx.fillRect(0, 0, w, h);
+
+    // Vintage cartography border
+    ctx.strokeStyle = '#5a3818';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(6, 6, w - 12, h - 12);
+    ctx.lineWidth = 1;
+    ctx.strokeRect(10, 10, w - 20, h - 20);
+
+    // Ocean waves decoration
+    ctx.fillStyle = '#b89868';
+    for (let y = 30; y < h - 30; y += 24) {
+      for (let x = 20; x < w - 20; x += 36) {
+        ctx.fillRect(x, y, 4, 1);
+        ctx.fillRect(x + 2, y + 1, 4, 1);
+      }
+    }
+
+    // Header Title Card
+    ctx.fillStyle = '#3a1808';
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText("THE CURSED PC GAMING MUSEUM", w / 2, 26);
+    ctx.font = '8px monospace';
+    ctx.fillText("MAP OF SIR ARTHUR'S HISTORIC PILGRIMAGE", w / 2, 36);
+    ctx.textAlign = 'left';
+
+    // 6 Stage Locations on Map
+    const stageNodes = [
+      { num: 1, x: 45, y: 140, name: "LeChuck's Ship" },
+      { num: 2, x: 95, y: 85, name: "Moat of Daventry" },
+      { num: 3, x: 155, y: 145, name: "Jaffar Catacombs" },
+      { num: 4, x: 215, y: 80, name: "Lemmings Foundry" },
+      { num: 5, x: 265, y: 135, name: "Phobos E1M1" },
+      { num: 6, x: 275, y: 65, name: "Throne of Astaroth" }
+    ];
+
+    // Dotted route line connecting stages
+    ctx.strokeStyle = '#8b4513';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(stageNodes[0].x, stageNodes[0].y);
+    for (let i = 1; i < stageNodes.length; i++) {
+      ctx.lineTo(stageNodes[i].x, stageNodes[i].y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw Stage Map Icons
+    stageNodes.forEach((node) => {
+      const isCurrent = (node.num === currentStage);
+      const isCompleted = (node.num < currentStage);
+
+      // Island fortress icon
+      ctx.fillStyle = isCompleted ? '#4a7838' : (isCurrent ? '#b83828' : '#705038');
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#201008';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(node.num.toString(), node.x, node.y + 3);
+
+      // Name label
+      ctx.fillStyle = '#3a1808';
+      ctx.font = '7px monospace';
+      ctx.fillText(node.name, node.x, node.y + 16);
+    });
+
+    // Arthur walking along the path
+    const targetIdx = currentStage - 1;
+    const startIdx = Math.max(0, targetIdx - 1);
+    const startNode = stageNodes[startIdx];
+    const endNode = stageNodes[targetIdx];
+
+    const curX = startNode.x + (endNode.x - startNode.x) * progress;
+    const curY = startNode.y + (endNode.y - startNode.y) * progress;
+
+    // Draw walking Arthur icon
+    this.drawArthur(curX, curY - 2, 'steel', 1, gameTime * 8, false, false, false, false, 0, false, 0);
+
+    // Bottom prompt
+    ctx.fillStyle = Math.sin(gameTime * 6) > 0 ? '#b82010' : '#201008';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText("PRESS [SPACE] OR CLICK TO ENTER EXHIBIT", w / 2, 185);
+    ctx.textAlign = 'left';
+  }
+}
+
+
+// ============================================================================
+// PHYSICS, TILES & INTERACTIVE TRAPS ENGINE
+// ============================================================================
+
+class PhysicsEngine {
+  constructor() {
+    this.gravity = 0.28;
+    this.terminalVelocity = 7.0;
+  }
+
+  // AABB Box overlap check
+  checkOverlap(box1, box2) {
+    return (
+      box1.x < box2.x + box2.width &&
+      box1.x + box1.width > box2.x &&
+      box1.y < box2.y + box2.height &&
+      box1.y + box1.height > box2.y
+    );
+  }
+
+  // Check collision against solid level geometry & interactive platforms
+  collideEntityWithWorld(entity, stage, sound, particles) {
+    if (!stage) return;
+
+    // 1. Horizontal movement & collision
+    entity.x += entity.vx;
+    let feetBox = {
+      x: entity.x - entity.width / 2,
+      y: entity.y - entity.height,
+      width: entity.width,
+      height: entity.height
+    };
+
+    // Solid block checks
+    for (const block of stage.solids) {
+      if (this.checkOverlap(feetBox, block)) {
+        if (entity.vx > 0) {
+          entity.x = block.x - entity.width / 2;
+        } else if (entity.vx < 0) {
+          entity.x = block.x + block.width + entity.width / 2;
+        }
+        entity.vx = 0;
+        break;
+      }
+    }
+
+    // 2. Vertical movement & gravity
+    entity.vy += this.gravity;
+    if (entity.vy > this.terminalVelocity) {
+      entity.vy = this.terminalVelocity;
+    }
+
+    const prevY = entity.y;
+    entity.y += entity.vy;
+    entity.onGround = false;
+
+    feetBox = {
+      x: entity.x - entity.width / 2,
+      y: entity.y - entity.height,
+      width: entity.width,
+      height: entity.height
+    };
+
+    // Check solid ground & ceiling
+    for (const block of stage.solids) {
+      if (this.checkOverlap(feetBox, block)) {
+        if (entity.vy > 0) {
+          // Landing on floor
+          entity.y = block.y;
+          entity.onGround = true;
+
+          // Check cracked floor smash (Heavy Steel Armor landing from height or Anvil)
+          if (block.isCracked) {
+            const isHeavyLanding = (entity.isPlayer && entity.armorState === 'steel' && entity.vy > 3.5) || entity.isAnvil;
+            if (isHeavyLanding) {
+              block.broken = true;
+              sound.sfxFloorSmash();
+              // Spawn dust/debris particles
+              for (let i = 0; i < 12; i++) {
+                particles.push({
+                  x: block.x + Math.random() * block.width,
+                  y: block.y,
+                  vx: (Math.random() - 0.5) * 4,
+                  vy: -Math.random() * 3 - 1,
+                  size: 3,
+                  color: '#888898',
+                  life: 0.6
+                });
+              }
+            }
+          }
+        } else if (entity.vy < 0) {
+          // Hitting ceiling
+          entity.y = block.y + block.height + entity.height;
+        }
+        entity.vy = 0;
+        break;
+      }
+    }
+
+    // Filter out destroyed cracked blocks from solids
+    stage.solids = stage.solids.filter(b => !b.broken);
+
+    // 3. Semi-solid one-way platforms (jump through from below, land on top)
+    if (entity.vy >= 0) {
+      for (const plat of stage.platforms) {
+        // Must be falling and feet must cross top of platform
+        if (prevY <= plat.y + 2 && entity.y >= plat.y) {
+          if (entity.x + entity.width / 2 > plat.x && entity.x - entity.width / 2 < plat.x + plat.width) {
+            entity.y = plat.y;
+            entity.vy = 0;
+            entity.onGround = true;
+
+            // Handle conveyor belt velocity
+            if (plat.isConveyor && !(entity.isPlayer && entity.armorState === 'steel')) {
+              // Steel armor resists conveyor pull, boxer shorts / enemies get pushed!
+              entity.x += plat.conveyorSpeed;
+            }
+
+            // Handle collapsing drawbridge
+            if (plat.isDrawbridge && !plat.isCrumbling) {
+              plat.isCrumbling = true;
+              plat.crumbleTimer = 0.7; // seconds before dropping
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    // 4. Ghost Platforms (Visible & Solid ONLY in Boxer Shorts mode)
+    if (entity.isPlayer && entity.armorState === 'boxers' && entity.vy >= 0) {
+      for (const gp of stage.ghostPlatforms) {
+        if (prevY <= gp.y + 2 && entity.y >= gp.y) {
+          if (entity.x + entity.width / 2 > gp.x && entity.x - entity.width / 2 < gp.x + gp.width) {
+            entity.y = gp.y;
+            entity.vy = 0;
+            entity.onGround = true;
+            break;
+          }
+        }
+      }
+    }
+
+    // 5. Ladders check (for player)
+    if (entity.isPlayer) {
+      entity.canClimb = false;
+      for (const ladder of stage.ladders) {
+        if (
+          entity.x > ladder.x - 6 &&
+          entity.x < ladder.x + ladder.width + 6 &&
+          entity.y > ladder.y &&
+          entity.y - entity.height < ladder.y + ladder.height
+        ) {
+          entity.canClimb = true;
+          entity.currentLadder = ladder;
+          break;
+        }
+      }
+      if (!entity.canClimb) {
+        entity.isClimbing = false;
+      }
+    }
+
+    // 6. Hazard Liquid checks (Cursed Water, Acid, Green Nukage)
+    for (const haz of stage.hazards) {
+      const eBox = {
+        x: entity.x - entity.width / 2,
+        y: entity.y - entity.height,
+        width: entity.width,
+        height: entity.height
+      };
+      if (this.checkOverlap(eBox, haz)) {
+        if (entity.isPlayer) {
+          // Possessed monsters like Gargoyles or Zombified form are immune to hazards!
+          if (entity.armorState !== 'possessed' || entity.possessedType === 'human') {
+            entity.takeDamage(100, 'hazard'); // lethal liquid
+          }
+        }
+      }
+    }
+  }
+
+  // Update dynamic traps (slicers, pistons, collapsing planks, pressure plates)
+  updateTraps(stage, dt, sound, particles, player, anvils) {
+    if (!stage) return;
+
+    // 1. Slicer Gates (Prince of Persia)
+    for (const slicer of stage.slicerGates) {
+      slicer.timer = (slicer.timer + dt) % slicer.period;
+      // Snaps closed when timer < snapDuration
+      const isSnapped = slicer.timer < 0.4;
+      slicer.openHeight = isSnapped ? 2 : 22;
+
+      if (isSnapped && !slicer.soundPlayed) {
+        sound.sfxSlicerClank();
+        slicer.soundPlayed = true;
+      } else if (!isSnapped) {
+        slicer.soundPlayed = false;
+      }
+
+      // Check hit against player
+      if (isSnapped && player) {
+        const pBox = {
+          x: player.x - player.width / 2,
+          y: player.y - player.height,
+          width: player.width,
+          height: player.height
+        };
+        const sBox = {
+          x: slicer.x - 8,
+          y: slicer.y - 20,
+          width: 16,
+          height: 40
+        };
+        if (this.checkOverlap(pBox, sBox)) {
+          player.takeDamage(50, 'slicer');
+        }
+      }
+    }
+
+    // 2. Hydraulic Piston Crushers (Lemmings)
+    for (const piston of stage.pistons) {
+      piston.timer = (piston.timer + dt) % piston.period;
+      // Stamping down cycle: 0..0.3s slam down, 0.3..0.6s hold, 0.6..2.5s rise
+      if (piston.timer < 0.25) {
+        piston.currentY = (piston.timer / 0.25) * piston.maxDrop;
+        if (piston.timer > 0.22 && !piston.soundPlayed) {
+          sound.sfxPistonSmash();
+          piston.soundPlayed = true;
+        }
+      } else if (piston.timer < 0.6) {
+        piston.currentY = piston.maxDrop;
+      } else {
+        piston.soundPlayed = false;
+        const riseProgress = (piston.timer - 0.6) / (piston.period - 0.6);
+        piston.currentY = piston.maxDrop * (1.0 - riseProgress);
+      }
+
+      // Crusher hitbox at bottom of piston head
+      if (piston.currentY > piston.maxDrop - 10 && player) {
+        const pBox = {
+          x: player.x - player.width / 2,
+          y: player.y - player.height,
+          width: player.width,
+          height: player.height
+        };
+        const crushBox = {
+          x: piston.x - 16,
+          y: piston.y + piston.currentY,
+          width: 32,
+          height: 14
+        };
+        if (this.checkOverlap(pBox, crushBox)) {
+          player.takeDamage(80, 'crush');
+        }
+      }
+    }
+
+    // 3. Collapsing Drawbridges
+    for (let i = stage.platforms.length - 1; i >= 0; i--) {
+      const plat = stage.platforms[i];
+      if (plat.isDrawbridge && plat.isCrumbling) {
+        plat.crumbleTimer -= dt;
+        if (plat.crumbleTimer <= 0) {
+          // Falls into abyss
+          plat.y += 180 * dt;
+          if (plat.y > 250) {
+            stage.platforms.splice(i, 1);
+          }
+        }
+      }
+    }
+
+    // 4. Pressure Plates (Stepped on by player OR weighted by Anvil!)
+    for (const plate of stage.pressurePlates) {
+      plate.isDown = false;
+      const plateBox = {
+        x: plate.x - 10,
+        y: plate.y - 6,
+        width: 20,
+        height: 8
+      };
+
+      // Check player standing on plate
+      if (player) {
+        const pFeet = {
+          x: player.x - 6,
+          y: player.y - 4,
+          width: 12,
+          height: 6
+        };
+        if (this.checkOverlap(pFeet, plateBox)) {
+          plate.isDown = true;
+        }
+      }
+
+      // Check Anvil standing on plate!
+      for (const anvil of anvils) {
+        const aFeet = {
+          x: anvil.x - 8,
+          y: anvil.y - 4,
+          width: 16,
+          height: 6
+        };
+        if (this.checkOverlap(aFeet, plateBox)) {
+          plate.isDown = true;
+        }
+      }
+
+      // If plate is down, linked door/gate is retracted/open!
+      if (plate.linkedGateId && stage.gates) {
+        const gate = stage.gates.find(g => g.id === plate.linkedGateId);
+        if (gate) {
+          gate.isOpen = plate.isDown;
+        }
+      }
+    }
+  }
+}
+
+
+// ============================================================================
+// PLAYER, WEAPONS & TACTICAL ARMOR SYSTEM
+// ============================================================================
+
+class WeaponProjectile {
+  constructor(type, x, y, vx, vy, facing, damage, owner) {
+    this.type = type;
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.facing = facing;
+    this.damage = damage;
+    this.owner = owner;
+    this.isDead = false;
+    this.lifetime = 0;
+    this.startX = x;
+    this.pierceCount = (type === 'lance') ? 2 : (type === 'axe' ? 5 : 1);
+    this.isReturning = false; // for Boomerang Cross
+  }
+
+  update(dt, stage, sound, particles) {
+    this.lifetime += dt;
+
+    if (this.type === 'lance' || this.type === 'dagger' || this.type === 'fireball' || this.type === 'plasma') {
+      this.x += this.vx;
+      this.y += this.vy;
+      // Destroy if far out of stage bounds or lifespan
+      if (this.lifetime > 2.0) this.isDead = true;
+
+    } else if (this.type === 'torch') {
+      // Parabolic lob
+      this.x += this.vx;
+      this.vy += 0.28; // gravity
+      this.y += this.vy;
+
+      // Check collision with ground to spawn blue holy fire
+      for (const block of stage.solids) {
+        if (
+          this.x > block.x &&
+          this.x < block.x + block.width &&
+          this.y >= block.y &&
+          this.y <= block.y + 12
+        ) {
+          this.isDead = true;
+          sound.sfxFireBurst();
+          // Spawn Blue Holy Ground Fire
+          stage.weapons.push(new WeaponProjectile('blueFire', this.x, block.y, 0, 0, 1, 12, this.owner));
+          break;
+        }
+      }
+
+    } else if (this.type === 'blueFire') {
+      // Sits on ground and damages anything passing through
+      if (this.lifetime > 2.5) {
+        this.isDead = true;
+      }
+
+    } else if (this.type === 'axe') {
+      // High upward parabolic arc
+      this.x += this.vx;
+      this.vy += 0.22;
+      this.y += this.vy;
+      if (this.y > 220) this.isDead = true;
+
+    } else if (this.type === 'cross') {
+      // Boomerang Cross: flies forward 130px, halts, and returns to player!
+      if (!this.isReturning) {
+        this.x += this.vx;
+        const dist = Math.abs(this.x - this.startX);
+        if (dist > 130) {
+          this.isReturning = true;
+        }
+      } else {
+        // Fly towards owner
+        const dx = this.owner.x - this.x;
+        const dy = (this.owner.y - 12) - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 10) {
+          this.isDead = true; // Caught by player
+        } else {
+          this.x += (dx / dist) * 4.5;
+          this.y += (dy / dist) * 4.5;
+        }
+      }
+
+    } else if (this.type === 'bone') {
+      this.x += this.vx;
+      this.vy += 0.25;
+      this.y += this.vy;
+      if (this.lifetime > 2.0) this.isDead = true;
+    }
+  }
+}
+
+// Tactical Ejected Armor Anvil Entity
+class ArmorAnvil {
+  constructor(x, y, facing) {
+    this.x = x;
+    this.y = y;
+    this.vx = facing * 1.4;
+    this.vy = -1.8;
+    this.width = 18;
+    this.height = 14;
+    this.isAnvil = true;
+    this.onGround = false;
+    this.facing = facing;
+  }
+
+  update(dt, stage, physics, sound, particles, enemies) {
+    // Heavy downward physics
+    this.vy += 0.4;
+    if (this.vy > 8.0) this.vy = 8.0;
+
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Air drag on horizontal speed
+    this.vx *= 0.95;
+
+    // Check collision with enemies (Massive 150 Crushing Damage!)
+    for (const enemy of enemies) {
+      if (enemy.isDead) continue;
+      const aBox = { x: this.x - 9, y: this.y - 12, width: 18, height: 14 };
+      const eBox = { x: enemy.x - enemy.width / 2, y: enemy.y - enemy.height, width: enemy.width, height: enemy.height };
+
+      if (physics.checkOverlap(aBox, eBox)) {
+        enemy.takeDamage(150, sound, particles);
+        sound.sfxEnemyDeath();
+        // Anvil bounce upon crushing enemy
+        this.vy = -2.5;
+      }
+    }
+
+    // Floor collision
+    this.onGround = false;
+    for (const block of stage.solids) {
+      const aBox = { x: this.x - 9, y: this.y - 12, width: 18, height: 14 };
+      if (physics.checkOverlap(aBox, block)) {
+        if (this.vy > 0) {
+          this.y = block.y;
+          this.vy = 0;
+          this.vx = 0;
+          this.onGround = true;
+
+          // Impact effects
+          sound.sfxAnvilThud();
+          for (let i = 0; i < 8; i++) {
+            particles.push({
+              x: this.x + (Math.random() - 0.5) * 16,
+              y: this.y,
+              vx: (Math.random() - 0.5) * 3,
+              vy: -Math.random() * 2 - 1,
+              size: 2,
+              color: '#c0c8d8',
+              life: 0.4
+            });
+          }
+        }
+        break;
+      }
+    }
+  }
+}
+
+// Sir Arthur Player Class
+class Player {
+  constructor(x, y) {
+    this.isPlayer = true;
+    this.spawnX = x;
+    this.spawnY = y;
+    this.x = x;
+    this.y = y;
+    this.vx = 0;
+    this.vy = 0;
+    this.width = 14;
+    this.height = 24;
+    this.facing = 1;
+
+    // Armor state: 'steel', 'boxers', 'golden', 'possessed'
+    this.armorState = 'steel';
+    this.lives = 3;
+    this.score = 0;
+
+    // Movement state
+    this.onGround = false;
+    this.canClimb = false;
+    this.isClimbing = false;
+    this.isCrouching = false;
+    this.isDoubleJumping = false;
+    this.hasDoubleJumped = false;
+    this.animFrame = 0;
+
+    // Weapon Arsenal (Starts with Lance)
+    this.currentWeapon = 'lance';
+    this.attackCooldown = 0;
+
+    // Golden Magic Charge
+    this.isChargingMagic = false;
+    this.magicChargeTimer = 0;
+    this.maxChargeTime = 1.2;
+
+    // Possession Curse State
+    this.possessionTimer = 0;
+    this.possessedType = ''; // 'gargoyle', 'zombie', 'skeleton', 'imp'
+    this.possessedTarget = null;
+
+    // Invulnerability
+    this.invincibleTimer = 0;
+
+    // Screen Shake trigger
+    this.screenShake = 0;
+  }
+
+  resetPosition(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = 0;
+    this.vy = 0;
+    this.onGround = false;
+    this.isClimbing = false;
+    this.isCrouching = false;
+    this.isDoubleJumping = false;
+    this.hasDoubleJumped = false;
+  }
+
+  update(dt, input, stage, physics, sound, particles, anvils, enemies) {
+    // Update timers
+    if (this.invincibleTimer > 0) this.invincibleTimer -= dt;
+    if (this.attackCooldown > 0) this.attackCooldown -= dt;
+    if (this.screenShake > 0) this.screenShake = Math.max(0, this.screenShake - dt * 15);
+
+    // ========================================================================
+    // POSSESSED MONSTER CONTROL MODE
+    // ========================================================================
+    if (this.armorState === 'possessed') {
+      this.possessionTimer -= dt;
+
+      // Warning beep when low on possession time
+      if (this.possessionTimer < 2.0 && Math.floor(this.possessionTimer * 4) % 2 === 0) {
+        sound.sfxPossessWarning();
+      }
+
+      // Check manual eject [E] or timeout
+      if (this.possessionTimer <= 0 || input.ejectPressed) {
+        this.exitPossession(sound, particles);
+        return;
+      }
+
+      // Specific Monster Abilities
+      if (this.possessedType === 'gargoyle') {
+        // Red Arremer Gargoyle: 8-way free flight!
+        const flySpeed = 2.4;
+        this.vx = 0;
+        this.vy = 0;
+        if (input.left) { this.vx = -flySpeed; this.facing = -1; }
+        if (input.right) { this.vx = flySpeed; this.facing = 1; }
+        if (input.up) { this.vy = -flySpeed; }
+        if (input.down) { this.vy = flySpeed; }
+
+        this.x += this.vx;
+        this.y += this.vy;
+        this.animFrame += dt * 8;
+
+        // Attack: Rapid Fireballs!
+        if (input.attack && this.attackCooldown <= 0) {
+          sound.sfxTorch();
+          stage.weapons.push(new WeaponProjectile('fireball', this.x + this.facing * 8, this.y - 12, this.facing * 5.5, 0, this.facing, 30, this));
+          this.attackCooldown = 0.22;
+        }
+
+      } else if (this.possessedType === 'zombie') {
+        // Zombie: High claw swipe, acid spit, immune to nukage
+        const zSpeed = 1.2;
+        this.vx = 0;
+        if (input.left) { this.vx = -zSpeed; this.facing = -1; }
+        if (input.right) { this.vx = zSpeed; this.facing = 1; }
+
+        physics.collideEntityWithWorld(this, stage, sound, particles);
+        this.animFrame += Math.abs(this.vx) * dt * 4;
+
+        // Attack: Acid spit lob
+        if (input.attack && this.attackCooldown <= 0) {
+          sound.sfxTorch();
+          stage.weapons.push(new WeaponProjectile('fireball', this.x + this.facing * 8, this.y - 14, this.facing * 3.5, -2.5, this.facing, 25, this));
+          this.attackCooldown = 0.35;
+        }
+
+      } else if (this.possessedType === 'skeleton') {
+        // Skeleton: High agile jump, rapid bone toss
+        const sSpeed = 1.8;
+        this.vx = 0;
+        if (input.left) { this.vx = -sSpeed; this.facing = -1; }
+        if (input.right) { this.vx = sSpeed; this.facing = 1; }
+
+        if (input.jump && this.onGround) {
+          this.vy = -5.4; // super high jump
+          sound.sfxBoxerHop();
+        }
+
+        physics.collideEntityWithWorld(this, stage, sound, particles);
+        this.animFrame += Math.abs(this.vx) * dt * 5;
+
+        // Attack: Rapid bone throw
+        if (input.attack && this.attackCooldown <= 0) {
+          sound.sfxLance();
+          stage.weapons.push(new WeaponProjectile('bone', this.x + this.facing * 8, this.y - 14, this.facing * 4.2, -2.0, this.facing, 22, this));
+          this.attackCooldown = 0.18;
+        }
+
+      } else if (this.possessedType === 'imp') {
+        // Cyber-Imp: Heavy dual plasma shots
+        const iSpeed = 1.4;
+        this.vx = 0;
+        if (input.left) { this.vx = -iSpeed; this.facing = -1; }
+        if (input.right) { this.vx = iSpeed; this.facing = 1; }
+
+        physics.collideEntityWithWorld(this, stage, sound, particles);
+        this.animFrame += Math.abs(this.vx) * dt * 4;
+
+        if (input.attack && this.attackCooldown <= 0) {
+          sound.sfxDagger();
+          stage.weapons.push(new WeaponProjectile('plasma', this.x + this.facing * 8, this.y - 12, this.facing * 6.0, 0, this.facing, 35, this));
+          this.attackCooldown = 0.28;
+        }
+      }
+
+      return;
+    }
+
+    // ========================================================================
+    // NORMAL ARTHUR CONTROLS & TWISTS
+    // ========================================================================
+
+    // Speed calculation: Boxer Shorts gives +35% movement speed!
+    const baseSpeed = 1.6;
+    const currentSpeed = (this.armorState === 'boxers') ? (baseSpeed * 1.35) : baseSpeed;
+
+    // 1. Ladder Climbing
+    if (this.canClimb && (input.up || input.down)) {
+      this.isClimbing = true;
+      this.vx = 0;
+      this.vy = 0;
+      this.hasDoubleJumped = false;
+    }
+
+    if (this.isClimbing) {
+      if (input.up) {
+        this.y -= 1.4;
+        this.animFrame += dt * 6;
+      } else if (input.down) {
+        this.y += 1.4;
+        this.animFrame += dt * 6;
+      }
+      if (input.jump) {
+        this.isClimbing = false;
+        this.vy = -4.0;
+        sound.sfxBoxerHop();
+      }
+      return;
+    }
+
+    // 2. Crouching
+    this.isCrouching = (input.down && this.onGround);
+    this.height = this.isCrouching ? 14 : 24;
+
+    // 3. Horizontal Walking
+    if (!this.isCrouching && !this.isChargingMagic) {
+      if (input.left) {
+        this.vx = -currentSpeed;
+        this.facing = -1;
+        this.animFrame += dt * (this.armorState === 'boxers' ? 10 : 7);
+      } else if (input.right) {
+        this.vx = currentSpeed;
+        this.facing = 1;
+        this.animFrame += dt * (this.armorState === 'boxers' ? 10 : 7);
+      } else {
+        this.vx = 0;
+      }
+    } else {
+      this.vx = 0;
+    }
+
+    // 4. Jumping & Double-Jump Flip (Boxer Shorts Twist!)
+    if (input.jumpPressed) {
+      if (this.onGround) {
+        this.vy = -4.8;
+        this.onGround = false;
+        this.hasDoubleJumped = false;
+        this.isDoubleJumping = false;
+        sound.sfxBoxerHop();
+      } else if (this.armorState === 'boxers' && !this.hasDoubleJumped) {
+        // Boxer Shorts Double Jump with somersault spin!
+        this.vy = -4.4;
+        this.hasDoubleJumped = true;
+        this.isDoubleJumping = true;
+        sound.sfxDoubleJump();
+        // Cyan trail particles
+        for (let i = 0; i < 6; i++) {
+          particles.push({
+            x: this.x + (Math.random() - 0.5) * 10,
+            y: this.y - 12,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2,
+            size: 2,
+            color: '#00d8f0',
+            life: 0.35
+          });
+        }
+      }
+    }
+
+    if (this.onGround) {
+      this.hasDoubleJumped = false;
+      this.isDoubleJumping = false;
+    }
+
+    // 5. Springboard Bounce on Ejected Armor Anvil!
+    for (const anvil of anvils) {
+      if (
+        this.vy > 0 &&
+        this.x > anvil.x - 12 &&
+        this.x < anvil.x + 12 &&
+        this.y >= anvil.y - 14 &&
+        this.y <= anvil.y - 2
+      ) {
+        // Super high launch springboard!
+        this.y = anvil.y - 14;
+        this.vy = -7.2;
+        this.hasDoubleJumped = false;
+        sound.sfxBoxerHop();
+        this.screenShake = 3;
+        break;
+      }
+    }
+
+    // 6. Physics Collision
+    physics.collideEntityWithWorld(this, stage, sound, particles);
+
+    // 7. Tactical Armor Ejection OR Soul Possession ([E] / Right-Click)
+    if (input.ejectPressed) {
+      if (this.armorState === 'steel' || this.armorState === 'golden') {
+        // ====================================================================
+        // TACTICAL ARMOR EJECTION TWIST!
+        // ====================================================================
+        sound.sfxArmorEject();
+        sound.sfxArmorShatter();
+        this.screenShake = 5;
+
+        // Spawn Anvil Decoy block
+        anvils.push(new ArmorAnvil(this.x + this.facing * 8, this.y - 10, this.facing));
+
+        // Armor shatter debris flying outward
+        for (let i = 0; i < 10; i++) {
+          particles.push({
+            x: this.x,
+            y: this.y - 14,
+            vx: (Math.random() - 0.5) * 6,
+            vy: -Math.random() * 4 - 2,
+            size: 3,
+            color: this.armorState === 'golden' ? '#ffe060' : '#d2d8e4',
+            life: 0.8
+          });
+        }
+
+        // Switch to Strawberry Boxer Shorts!
+        this.armorState = 'boxers';
+        sound.setBoxerShortsMode(true);
+
+      } else if (this.armorState === 'boxers') {
+        // ====================================================================
+        // SOUL POSSESSION CURSE TWIST!
+        // ====================================================================
+        // Search nearest visible non-boss enemy within 200px
+        let nearestEnemy = null;
+        let minDist = 200;
+
+        for (const e of enemies) {
+          if (e.isDead || e.isBoss) continue;
+          const dist = Math.hypot(e.x - this.x, e.y - this.y);
+          if (dist < minDist) {
+            minDist = dist;
+            nearestEnemy = e;
+          }
+        }
+
+        if (nearestEnemy) {
+          sound.sfxPossessCast();
+          sound.sfxPossessHit();
+          this.possessionTimer = 8.0;
+          this.possessedType = nearestEnemy.type; // 'gargoyle', 'zombie', 'skeleton', 'imp'
+          this.possessedTarget = nearestEnemy;
+          this.armorState = 'possessed';
+
+          // Snap Arthur position to the monster
+          this.x = nearestEnemy.x;
+          this.y = nearestEnemy.y;
+
+          // Remove the possessed monster from active enemy list
+          nearestEnemy.isDead = true;
+
+          // Ethereal soul stream particles
+          for (let i = 0; i < 16; i++) {
+            particles.push({
+              x: this.x,
+              y: this.y - 12,
+              vx: (Math.random() - 0.5) * 5,
+              vy: (Math.random() - 0.5) * 5,
+              size: 3,
+              color: '#00d8f0',
+              life: 0.6
+            });
+          }
+        }
+      }
+    }
+
+    // 8. Weapons & Golden Magic Attacks
+    if (this.armorState === 'golden') {
+      // Golden Armor: Holding attack charges screen-clearing Magic!
+      if (input.attack) {
+        this.isChargingMagic = true;
+        this.magicChargeTimer += dt;
+        sound.sfxMagicCharge();
+      } else if (this.isChargingMagic) {
+        // Released attack
+        if (this.magicChargeTimer >= this.maxChargeTime) {
+          // SCREEN-CLEARING THUNDER DRAGON MAGIC!
+          this.castGoldenMagic(stage, sound, particles, enemies);
+        } else {
+          // Normal weapon throw
+          this.fireWeapon(stage, sound, input);
+        }
+        this.isChargingMagic = false;
+        this.magicChargeTimer = 0;
+      }
+    } else {
+      // Normal attack for Steel & Boxer modes
+      if (input.attackPressed && this.attackCooldown <= 0) {
+        this.fireWeapon(stage, sound, input);
+      }
+    }
+  }
+
+  fireWeapon(stage, sound, input) {
+    let spawnY = this.isCrouching ? (this.y - 8) : (this.y - 14);
+    let vx = this.facing * 5.0;
+    let vy = 0;
+
+    // Aiming straight up
+    if (input.up && !this.isCrouching) {
+      vx = 0;
+      vy = -5.5;
+    }
+
+    if (this.currentWeapon === 'lance') {
+      sound.sfxLance();
+      stage.weapons.push(new WeaponProjectile('lance', this.x + this.facing * 8, spawnY, vx, vy, this.facing, 35, this));
+      this.attackCooldown = 0.28;
+
+    } else if (this.currentWeapon === 'dagger') {
+      sound.sfxDagger();
+      stage.weapons.push(new WeaponProjectile('dagger', this.x + this.facing * 8, spawnY, vx * 1.3, vy * 1.3, this.facing, 18, this));
+      this.attackCooldown = 0.14; // rapid fire!
+
+    } else if (this.currentWeapon === 'torch') {
+      sound.sfxTorch();
+      stage.weapons.push(new WeaponProjectile('torch', this.x + this.facing * 8, spawnY, this.facing * 2.8, -3.2, this.facing, 20, this));
+      this.attackCooldown = 0.35;
+
+    } else if (this.currentWeapon === 'axe') {
+      sound.sfxAxe();
+      stage.weapons.push(new WeaponProjectile('axe', this.x + this.facing * 8, spawnY, this.facing * 2.2, -5.0, this.facing, 45, this));
+      this.attackCooldown = 0.38;
+
+    } else if (this.currentWeapon === 'cross') {
+      sound.sfxCross();
+      stage.weapons.push(new WeaponProjectile('cross', this.x + this.facing * 8, spawnY, this.facing * 4.2, 0, this.facing, 30, this));
+      this.attackCooldown = 0.45;
+    }
+  }
+
+  castGoldenMagic(stage, sound, particles, enemies) {
+    sound.sfxMagicRelease();
+    this.screenShake = 15;
+    this.invincibleTimer = 2.5;
+
+    // Screen-clearing Thunder Dragon Flood!
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * 320,
+        y: Math.random() * 200,
+        vx: (Math.random() - 0.5) * 10,
+        vy: (Math.random() - 0.5) * 10,
+        size: 4,
+        color: Math.random() > 0.5 ? '#ffe060' : '#00a8ff',
+        life: 1.0
+      });
+    }
+
+    // Obliterate all normal enemies and damage bosses
+    for (const e of enemies) {
+      if (e.isDead) continue;
+      if (e.isBoss) {
+        e.takeDamage(120, sound, particles);
+      } else {
+        e.takeDamage(200, sound, particles);
+      }
+    }
+
+    // Wipe all enemy projectiles
+    stage.weapons = stage.weapons.filter(w => w.owner === this);
+  }
+
+  exitPossession(sound, particles) {
+    sound.sfxPossessHit();
+    this.armorState = 'boxers';
+    sound.setBoxerShortsMode(true);
+    this.invincibleTimer = 1.5;
+    this.vy = -3.5; // pop out upward
+
+    // Monster explosion ectoplasm
+    for (let i = 0; i < 16; i++) {
+      particles.push({
+        x: this.x,
+        y: this.y - 12,
+        vx: (Math.random() - 0.5) * 5,
+        vy: (Math.random() - 0.5) * 5,
+        size: 3,
+        color: '#588850',
+        life: 0.5
+      });
+    }
+  }
+
+  takeDamage(amount, sound, particles) {
+    if (this.invincibleTimer > 0) return;
+
+    if (this.armorState === 'golden') {
+      // Golden -> Steel Armor
+      this.armorState = 'steel';
+      this.invincibleTimer = 2.0;
+      sound.sfxArmorShatter();
+      this.screenShake = 8;
+    } else if (this.armorState === 'steel') {
+      // Steel -> Strawberry Boxer Shorts
+      this.armorState = 'boxers';
+      sound.setBoxerShortsMode(true);
+      this.invincibleTimer = 2.0;
+      sound.sfxArmorShatter();
+      this.screenShake = 8;
+      // Armor shatter particles
+      for (let i = 0; i < 12; i++) {
+        particles.push({
+          x: this.x,
+          y: this.y - 14,
+          vx: (Math.random() - 0.5) * 6,
+          vy: -Math.random() * 4 - 2,
+          size: 3,
+          color: '#d2d8e4',
+          life: 0.8
+        });
+      }
+    } else if (this.armorState === 'boxers') {
+      // Death in Boxer Shorts!
+      this.die(sound, particles);
+    }
+  }
+
+  die(sound, particles) {
+    this.lives--;
+    sound.sfxPlayerDeath();
+    this.screenShake = 12;
+
+    // Disintegration bone collapse
+    for (let i = 0; i < 16; i++) {
+      particles.push({
+        x: this.x,
+        y: this.y - 12,
+        vx: (Math.random() - 0.5) * 5,
+        vy: -Math.random() * 5 - 1,
+        size: 3,
+        color: '#e8e4d0',
+        life: 1.2
+      });
+    }
+
+    if (this.lives > 0) {
+      // Respawn at checkpoint / start
+      this.resetPosition(this.spawnX, this.spawnY);
+      this.armorState = 'steel';
+      sound.setBoxerShortsMode(false);
+      this.invincibleTimer = 3.0;
+    }
+  }
+
+  reclaimArmor(armorType, sound) {
+    this.armorState = armorType;
+    if (armorType !== 'boxers') {
+      sound.setBoxerShortsMode(false);
+    }
+    sound.sfxChestOpen();
+  }
+}
+
+
+// ============================================================================
+// ENEMY AI & MULTI-STAGE FINAL BOSS ENGINE
+// ============================================================================
+
+class Enemy {
+  constructor(type, x, y, facing = -1) {
+    this.type = type;
+    this.x = x;
+    this.y = y;
+    this.vx = 0;
+    this.vy = 0;
+    this.facing = facing;
+    this.isDead = false;
+    this.animFrame = 0;
+    this.state = 'idle';
+    this.aiTimer = 0;
+    this.attackTimer = 0;
+    this.isBoss = false;
+
+    // Attributes by enemy type
+    if (type === 'zombie') {
+      this.width = 12;
+      this.height = 22;
+      this.hp = 25;
+      this.speed = 0.55;
+      this.state = 'rising'; // spawns out of ground
+      this.riseProgress = 0;
+      this.scoreValue = 200;
+    } else if (type === 'skeleton') {
+      this.width = 12;
+      this.height = 22;
+      this.hp = 35;
+      this.speed = 0.8;
+      this.isParrying = false;
+      this.parryCooldown = 0;
+      this.scoreValue = 300;
+    } else if (type === 'gargoyle') {
+      this.width = 18;
+      this.height = 24;
+      this.hp = 60;
+      this.speed = 1.6;
+      this.state = 'perched'; // waiting for player
+      this.swoopProgress = 0;
+      this.scoreValue = 800;
+    } else if (type === 'imp') {
+      this.width = 16;
+      this.height = 22;
+      this.hp = 45;
+      this.speed = 0.7;
+      this.scoreValue = 400;
+    } else if (type === 'lemming') {
+      this.width = 12;
+      this.height = 18;
+      this.hp = 15;
+      this.speed = 0;
+      this.countdown = 5.0; // 5-second countdown to explosion!
+      this.scoreValue = 100;
+    } else if (type === 'voodooSkull') {
+      this.width = 14;
+      this.height = 14;
+      this.hp = 20;
+      this.speed = 1.0;
+      this.baseY = y;
+      this.scoreValue = 250;
+    }
+  }
+
+  update(dt, player, stage, physics, sound, particles) {
+    if (this.isDead) return;
+
+    this.animFrame += dt * 6;
+    this.aiTimer += dt;
+    this.attackTimer += dt;
+
+    const distToPlayer = player ? Math.hypot(player.x - this.x, player.y - this.y) : 999;
+    const dx = player ? (player.x - this.x) : 0;
+    const dy = player ? (player.y - this.y) : 0;
+
+    // Face player
+    if (dx !== 0 && this.type !== 'lemming') {
+      this.facing = dx > 0 ? 1 : -1;
+    }
+
+    // ========================================================================
+    // 1. ZOMBIE AI (Rising from dirt, shambling, acid spit)
+    // ========================================================================
+    if (this.type === 'zombie') {
+      if (this.state === 'rising') {
+        this.riseProgress += dt * 2.0;
+        // Spawn dirt particles
+        if (Math.random() < 0.3) {
+          particles.push({
+            x: this.x + (Math.random() - 0.5) * 12,
+            y: this.y,
+            vx: (Math.random() - 0.5) * 2,
+            vy: -Math.random() * 2,
+            size: 2,
+            color: '#4a3424',
+            life: 0.3
+          });
+        }
+        if (this.riseProgress >= 1.0) {
+          this.state = 'walking';
+        }
+        return;
+      }
+
+      // Shambling towards Arthur
+      this.vx = this.facing * this.speed;
+      physics.collideEntityWithWorld(this, stage, sound, particles);
+
+      // Acid spit every 3.5s if within 120px
+      if (this.attackTimer > 3.5 && distToPlayer < 120) {
+        sound.sfxTorch();
+        stage.weapons.push(new WeaponProjectile('fireball', this.x + this.facing * 6, this.y - 14, this.facing * 3.0, -2.0, this.facing, 15, this));
+        this.attackTimer = 0;
+      }
+
+    // ========================================================================
+    // 2. SKELETON SWORDSMAN AI (Shield parry, bone toss, agile leap)
+    // ========================================================================
+    } else if (this.type === 'skeleton') {
+      if (this.parryCooldown > 0) this.parryCooldown -= dt;
+
+      // Check reactive parry: if Arthur threw a horizontal weapon at front
+      this.isParrying = false;
+      for (const wp of stage.weapons) {
+        if (wp.owner === player && (wp.type === 'lance' || wp.type === 'dagger')) {
+          const wdx = wp.x - this.x;
+          // Approaching frontally within 45px
+          if (Math.abs(wdx) < 45 && ((wdx > 0 && this.facing === 1) || (wdx < 0 && this.facing === -1))) {
+            this.isParrying = true;
+            break;
+          }
+        }
+      }
+
+      this.vx = this.isParrying ? 0 : (this.facing * this.speed);
+      physics.collideEntityWithWorld(this, stage, sound, particles);
+
+      // Bone toss in arc every 2.8s
+      if (this.attackTimer > 2.8 && distToPlayer < 140 && !this.isParrying) {
+        sound.sfxLance();
+        stage.weapons.push(new WeaponProjectile('bone', this.x + this.facing * 6, this.y - 14, this.facing * 3.5, -2.5, this.facing, 18, this));
+        this.attackTimer = 0;
+      }
+
+    // ========================================================================
+    // 3. RED ARREMER GARGOYLE AI (Statue perch, evasive dodge, swoop dive!)
+    // ========================================================================
+    } else if (this.type === 'gargoyle') {
+      if (this.state === 'perched') {
+        // Awaken when Arthur draws near (within 130px)
+        if (distToPlayer < 130) {
+          this.state = 'hover';
+          this.aiTimer = 0;
+          sound.sfxAxe();
+        }
+        return;
+      }
+
+      // REACTIVE DODGE AI: If player throws a weapon horizontally, Red Arremer leaps up!
+      let shouldDodge = false;
+      for (const wp of stage.weapons) {
+        if (wp.owner === player && Math.abs(wp.y - (this.y - 12)) < 15 && Math.abs(wp.x - this.x) < 70) {
+          shouldDodge = true;
+          break;
+        }
+      }
+
+      if (shouldDodge && this.state !== 'dodge') {
+        this.state = 'dodge';
+        this.aiTimer = 0;
+        this.vy = -3.8; // flap rapidly upwards to dodge!
+        this.vx = -this.facing * 1.5;
+        sound.sfxDoubleJump();
+      }
+
+      if (this.state === 'dodge') {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy *= 0.95;
+        if (this.aiTimer > 0.6) {
+          this.state = 'hover';
+          this.aiTimer = 0;
+        }
+      } else if (this.state === 'hover') {
+        // Hover at target height, match player X smoothly
+        const targetY = player ? (player.y - 45) : this.y;
+        this.y += (targetY - this.y) * 0.05;
+        this.x += (dx > 0 ? 0.6 : -0.6);
+
+        // Periodically transition to Swoop Dive or spit Fireball
+        if (this.aiTimer > 2.0) {
+          if (Math.random() < 0.6) {
+            // Swoop Dive Attack!
+            this.state = 'swoop';
+            this.swoopProgress = 0;
+            this.swoopStartX = this.x;
+            this.swoopStartY = this.y;
+            this.swoopTargetX = player ? player.x : this.x;
+            this.swoopTargetY = player ? player.y : this.y;
+            sound.sfxAxe();
+          } else {
+            // Spit Demon Fireball!
+            sound.sfxTorch();
+            stage.weapons.push(new WeaponProjectile('fireball', this.x + this.facing * 8, this.y - 10, this.facing * 4.2, 0.5, this.facing, 25, this));
+          }
+          this.aiTimer = 0;
+        }
+
+      } else if (this.state === 'swoop') {
+        // Parabolic high-speed dive curve
+        this.swoopProgress += dt * 1.6;
+        const p = this.swoopProgress;
+        if (p < 0.5) {
+          // Diving down towards player
+          this.x += (this.swoopTargetX - this.swoopStartX) * dt * 2.0;
+          this.y += (this.swoopTargetY - this.swoopStartY) * dt * 2.0;
+        } else if (p < 1.0) {
+          // Pulling up back into the air
+          this.y -= 70 * dt;
+          this.x += this.facing * 1.2;
+        } else {
+          this.state = 'hover';
+          this.aiTimer = 0;
+        }
+      }
+
+    // ========================================================================
+    // 4. CYBER-IMP AI (Techbase patrol, blue plasma cannon)
+    // ========================================================================
+    } else if (this.type === 'imp') {
+      this.vx = this.facing * this.speed;
+      physics.collideEntityWithWorld(this, stage, sound, particles);
+
+      // Fire dual blue plasma every 2.4s
+      if (this.attackTimer > 2.4 && distToPlayer < 150) {
+        sound.sfxDagger();
+        stage.weapons.push(new WeaponProjectile('plasma', this.x + this.facing * 8, this.y - 12, this.facing * 5.0, 0, this.facing, 25, this));
+        this.attackTimer = 0;
+      }
+
+    // ========================================================================
+    // 5. LEMMING BLOCKER AI (Countdown timer, explosive self-destruction!)
+    // ========================================================================
+    } else if (this.type === 'lemming') {
+      if (distToPlayer < 90) {
+        this.countdown -= dt;
+        if (this.countdown <= 0) {
+          // EXPLODE!
+          this.isDead = true;
+          sound.sfxExplodingBlocker();
+          // Confetti & lethal shrapnel explosion
+          for (let i = 0; i < 24; i++) {
+            particles.push({
+              x: this.x,
+              y: this.y - 10,
+              vx: (Math.random() - 0.5) * 7,
+              vy: (Math.random() - 0.5) * 7,
+              size: 3,
+              color: ['#00ff44', '#2040c0', '#ffe060', '#ff0033'][Math.floor(Math.random() * 4)],
+              life: 0.8
+            });
+          }
+          // Damage Arthur if within blast radius
+          if (distToPlayer < 40 && player) {
+            player.takeDamage(60, sound, particles);
+          }
+        }
+      }
+
+    // ========================================================================
+    // 6. VOODOO SKULL AI (Floating sine-wave drift)
+    // ========================================================================
+    } else if (this.type === 'voodooSkull') {
+      this.x += this.facing * this.speed;
+      this.y = this.baseY + Math.sin(this.aiTimer * 3.5) * 16;
+    }
+
+    // Check collision with player
+    if (player && !this.isDead && this.state !== 'rising') {
+      const eBox = { x: this.x - this.width / 2, y: this.y - this.height, width: this.width, height: this.height };
+      const pBox = { x: player.x - player.width / 2, y: player.y - player.height, width: player.width, height: player.height };
+
+      if (physics.checkOverlap(eBox, pBox)) {
+        player.takeDamage(30, sound, particles);
+      }
+    }
+  }
+
+  takeDamage(amount, sound, particles) {
+    if (this.isDead) return;
+
+    // Check skeleton parry deflection
+    if (this.type === 'skeleton' && this.isParrying) {
+      sound.sfxFloorSmash();
+      // Deflected spark
+      for (let i = 0; i < 5; i++) {
+        particles.push({
+          x: this.x + this.facing * 8,
+          y: this.y - 14,
+          vx: (Math.random() - 0.5) * 4,
+          vy: -Math.random() * 3,
+          size: 2,
+          color: '#ffe060',
+          life: 0.25
+        });
+      }
+      return; // deflected!
+    }
+
+    this.hp -= amount;
+    sound.sfxEnemyHit();
+
+    // Damage flash particles
+    for (let i = 0; i < 6; i++) {
+      particles.push({
+        x: this.x,
+        y: this.y - 10,
+        vx: (Math.random() - 0.5) * 4,
+        vy: -Math.random() * 3,
+        size: 2,
+        color: '#ff3344',
+        life: 0.3
+      });
+    }
+
+    if (this.hp <= 0) {
+      this.isDead = true;
+      sound.sfxEnemyDeath();
+      // Splatter particles
+      for (let i = 0; i < 12; i++) {
+        particles.push({
+          x: this.x,
+          y: this.y - 10,
+          vx: (Math.random() - 0.5) * 5,
+          vy: -Math.random() * 4 - 1,
+          size: 3,
+          color: (this.type === 'skeleton') ? '#e8e4d0' : '#588850',
+          life: 0.7
+        });
+      }
+    }
+  }
+}
+
+// ============================================================================
+// FINAL BOSS: ASTAROTH-LECHUCK-9000 (MULTI-PHASE TITAN)
+// ============================================================================
+
+class BossAstarothLeChuck {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 65;
+    this.height = 80;
+    this.isBoss = true;
+    this.isDead = false;
+    this.hp = 500;
+    this.maxHp = 500;
+    this.phase = 1; // 1 = Ghost Pirate LeChuck, 2 = Cyber-Demon Astaroth
+
+    // Mechanical Fist positions
+    this.leftHandX = x - 42;
+    this.leftHandY = y + 15;
+    this.rightHandX = x + 42;
+    this.rightHandY = y + 15;
+
+    // AI state
+    this.aiTimer = 0;
+    this.attackCycle = 0;
+    this.coreExposed = false;
+    this.coreExposedTimer = 0;
+    this.voodooLightningX = 0;
+    this.voodooTelegraph = 0;
+  }
+
+  update(dt, player, stage, physics, sound, particles) {
+    if (this.isDead) return;
+
+    this.aiTimer += dt;
+
+    // Check Phase 2 Transition (Under 50% HP)
+    if (this.hp <= 250 && this.phase === 1) {
+      this.phase = 2;
+      sound.sfxMagicRelease();
+      // Mainframe surges with cyber energy
+      for (let i = 0; i < 30; i++) {
+        particles.push({
+          x: this.x + (Math.random() - 0.5) * 70,
+          y: this.y + (Math.random() - 0.5) * 70,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          size: 3,
+          color: '#00d8f0',
+          life: 1.0
+        });
+      }
+    }
+
+    // Core vulnerability countdown
+    if (this.coreExposedTimer > 0) {
+      this.coreExposedTimer -= dt;
+      if (this.coreExposedTimer <= 0) {
+        this.coreExposed = false;
+      }
+    }
+
+    // ========================================================================
+    // PHASE 1: GHOST PIRATE LECHUCK FORM
+    // ========================================================================
+    if (this.phase === 1) {
+      // 1. Rolling Grog Skull Bombs every 3.0s
+      if (this.aiTimer > 3.0) {
+        sound.sfxTorch();
+        stage.weapons.push(new WeaponProjectile('fireball', this.x - 20, this.y + 10, -2.2, 0, -1, 30, this));
+        this.aiTimer = 0;
+        this.attackCycle++;
+      }
+
+      // 2. Telegraphed Voodoo Lightning every 3rd cycle
+      if (this.attackCycle % 3 === 0 && this.voodooTelegraph === 0) {
+        this.voodooLightningX = player ? player.x : this.x - 50;
+        this.voodooTelegraph = 1.2; // 1.2s telegraph sparks before lightning strike!
+      }
+
+      if (this.voodooTelegraph > 0) {
+        this.voodooTelegraph -= dt;
+        // Spark indicators on floor
+        particles.push({
+          x: this.voodooLightningX + (Math.random() - 0.5) * 20,
+          y: 165,
+          vx: (Math.random() - 0.5) * 2,
+          vy: -Math.random() * 2,
+          size: 2,
+          color: '#20e060',
+          life: 0.2
+        });
+
+        if (this.voodooTelegraph <= 0) {
+          // LIGHTNING STRIKE!
+          sound.sfxMagicRelease();
+          for (let ly = 0; ly < 170; ly += 6) {
+            particles.push({
+              x: this.voodooLightningX + (Math.random() - 0.5) * 6,
+              y: ly,
+              vx: (Math.random() - 0.5) * 3,
+              vy: (Math.random() - 0.5) * 3,
+              size: 3,
+              color: '#ffffff',
+              life: 0.4
+            });
+          }
+          // Hit Arthur if caught under lightning
+          if (player && Math.abs(player.x - this.voodooLightningX) < 18) {
+            player.takeDamage(50, sound, particles);
+          }
+        }
+      }
+
+    // ========================================================================
+    // PHASE 2: CYBERNETIC ASTAROTH DEMON TITAN
+    // ========================================================================
+    } else if (this.phase === 2) {
+      // 1. Alternating Mechanical Fist Slams
+      const slamProgress = (this.aiTimer * 1.5) % 4.0;
+      if (slamProgress < 1.0) {
+        // Left fist slams to floor
+        this.leftHandY = this.y + 15 + Math.sin(slamProgress * Math.PI) * 50;
+        if (slamProgress > 0.48 && slamProgress < 0.52) {
+          sound.sfxAnvilThud();
+          if (player && Math.abs(player.x - this.leftHandX) < 20 && player.y > 150) {
+            player.takeDamage(40, sound, particles);
+          }
+        }
+      } else if (slamProgress < 2.0) {
+        // Right fist slams to floor
+        this.rightHandY = this.y + 15 + Math.sin((slamProgress - 1.0) * Math.PI) * 50;
+        if (slamProgress > 1.48 && slamProgress < 1.52) {
+          sound.sfxAnvilThud();
+          if (player && Math.abs(player.x - this.rightHandX) < 20 && player.y > 150) {
+            player.takeDamage(40, sound, particles);
+          }
+        }
+      }
+
+      // 2. Hellfire Breath across lower floor every 4.5s
+      if (this.aiTimer > 4.5) {
+        sound.sfxFireBurst();
+        for (let fx = 40; fx < 260; fx += 14) {
+          stage.weapons.push(new WeaponProjectile('blueFire', fx, 170, 0, 0, 1, 15, this));
+        }
+        // Expose Cursed Floppy Disk core after breathing fire!
+        this.coreExposed = true;
+        this.coreExposedTimer = 2.5; // vulnerable for 2.5 seconds!
+        this.aiTimer = 0;
+      }
+    }
+  }
+
+  takeDamage(amount, sound, particles) {
+    if (this.isDead) return;
+
+    // Double damage if striking exposed Cursed Floppy Disk core!
+    const effectiveDmg = this.coreExposed ? (amount * 2.0) : amount;
+    this.hp -= effectiveDmg;
+    sound.sfxEnemyHit();
+
+    // Damage flash sparks
+    for (let i = 0; i < 8; i++) {
+      particles.push({
+        x: this.x + (Math.random() - 0.5) * 40,
+        y: this.y + (Math.random() - 0.5) * 40,
+        vx: (Math.random() - 0.5) * 5,
+        vy: -Math.random() * 4,
+        size: 3,
+        color: this.coreExposed ? '#ffe060' : '#ff2244',
+        life: 0.4
+      });
+    }
+
+    if (this.hp <= 0) {
+      this.isDead = true;
+      sound.sfxMagicRelease();
+      // Spectacular arcade explosion chain!
+      for (let i = 0; i < 60; i++) {
+        particles.push({
+          x: this.x + (Math.random() - 0.5) * 90,
+          y: this.y + (Math.random() - 0.5) * 90,
+          vx: (Math.random() - 0.5) * 10,
+          vy: (Math.random() - 0.5) * 10,
+          size: 4,
+          color: ['#ffe060', '#ff5500', '#ffffff', '#00d8f0'][Math.floor(Math.random() * 4)],
+          life: 1.5
+        });
+      }
+    }
+  }
+}
+
+
+// ============================================================================
+// STAGE DATA & PARODY EXHIBIT GENERATOR (6 STAGES + FINAL BOSS)
+// ============================================================================
+
+class LevelManager {
+  static createStage(stageNum) {
+    const stage = {
+      num: stageNum,
+      name: "",
+      width: 1400,
+      height: 200,
+      solids: [],
+      platforms: [],
+      ladders: [],
+      hazards: [],
+      ghostPlatforms: [],
+      slicerGates: [],
+      pistons: [],
+      pressurePlates: [],
+      gates: [],
+      chests: [],
+      enemies: [],
+      weapons: [],
+      boss: null,
+      playerStartX: 30,
+      playerStartY: 160,
+      goalX: 1350
+    };
+
+    // ========================================================================
+    // STAGE 1: LECHUCK'S GHOST SHIP & MÊLÉE GRAVEYARD (Monkey Island)
+    // ========================================================================
+    if (stageNum === 1) {
+      stage.name = "LeChuck's Ghost Ship & Mêlée Graveyard";
+      stage.width = 1400;
+      stage.goalX = 1350;
+
+      // Ground deck & graveyard soil
+      stage.solids.push({ x: 0, y: 170, width: 350, height: 30 });
+      stage.solids.push({ x: 380, y: 170, width: 450, height: 30 });
+      stage.solids.push({ x: 860, y: 170, width: 540, height: 30 });
+
+      // Ship deck elevated platforms & masts
+      stage.platforms.push({ x: 120, y: 130, width: 90, height: 6 });
+      stage.platforms.push({ x: 260, y: 100, width: 80, height: 6 });
+      stage.platforms.push({ x: 440, y: 125, width: 100, height: 6 });
+      stage.platforms.push({ x: 600, y: 95, width: 90, height: 6 });
+      stage.platforms.push({ x: 740, y: 130, width: 80, height: 6 });
+      stage.platforms.push({ x: 920, y: 110, width: 110, height: 6 });
+      stage.platforms.push({ x: 1100, y: 85, width: 100, height: 6 });
+
+      // Climbable rigging / ladders
+      stage.ladders.push({ x: 160, y: 100, width: 14, height: 70 });
+      stage.ladders.push({ x: 640, y: 95, width: 14, height: 75 });
+      stage.ladders.push({ x: 1140, y: 85, width: 14, height: 85 });
+
+      // Hazards (Shark-infested Caribbean ocean gaps)
+      stage.hazards.push({ x: 350, y: 180, width: 30, height: 20 });
+      stage.hazards.push({ x: 830, y: 180, width: 30, height: 20 });
+
+      // Secret Crow's Nest Chest (High above ship reached via anvil springboard!)
+      stage.platforms.push({ x: 280, y: 55, width: 40, height: 6 });
+      stage.chests.push({ x: 295, y: 55, chestType: 'golden', isOpen: false, item: 'goldenArmor' });
+
+      // Standard wooden chests & pots
+      stage.chests.push({ x: 500, y: 125, chestType: 'wood', isOpen: false, item: 'dagger' });
+      stage.chests.push({ x: 960, y: 110, chestType: 'wood', isOpen: false, item: 'torch' });
+
+      // Enemies (Pirate Zombies & Voodoo Skulls)
+      stage.enemies.push(new Enemy('zombie', 200, 170));
+      stage.enemies.push(new Enemy('zombie', 320, 170));
+      stage.enemies.push(new Enemy('voodooSkull', 400, 90));
+      stage.enemies.push(new Enemy('zombie', 520, 170));
+      stage.enemies.push(new Enemy('zombie', 680, 170));
+      stage.enemies.push(new Enemy('voodooSkull', 780, 80));
+      stage.enemies.push(new Enemy('zombie', 980, 170));
+      stage.enemies.push(new Enemy('zombie', 1180, 170));
+      stage.enemies.push(new Enemy('gargoyle', 1280, 70));
+
+    // ========================================================================
+    // STAGE 2: THE HAUNTED MOAT OF DAVENTRY (King's Quest)
+    // ========================================================================
+    } else if (stageNum === 2) {
+      stage.name = "The Haunted Moat of Daventry";
+      stage.width = 1400;
+      stage.goalX = 1350;
+
+      // Castle Daventry courtyard & moat banks
+      stage.solids.push({ x: 0, y: 170, width: 220, height: 30 });
+      stage.solids.push({ x: 420, y: 170, width: 140, height: 30 });
+      stage.solids.push({ x: 800, y: 170, width: 160, height: 30 });
+      stage.solids.push({ x: 1180, y: 170, width: 220, height: 30 });
+
+      // Lethal Cursed Purple Water Moat (Instant death on touch!)
+      stage.hazards.push({ x: 220, y: 175, width: 200, height: 25 });
+      stage.hazards.push({ x: 560, y: 175, width: 240, height: 25 });
+      stage.hazards.push({ x: 960, y: 175, width: 220, height: 25 });
+
+      // Collapsing Wooden Drawbridges across moat
+      stage.platforms.push({ x: 250, y: 165, width: 50, height: 6, isDrawbridge: true, crumbleTimer: 0.7 });
+      stage.platforms.push({ x: 330, y: 155, width: 50, height: 6, isDrawbridge: true, crumbleTimer: 0.7 });
+      stage.platforms.push({ x: 600, y: 160, width: 60, height: 6, isDrawbridge: true, crumbleTimer: 0.7 });
+      stage.platforms.push({ x: 700, y: 150, width: 60, height: 6, isDrawbridge: true, crumbleTimer: 0.7 });
+      stage.platforms.push({ x: 1000, y: 160, width: 60, height: 6, isDrawbridge: true, crumbleTimer: 0.7 });
+      stage.platforms.push({ x: 1090, y: 150, width: 60, height: 6, isDrawbridge: true, crumbleTimer: 0.7 });
+
+      // Ivy ladders on castle walls
+      stage.ladders.push({ x: 480, y: 90, width: 14, height: 80 });
+      stage.ladders.push({ x: 880, y: 80, width: 14, height: 90 });
+
+      // Castle battlements platforms
+      stage.platforms.push({ x: 440, y: 90, width: 100, height: 6 });
+      stage.platforms.push({ x: 840, y: 80, width: 90, height: 6 });
+
+      // SPECTRAL VISION GHOST PLATFORMS (Visible ONLY in Boxer Shorts!)
+      // High shortcut above the moat leading to Golden Armor chest!
+      stage.ghostPlatforms.push({ x: 240, y: 90, width: 45, height: 6, visible: false });
+      stage.ghostPlatforms.push({ x: 320, y: 75, width: 45, height: 6, visible: false });
+      stage.ghostPlatforms.push({ x: 400, y: 60, width: 45, height: 6, visible: false });
+      stage.chests.push({ x: 415, y: 60, chestType: 'golden', isOpen: false, item: 'goldenArmor' });
+
+      // Enemies (Red Arremer Gargoyles & Skeletons)
+      stage.enemies.push(new Enemy('gargoyle', 380, 70));
+      stage.enemies.push(new Enemy('skeleton', 480, 170));
+      stage.enemies.push(new Enemy('gargoyle', 750, 65));
+      stage.enemies.push(new Enemy('skeleton', 860, 170));
+      stage.enemies.push(new Enemy('gargoyle', 1120, 65));
+      stage.enemies.push(new Enemy('skeleton', 1240, 170));
+
+    // ========================================================================
+    // STAGE 3: THE JAFFAR SPIKE CATACOMBS (Prince of Persia)
+    // ========================================================================
+    } else if (stageNum === 3) {
+      stage.name = "The Jaffar Spike Catacombs";
+      stage.width = 1500;
+      stage.goalX = 1450;
+
+      // Sandstone catacomb floor
+      stage.solids.push({ x: 0, y: 170, width: 300, height: 30 });
+      // Cracked floor block (smashable by Steel Arthur or Anvil!)
+      stage.solids.push({ x: 300, y: 170, width: 60, height: 30, isCracked: true });
+      stage.solids.push({ x: 360, y: 170, width: 360, height: 30 });
+      stage.solids.push({ x: 780, y: 170, width: 340, height: 30 });
+      stage.solids.push({ x: 1180, y: 170, width: 320, height: 30 });
+
+      // Subterranean secret chamber below cracked floor!
+      stage.solids.push({ x: 260, y: 195, width: 140, height: 10 });
+      stage.chests.push({ x: 320, y: 195, chestType: 'golden', isOpen: false, item: 'goldenArmor' });
+
+      // Elevated dungeon tiers
+      stage.platforms.push({ x: 160, y: 125, width: 90, height: 6 });
+      stage.platforms.push({ x: 450, y: 120, width: 120, height: 6 });
+      stage.platforms.push({ x: 860, y: 120, width: 110, height: 6 });
+
+      // CHOMPING IRON SLICER GATES (Prince of Persia traps)
+      stage.slicerGates.push({ x: 220, y: 150, openHeight: 22, bladeLength: 16, period: 2.2, timer: 0, soundPlayed: false });
+      stage.slicerGates.push({ x: 620, y: 150, openHeight: 22, bladeLength: 16, period: 2.0, timer: 0.8, soundPlayed: false });
+      stage.slicerGates.push({ x: 920, y: 150, openHeight: 22, bladeLength: 16, period: 2.4, timer: 0.4, soundPlayed: false });
+      stage.slicerGates.push({ x: 1260, y: 150, openHeight: 22, bladeLength: 16, period: 2.1, timer: 1.2, soundPlayed: false });
+
+      // PRESSURE PLATE PUZZLE:
+      // Drop Armor Anvil on pressure plate at 720 to open Iron Gate at 760!
+      stage.pressurePlates.push({ x: 710, y: 170, isDown: false, linkedGateId: 'gate1' });
+      stage.gates.push({ id: 'gate1', x: 760, y: 130, width: 12, height: 40, isOpen: false });
+
+      // Iron gate block added to solids dynamically
+      stage.solids.push({ x: 760, y: 130, width: 12, height: 40 });
+
+      // Weapons Chest
+      stage.chests.push({ x: 500, y: 120, chestType: 'wood', isOpen: false, item: 'axe' });
+      stage.chests.push({ x: 1000, y: 170, chestType: 'wood', isOpen: false, item: 'cross' });
+
+      // Enemies (Skeleton Swordsmen that parry frontal attacks!)
+      stage.enemies.push(new Enemy('skeleton', 180, 170));
+      stage.enemies.push(new Enemy('skeleton', 480, 120));
+      stage.enemies.push(new Enemy('skeleton', 660, 170));
+      stage.enemies.push(new Enemy('skeleton', 880, 170));
+      stage.enemies.push(new Enemy('skeleton', 1080, 170));
+      stage.enemies.push(new Enemy('skeleton', 1340, 170));
+
+    // ========================================================================
+    // STAGE 4: THE LEMMINGS CRUSHER FOUNDRY (Lemmings)
+    // ========================================================================
+    } else if (stageNum === 4) {
+      stage.name = "The Lemmings Crusher Foundry";
+      stage.width = 1500;
+      stage.goalX = 1450;
+
+      // Foundry metal floor
+      stage.solids.push({ x: 0, y: 170, width: 340, height: 30 });
+      stage.solids.push({ x: 420, y: 170, width: 320, height: 30 });
+      stage.solids.push({ x: 820, y: 170, width: 300, height: 30 });
+      stage.solids.push({ x: 1180, y: 170, width: 320, height: 30 });
+
+      // Molten Metal Vats (Lethal liquid hazard)
+      stage.hazards.push({ x: 340, y: 180, width: 80, height: 20 });
+      stage.hazards.push({ x: 740, y: 180, width: 80, height: 20 });
+      stage.hazards.push({ x: 1120, y: 180, width: 60, height: 20 });
+
+      // CONVEYOR BELTS (Push player and enemies with directional velocity!)
+      stage.platforms.push({ x: 140, y: 140, width: 110, height: 8, isConveyor: true, conveyorSpeed: 1.5 });
+      stage.platforms.push({ x: 480, y: 135, width: 120, height: 8, isConveyor: true, conveyorSpeed: -1.5 });
+      stage.platforms.push({ x: 880, y: 135, width: 130, height: 8, isConveyor: true, conveyorSpeed: 1.5 });
+
+      // HYDRAULIC PISTON CRUSHERS (Ceiling stampers)
+      stage.pistons.push({ x: 260, y: 0, currentY: 0, maxDrop: 154, period: 2.5, timer: 0, soundPlayed: false });
+      stage.pistons.push({ x: 620, y: 0, currentY: 0, maxDrop: 154, period: 2.2, timer: 0.8, soundPlayed: false });
+      stage.pistons.push({ x: 1020, y: 0, currentY: 0, maxDrop: 154, period: 2.6, timer: 1.4, soundPlayed: false });
+      stage.pistons.push({ x: 1300, y: 0, currentY: 0, maxDrop: 154, period: 2.4, timer: 0.5, soundPlayed: false });
+
+      // Chests
+      stage.chests.push({ x: 200, y: 140, chestType: 'wood', isOpen: false, item: 'cross' });
+      stage.chests.push({ x: 920, y: 135, chestType: 'golden', isOpen: false, item: 'goldenArmor' });
+
+      // Enemies (Lemming Blockers with self-destruction countdown & Cyber-Imps)
+      stage.enemies.push(new Enemy('lemming', 230, 170));
+      stage.enemies.push(new Enemy('imp', 520, 170));
+      stage.enemies.push(new Enemy('lemming', 700, 170));
+      stage.enemies.push(new Enemy('imp', 950, 170));
+      stage.enemies.push(new Enemy('lemming', 1240, 170));
+
+    // ========================================================================
+    // STAGE 5: PHOBOS E1M1 NECROPOLIS (DOOM)
+    // ========================================================================
+    } else if (stageNum === 5) {
+      stage.name = "Phobos E1M1 Necropolis";
+      stage.width = 1600;
+      stage.goalX = 1550;
+
+      // Techbase metal grating
+      stage.solids.push({ x: 0, y: 170, width: 280, height: 30 });
+      stage.solids.push({ x: 380, y: 170, width: 320, height: 30 });
+      stage.solids.push({ x: 800, y: 170, width: 340, height: 30 });
+      stage.solids.push({ x: 1220, y: 170, width: 380, height: 30 });
+
+      // Glowing Green Radioactive Nukage Slime Pits
+      stage.hazards.push({ x: 280, y: 178, width: 100, height: 22 });
+      stage.hazards.push({ x: 700, y: 178, width: 100, height: 22 });
+      stage.hazards.push({ x: 1140, y: 178, width: 80, height: 22 });
+
+      // Catwalk platforms
+      stage.platforms.push({ x: 160, y: 120, width: 90, height: 6 });
+      stage.platforms.push({ x: 300, y: 140, width: 60, height: 6 }); // floating over nukage
+      stage.platforms.push({ x: 480, y: 110, width: 120, height: 6 });
+      stage.platforms.push({ x: 720, y: 140, width: 60, height: 6 });
+      stage.platforms.push({ x: 920, y: 115, width: 110, height: 6 });
+
+      // Ladders
+      stage.ladders.push({ x: 200, y: 120, width: 14, height: 50 });
+      stage.ladders.push({ x: 540, y: 110, width: 14, height: 60 });
+      stage.ladders.push({ x: 970, y: 115, width: 14, height: 55 });
+
+      // Chests
+      stage.chests.push({ x: 520, y: 110, chestType: 'golden', isOpen: false, item: 'goldenArmor' });
+      stage.chests.push({ x: 960, y: 115, chestType: 'wood', isOpen: false, item: 'axe' });
+
+      // Enemies (Cyber-Imps and the Red Arremer Elite Mini-Boss!)
+      stage.enemies.push(new Enemy('imp', 190, 170));
+      stage.enemies.push(new Enemy('imp', 440, 170));
+      stage.enemies.push(new Enemy('imp', 600, 170));
+      stage.enemies.push(new Enemy('imp', 880, 170));
+      stage.enemies.push(new Enemy('imp', 1040, 170));
+
+      // RED ARREMER ELITE MINI-BOSS guarding the Gateway Teleporter!
+      stage.enemies.push(new Enemy('gargoyle', 1380, 80));
+
+    // ========================================================================
+    // STAGE 6: THRONE OF ASTAROTH-LECHUCK-9000 (FINAL BOSS ARENA)
+    // ========================================================================
+    } else if (stageNum === 6) {
+      stage.name = "Throne of Astaroth-LeChuck-9000";
+      stage.width = 320; // single screen epic boss arena!
+      stage.goalX = 9999; // defeated by slaying boss!
+
+      // Arena floor
+      stage.solids.push({ x: 0, y: 170, width: 320, height: 30 });
+
+      // Arena platforms (allows Arthur to jump to upper tiers to avoid floor fire)
+      stage.platforms.push({ x: 25, y: 130, width: 65, height: 6 });
+      stage.platforms.push({ x: 115, y: 95, width: 90, height: 6 });
+      stage.platforms.push({ x: 230, y: 130, width: 65, height: 6 });
+
+      // Emergency Chests on high platforms
+      stage.chests.push({ x: 45, y: 130, chestType: 'wood', isOpen: false, item: 'lance' });
+      stage.chests.push({ x: 160, y: 95, chestType: 'golden', isOpen: false, item: 'goldenArmor' });
+
+      // Spawn Final Boss Titan!
+      stage.boss = new BossAstarothLeChuck(240, 95);
+    }
+
+    return stage;
+  }
+}
+
+
+// ============================================================================
+// MAIN GAME ENGINE & STATE CONTROLLER
+// ============================================================================
+
+class Game {
+  constructor() {
+    this.canvas = document.getElementById('game-canvas');
+    this.renderer = new Renderer(this.canvas);
+    this.physics = new PhysicsEngine();
+
+    // High Score tracking
+    this.highScore = 50000;
+
+    // Game state: 'TITLE', 'MAP', 'PLAY', 'GAMEOVER', 'VICTORY'
+    this.state = 'TITLE';
+    this.isPaused = false;
+
+    // Current stage (1 to 6)
+    this.currentStageNum = 1;
+    this.stage = null;
+    this.player = null;
+    this.anvils = [];
+    this.particles = [];
+
+    // Camera & Screen Shake
+    this.camX = 0;
+    this.camY = 0;
+    this.screenShake = 0;
+    this.lightningFlash = 0;
+
+    // World Map transition progress
+    this.mapProgress = 0;
+    this.mapTimer = 0;
+
+    // Game time
+    this.gameTime = 0;
+    this.lastTimestamp = 0;
+
+    // Input state
+    this.input = {
+      left: false,
+      right: false,
+      up: false,
+      down: false,
+      jump: false,
+      jumpPressed: false,
+      attack: false,
+      attackPressed: false,
+      eject: false,
+      ejectPressed: false
+    };
+
+    // Stats for victory screen
+    this.totalEjections = 0;
+    this.totalPossessions = 0;
+    this.enemiesSlain = 0;
+
+    this.initInput();
+    this.initUI();
+  }
+
+  start() {
+    this.lastTimestamp = performance.now();
+    requestAnimationFrame((t) => this.loop(t));
+  }
+
+  // --- STAGE INITIALIZATION & WARP ---
+  loadStage(stageNum) {
+    this.currentStageNum = stageNum;
+    this.stage = LevelManager.createStage(stageNum);
+    this.player = new Player(this.stage.playerStartX, this.stage.playerStartY);
+    this.anvils = [];
+    this.particles = [];
+    this.camX = 0;
+    this.camY = 0;
+
+    // Start background music theme
+    sound.startTrack(stageNum);
+  }
+
+  warpToStage(stageNum) {
+    sound.resume();
+    this.loadStage(stageNum);
+    this.state = 'PLAY';
+  }
+
+  // --- INPUT HANDLING ---
+  initInput() {
+    // Keyboard handlers
+    window.addEventListener('keydown', (e) => {
+      sound.resume();
+
+      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') this.input.left = true;
+      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') this.input.right = true;
+      if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') this.input.up = true;
+      if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') this.input.down = true;
+
+      if (e.key === ' ' || e.key === 'z' || e.key === 'Z') {
+        if (!this.input.jump) this.input.jumpPressed = true;
+        this.input.jump = true;
+      }
+
+      if (e.key === 'j' || e.key === 'J' || e.key === 'x' || e.key === 'X') {
+        if (!this.input.attack) this.input.attackPressed = true;
+        this.input.attack = true;
+      }
+
+      if (e.key === 'e' || e.key === 'E' || e.key === 'c' || e.key === 'C') {
+        if (!this.input.eject) this.input.ejectPressed = true;
+        this.input.eject = true;
+      }
+
+      // Quick Stage Warp Keys (1-6)
+      if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
+        const target = parseInt(e.key, 10);
+        this.warpToStage(target);
+      }
+
+      // Hotkeys: CRT [B], Sound [M], Pause [P]
+      if (e.key === 'b' || e.key === 'B') {
+        document.getElementById('screen-container').classList.toggle('crt-active');
+        document.getElementById('btn-crt').classList.toggle('active');
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        const unmuted = sound.toggleMute();
+        document.getElementById('btn-sound').classList.toggle('active', unmuted);
+      }
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        this.isPaused = !this.isPaused;
+      }
+
+      // Menu interactions
+      if (this.state === 'TITLE' && (e.key === 'Enter' || e.key === ' ')) {
+        this.goToMap();
+      } else if (this.state === 'MAP' && (e.key === 'Enter' || e.key === ' ')) {
+        this.state = 'PLAY';
+        sound.startTrack(this.currentStageNum);
+      } else if (this.state === 'GAMEOVER' && e.key === 'Enter') {
+        this.warpToStage(1);
+      } else if (this.state === 'VICTORY' && e.key === 'Enter') {
+        this.state = 'TITLE';
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') this.input.left = false;
+      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') this.input.right = false;
+      if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') this.input.up = false;
+      if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') this.input.down = false;
+      if (e.key === ' ' || e.key === 'z' || e.key === 'Z') this.input.jump = false;
+      if (e.key === 'j' || e.key === 'J' || e.key === 'x' || e.key === 'X') this.input.attack = false;
+      if (e.key === 'e' || e.key === 'E' || e.key === 'c' || e.key === 'C') this.input.eject = false;
+    });
+
+    // Mouse handlers (Left-Click = Attack, Right-Click = Eject / Possess)
+    this.canvas.addEventListener('mousedown', (e) => {
+      sound.resume();
+      if (e.button === 0) {
+        // Left click
+        if (!this.input.attack) this.input.attackPressed = true;
+        this.input.attack = true;
+
+        if (this.state === 'TITLE') this.goToMap();
+        else if (this.state === 'MAP') {
+          this.state = 'PLAY';
+          sound.startTrack(this.currentStageNum);
+        } else if (this.state === 'GAMEOVER') this.warpToStage(1);
+        else if (this.state === 'VICTORY') this.state = 'TITLE';
+      } else if (e.button === 2) {
+        // Right click
+        if (!this.input.eject) this.input.ejectPressed = true;
+        this.input.eject = true;
+      }
+    });
+
+    this.canvas.addEventListener('mouseup', (e) => {
+      if (e.button === 0) this.input.attack = false;
+      if (e.button === 2) this.input.eject = false;
+    });
+
+    // Suppress context menu on canvas for smooth right-click ejection
+    this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  // --- UI BUTTONS & MODALS ---
+  initUI() {
+    // CRT Bezel toggle
+    const btnCrt = document.getElementById('btn-crt');
+    btnCrt.addEventListener('click', () => {
+      sound.resume();
+      document.getElementById('screen-container').classList.toggle('crt-active');
+      btnCrt.classList.toggle('active');
+    });
+
+    // Sound toggle
+    const btnSound = document.getElementById('btn-sound');
+    btnSound.addEventListener('click', () => {
+      sound.resume();
+      const unmuted = sound.toggleMute();
+      btnSound.classList.toggle('active', unmuted);
+    });
+
+    // Help Modal
+    const helpModal = document.getElementById('help-modal');
+    document.getElementById('btn-help').addEventListener('click', () => {
+      sound.resume();
+      helpModal.style.display = 'flex';
+    });
+    document.getElementById('btn-close-help').addEventListener('click', () => {
+      helpModal.style.display = 'none';
+    });
+
+    // Stage Warp Modal
+    const warpModal = document.getElementById('warp-modal');
+    document.getElementById('btn-warp').addEventListener('click', () => {
+      sound.resume();
+      warpModal.style.display = 'flex';
+    });
+    document.getElementById('btn-close-warp').addEventListener('click', () => {
+      warpModal.style.display = 'none';
+    });
+
+    // Stage Warp Item buttons
+    const warpBtns = document.querySelectorAll('.warp-item-btn');
+    warpBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const stageNum = parseInt(btn.getAttribute('data-stage'), 10);
+        warpModal.style.display = 'none';
+        this.warpToStage(stageNum);
+      });
+    });
+
+    // Touch controls
+    const bindTouch = (id, keyName, isPressedFlag = false) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        sound.resume();
+        this.input[keyName] = true;
+        if (isPressedFlag) this.input[keyName + 'Pressed'] = true;
+      });
+      el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.input[keyName] = false;
+      });
+      el.addEventListener('mousedown', (e) => {
+        sound.resume();
+        this.input[keyName] = true;
+        if (isPressedFlag) this.input[keyName + 'Pressed'] = true;
+      });
+      el.addEventListener('mouseup', () => {
+        this.input[keyName] = false;
+      });
+    };
+
+    bindTouch('tb-left', 'left');
+    bindTouch('tb-right', 'right');
+    bindTouch('tb-up', 'up');
+    bindTouch('tb-down', 'down');
+    bindTouch('tb-jump', 'jump', true);
+    bindTouch('tb-attack', 'attack', true);
+    bindTouch('tb-eject', 'eject', true);
+  }
+
+  goToMap() {
+    this.state = 'MAP';
+    this.mapProgress = 0;
+    this.mapTimer = 0;
+    sound.startTrack('map');
+  }
+
+  // --- MAIN LOOP ---
+  loop(timestamp) {
+    let dt = (timestamp - this.lastTimestamp) / 1000;
+    this.lastTimestamp = timestamp;
+
+    // Delta time clamping (avoid huge jumps when switching tabs)
+    if (dt > 0.05) dt = 0.05;
+
+    this.gameTime += dt;
+
+    if (!this.isPaused) {
+      this.update(dt);
+    }
+    this.render();
+
+    // Reset single-frame pressed triggers
+    this.input.jumpPressed = false;
+    this.input.attackPressed = false;
+    this.input.ejectPressed = false;
+
+    requestAnimationFrame((t) => this.loop(t));
+  }
+
+  // --- UPDATE STEP ---
+  update(dt) {
+    if (this.state === 'MAP') {
+      this.mapTimer += dt;
+      this.mapProgress = Math.min(1.0, this.mapTimer / 2.0);
+      if (this.mapTimer > 2.8) {
+        this.loadStage(this.currentStageNum);
+        this.state = 'PLAY';
+      }
+      return;
+    }
+
+    if (this.state !== 'PLAY') return;
+
+    // Check Player Death & Game Over
+    if (this.player.lives <= 0) {
+      this.state = 'GAMEOVER';
+      sound.stopMusic();
+      return;
+    }
+
+    // Update Player
+    this.player.update(dt, this.input, this.stage, this.physics, sound, this.particles, this.anvils, this.stage.enemies);
+
+    // Update Anvils
+    for (const anvil of this.anvils) {
+      anvil.update(dt, this.stage, this.physics, sound, this.particles, this.stage.enemies);
+    }
+
+    // Update Dynamic Traps (Slicers, Pistons, Conveyors, Pressure Plates)
+    this.physics.updateTraps(this.stage, dt, sound, this.particles, this.player, this.anvils);
+
+    // Update Weapons & Projectiles
+    for (const wp of this.stage.weapons) {
+      wp.update(dt, this.stage, sound, this.particles);
+
+      // Check collision between weapon and enemies
+      if (wp.owner === this.player) {
+        for (const enemy of this.stage.enemies) {
+          if (enemy.isDead) continue;
+          const eBox = { x: enemy.x - enemy.width / 2, y: enemy.y - enemy.height, width: enemy.width, height: enemy.height };
+          const wBox = { x: wp.x - 4, y: wp.y - 4, width: 8, height: 8 };
+
+          if (this.physics.checkOverlap(wBox, eBox)) {
+            enemy.takeDamage(wp.damage, sound, this.particles);
+            this.player.score += enemy.scoreValue || 100;
+            if (this.player.score > this.highScore) this.highScore = this.player.score;
+
+            wp.pierceCount--;
+            if (wp.pierceCount <= 0 && wp.type !== 'blueFire' && wp.type !== 'cross') {
+              wp.isDead = true;
+            }
+          }
+        }
+
+        // Check weapon vs Final Boss
+        if (this.stage.boss && !this.stage.boss.isDead) {
+          const boss = this.stage.boss;
+          const bBox = { x: boss.x - boss.width / 2, y: boss.y - boss.height / 2, width: boss.width, height: boss.height };
+          const wBox = { x: wp.x - 4, y: wp.y - 4, width: 8, height: 8 };
+
+          if (this.physics.checkOverlap(wBox, bBox)) {
+            boss.takeDamage(wp.damage, sound, this.particles);
+            this.player.score += 500;
+            wp.isDead = true;
+
+            if (boss.isDead) {
+              // VICTORY!
+              setTimeout(() => {
+                this.state = 'VICTORY';
+                sound.stopMusic();
+              }, 2500);
+            }
+          }
+        }
+      } else {
+        // Enemy projectile hitting player
+        const pBox = { x: this.player.x - this.player.width / 2, y: this.player.y - this.player.height, width: this.player.width, height: this.player.height };
+        const wBox = { x: wp.x - 4, y: wp.y - 4, width: 8, height: 8 };
+
+        if (this.physics.checkOverlap(wBox, pBox)) {
+          this.player.takeDamage(wp.damage, sound, this.particles);
+          wp.isDead = true;
+        }
+      }
+    }
+
+    // Clean dead weapons
+    this.stage.weapons = this.stage.weapons.filter(w => !w.isDead);
+
+    // Update Enemies
+    for (const enemy of this.stage.enemies) {
+      enemy.update(dt, this.player, this.stage, this.physics, sound, this.particles);
+    }
+    this.stage.enemies = this.stage.enemies.filter(e => !e.isDead);
+
+    // Update Final Boss (Stage 6)
+    if (this.stage.boss) {
+      this.stage.boss.update(dt, this.player, this.stage, this.physics, sound, this.particles);
+    }
+
+    // Update Chests Interaction
+    for (const chest of this.stage.chests) {
+      if (!chest.isOpen) {
+        const cBox = { x: chest.x - 10, y: chest.y - 14, width: 20, height: 16 };
+        const pBox = { x: this.player.x - 8, y: this.player.y - 20, width: 16, height: 22 };
+
+        if (this.physics.checkOverlap(pBox, cBox)) {
+          chest.isOpen = true;
+          sound.sfxChestOpen();
+
+          // Rewards
+          if (chest.item === 'goldenArmor') {
+            this.player.reclaimArmor('golden', sound);
+          } else if (chest.item === 'lance' || chest.item === 'dagger' || chest.item === 'torch' || chest.item === 'axe' || chest.item === 'cross') {
+            this.player.currentWeapon = chest.item;
+            if (this.player.armorState === 'boxers') {
+              this.player.reclaimArmor('steel', sound);
+            }
+          }
+        }
+      }
+    }
+
+    // Update Particles
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.life -= dt;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.15; // particle gravity
+      if (p.life <= 0) {
+        this.particles.splice(i, 1);
+      }
+    }
+
+    // Camera following Arthur
+    const targetCamX = this.player.x - 160;
+    const maxCamX = Math.max(0, this.stage.width - 320);
+    this.camX += (Math.max(0, Math.min(maxCamX, targetCamX)) - this.camX) * 0.1;
+
+    // Check Stage Goal reached (Advance to next stage!)
+    if (this.player.x >= this.stage.goalX && this.currentStageNum < 6) {
+      this.currentStageNum++;
+      this.goToMap();
+    }
+  }
+
+  // --- RENDER STEP ---
+  render() {
+    const ctx = this.renderer.ctx;
+    this.renderer.clear();
+
+    // ========================================================================
+    // TITLE SCREEN
+    // ========================================================================
+    if (this.state === 'TITLE') {
+      // Parallax background
+      this.renderer.drawBackground(1, Math.sin(this.gameTime * 0.5) * 40, 0, this.gameTime, 0);
+
+      ctx.fillStyle = 'rgba(6, 6, 12, 0.75)';
+      ctx.fillRect(0, 0, 320, 200);
+
+      // Retro Arcade Logo
+      ctx.fillStyle = '#ffaa00';
+      ctx.font = 'bold 15px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText("GHOSTS 'N GOBLINS", 160, 48);
+
+      ctx.fillStyle = '#ffdd44';
+      ctx.font = 'bold 10px monospace';
+      ctx.fillText("THE CURSED PC GAMING MUSEUM", 160, 64);
+
+      // Hero Arthur Sprite standing proudly
+      this.renderer.drawArthur(160, 115, 'steel', 1, this.gameTime * 4, false, false, false, false, 0, false, 0);
+
+      // Blinking start prompt
+      if (Math.sin(this.gameTime * 6) > 0) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px monospace';
+        ctx.fillText("PRESS [ENTER] OR CLICK TO START", 160, 142);
+      }
+
+      ctx.fillStyle = '#8a92a2';
+      ctx.font = '8px monospace';
+      ctx.fillText("TACTICAL ARMOR EJECT [E] | SOUL POSSESSION [E]", 160, 160);
+      ctx.fillText("PRESS [1-6] TO WARP TO ANY OF THE 6 EXHIBITS", 160, 172);
+      ctx.fillText("(C) 2026 CLEAN-ROOM RETRO DEMOSCENE", 160, 186);
+      ctx.textAlign = 'left';
+      return;
+    }
+
+    // ========================================================================
+    // WORLD MAP SCREEN
+    // ========================================================================
+    if (this.state === 'MAP') {
+      this.renderer.drawWorldMap(this.currentStageNum, this.mapProgress, this.gameTime);
+      return;
+    }
+
+    // ========================================================================
+    // GAME OVER SCREEN
+    // ========================================================================
+    if (this.state === 'GAMEOVER') {
+      ctx.fillStyle = '#08060c';
+      ctx.fillRect(0, 0, 320, 200);
+
+      ctx.fillStyle = '#e81838';
+      ctx.font = 'bold 16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText("GAME OVER", 160, 75);
+
+      ctx.fillStyle = '#d2d8e4';
+      ctx.font = '9px monospace';
+      ctx.fillText(`FINAL SCORE: ${this.player.score.toString().padStart(6, '0')}`, 160, 100);
+
+      if (Math.sin(this.gameTime * 5) > 0) {
+        ctx.fillStyle = '#ffcc00';
+        ctx.fillText("PRESS [ENTER] OR CLICK TO CONTINUE", 160, 135);
+      }
+
+      ctx.fillStyle = '#7a7a92';
+      ctx.font = '8px monospace';
+      ctx.fillText("PRESS [1-6] TO WARP TO ANY STAGE", 160, 155);
+      ctx.textAlign = 'left';
+      return;
+    }
+
+    // ========================================================================
+    // VICTORY SCREEN (DEMOSCENE TEXT SCROLL & CELEBRATION)
+    // ========================================================================
+    if (this.state === 'VICTORY') {
+      // Demoscene starfield
+      ctx.fillStyle = '#050510';
+      ctx.fillRect(0, 0, 320, 200);
+
+      ctx.fillStyle = '#ffffff';
+      for (let i = 0; i < 40; i++) {
+        const sx = ((i * 37 + this.gameTime * 50) % 320);
+        const sy = (i * 23) % 200;
+        ctx.fillRect(sx, sy, 1.5, 1.5);
+      }
+
+      // Arthur holding aloft the Cursed 1.44MB Floppy Disk!
+      this.renderer.drawArthur(160, 95, 'golden', 1, this.gameTime * 6, false, false, false, false, 0, false, 0);
+
+      // Floppy Disk glowing in Arthur's hand
+      ctx.fillStyle = '#1050a0';
+      ctx.fillRect(158, 65, 10, 9);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(160, 65, 6, 3);
+
+      ctx.fillStyle = '#ffe060';
+      ctx.font = 'bold 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText("CONGRATULATIONS SIR ARTHUR!", 160, 35);
+
+      ctx.fillStyle = '#00d8f0';
+      ctx.font = '8px monospace';
+      ctx.fillText("YOU HAVE CONQUERED THE CURSED PC GAMING MUSEUM!", 160, 48);
+      ctx.fillText("THE SACRED 1.44MB FLOPPY DISK SOURCE CODE IS SAVED!", 160, 58);
+
+      // Demoscene stats
+      ctx.fillStyle = '#d2d8e4';
+      ctx.fillText(`FINAL SCORE: ${this.player.score}`, 160, 125);
+      ctx.fillText(`MONKEY ISLAND &bull; DAVENTRY &bull; JAFFAR &bull; LEMMINGS &bull; DOOM`, 160, 140);
+
+      if (Math.sin(this.gameTime * 5) > 0) {
+        ctx.fillStyle = '#ffaa00';
+        ctx.fillText("PRESS [ENTER] TO RETURN TO TITLE", 160, 168);
+      }
+
+      ctx.textAlign = 'left';
+      return;
+    }
+
+    // ========================================================================
+    // GAMEPLAY RENDERING (PLAY STATE)
+    // ========================================================================
+
+    // Apply Screen Shake
+    ctx.save();
+    if (this.player.screenShake > 0) {
+      const sx = (Math.random() - 0.5) * this.player.screenShake;
+      const sy = (Math.random() - 0.5) * this.player.screenShake;
+      ctx.translate(Math.round(sx), Math.round(sy));
+    }
+
+    // 1. Draw 3-Layer Parallax Background
+    this.renderer.drawBackground(this.currentStageNum, this.camX, this.camY, this.gameTime, this.lightningFlash);
+
+    // 2. World Coordinate Translation (Layer 2 - Foreground Playfield)
+    ctx.save();
+    ctx.translate(-Math.round(this.camX), -Math.round(this.camY));
+
+    // Draw Solids / Platforms / Ladders
+    const solidsColor = this.currentStageNum === 1 ? '#2c3848' :
+                       (this.currentStageNum === 2 ? '#342040' :
+                       (this.currentStageNum === 3 ? '#3a2414' :
+                       (this.currentStageNum === 4 ? '#2c1e18' : '#281a18')));
+
+    for (const b of this.stage.solids) {
+      ctx.fillStyle = b.isCracked ? '#785038' : solidsColor;
+      ctx.fillRect(b.x, b.y, b.width, b.height);
+      // Top stone highlight
+      ctx.fillStyle = b.isCracked ? '#986848' : '#5a6878';
+      ctx.fillRect(b.x, b.y, b.width, 2);
+
+      // Cracked floor crack lines
+      if (b.isCracked) {
+        ctx.fillStyle = '#201008';
+        ctx.fillRect(b.x + 12, b.y + 2, 2, 8);
+        ctx.fillRect(b.x + 32, b.y + 4, 3, 10);
+      }
+    }
+
+    for (const p of this.stage.platforms) {
+      if (p.isConveyor) {
+        this.renderer.drawTrap({ type: 'conveyor', x: p.x, y: p.y, width: p.width, speed: p.conveyorSpeed }, this.gameTime);
+      } else if (p.isDrawbridge) {
+        this.renderer.drawTrap({ type: 'drawbridge', x: p.x, y: p.y, width: p.width, isCrumbling: p.isCrumbling }, this.gameTime);
+      } else {
+        ctx.fillStyle = '#685040';
+        ctx.fillRect(p.x, p.y, p.width, p.height);
+        ctx.fillStyle = '#907860';
+        ctx.fillRect(p.x, p.y, p.width, 2);
+      }
+    }
+
+    // Draw Ladders
+    for (const l of this.stage.ladders) {
+      ctx.fillStyle = '#8a6840';
+      ctx.fillRect(l.x, l.y, 2, l.height);
+      ctx.fillRect(l.x + l.width - 2, l.y, 2, l.height);
+      // Rungs
+      for (let ry = l.y + 4; ry < l.y + l.height; ry += 8) {
+        ctx.fillRect(l.x, ry, l.width, 2);
+      }
+    }
+
+    // Draw Hazards (Cursed water, green nukage)
+    for (const h of this.stage.hazards) {
+      const isNukage = (this.currentStageNum === 5);
+      ctx.fillStyle = isNukage ? '#00ff40' : '#8020a0';
+      ctx.fillRect(h.x, h.y, h.width, h.height);
+      // Surface ripple
+      ctx.fillStyle = isNukage ? '#b0ffc0' : '#d060f0';
+      for (let rx = h.x; rx < h.x + h.width; rx += 8) {
+        const ry = h.y + Math.sin(this.gameTime * 6 + rx) * 2;
+        ctx.fillRect(rx, ry, 6, 2);
+      }
+    }
+
+    // Draw Ghost Platforms (Only visible in Boxer Shorts!)
+    for (const gp of this.stage.ghostPlatforms) {
+      const isVisible = (this.player.armorState === 'boxers');
+      this.renderer.drawTrap({ type: 'ghostPlatform', x: gp.x, y: gp.y, width: gp.width, visible: isVisible }, this.gameTime);
+    }
+
+    // Draw Dynamic Traps
+    for (const slicer of this.stage.slicerGates) {
+      this.renderer.drawTrap({ type: 'slicer', x: slicer.x, y: slicer.y, openHeight: slicer.openHeight, bladeLength: slicer.bladeLength }, this.gameTime);
+    }
+    for (const piston of this.stage.pistons) {
+      this.renderer.drawTrap({ type: 'piston', x: piston.x, y: piston.y, currentY: piston.currentY }, this.gameTime);
+    }
+    for (const plate of this.stage.pressurePlates) {
+      this.renderer.drawTrap({ type: 'pressurePlate', x: plate.x, y: plate.y, isDown: plate.isDown }, this.gameTime);
+    }
+
+    // Draw Chests
+    for (const chest of this.stage.chests) {
+      if (!chest.isOpen) {
+        this.renderer.drawTrap({ type: 'chest', x: chest.x, y: chest.y, chestType: chest.chestType }, this.gameTime);
+      }
+    }
+
+    // Draw Anvils (Tactical Ejected Armor)
+    for (const anvil of this.anvils) {
+      this.renderer.drawWeapon({ type: 'anvil', x: anvil.x, y: anvil.y }, this.gameTime);
+    }
+
+    // Draw Enemies
+    for (const enemy of this.stage.enemies) {
+      if (enemy.isDead) continue;
+      if (enemy.type === 'zombie') {
+        this.renderer.drawZombie(enemy.x, enemy.y, enemy.animFrame, enemy.facing, enemy.state === 'rising');
+      } else if (enemy.type === 'skeleton') {
+        this.renderer.drawSkeleton(enemy.x, enemy.y, enemy.animFrame, enemy.facing, enemy.isParrying);
+      } else if (enemy.type === 'gargoyle') {
+        this.renderer.drawRedArremer(enemy.x, enemy.y, enemy.state, enemy.animFrame, enemy.facing);
+      } else if (enemy.type === 'imp') {
+        this.renderer.drawCyberImp(enemy.x, enemy.y, enemy.animFrame, enemy.facing);
+      } else if (enemy.type === 'lemming') {
+        this.renderer.drawLemmingBlocker(enemy.x, enemy.y, enemy.animFrame, enemy.countdown);
+      } else if (enemy.type === 'voodooSkull') {
+        this.renderer.drawVoodooSkull(enemy.x, enemy.y, enemy.animFrame);
+      }
+    }
+
+    // Draw Final Boss (Stage 6)
+    if (this.stage.boss && !this.stage.boss.isDead) {
+      this.renderer.drawBoss(this.stage.boss, this.gameTime);
+    }
+
+    // Draw Weapons & Projectiles
+    for (const wp of this.stage.weapons) {
+      this.renderer.drawWeapon(wp, this.gameTime);
+    }
+
+    // Draw Arthur Player
+    if (this.player.armorState === 'possessed') {
+      // Draw as possessed monster with glowing astral aura!
+      ctx.strokeStyle = '#00d8f0';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(this.player.x - 12, this.player.y - 26, 24, 28);
+
+      if (this.player.possessedType === 'gargoyle') {
+        this.renderer.drawRedArremer(this.player.x, this.player.y, 'hover', this.player.animFrame, this.player.facing);
+      } else if (this.player.possessedType === 'zombie') {
+        this.renderer.drawZombie(this.player.x, this.player.y, this.player.animFrame, this.player.facing, false);
+      } else if (this.player.possessedType === 'skeleton') {
+        this.renderer.drawSkeleton(this.player.x, this.player.y, this.player.animFrame, this.player.facing, false);
+      } else {
+        this.renderer.drawCyberImp(this.player.x, this.player.y, this.player.animFrame, this.player.facing);
+      }
+    } else {
+      const chargeRatio = this.player.isChargingMagic ? Math.min(1.0, this.player.magicChargeTimer / this.player.maxChargeTime) : 0;
+      this.renderer.drawArthur(
+        this.player.x,
+        this.player.y,
+        this.player.armorState,
+        this.player.facing,
+        this.player.animFrame,
+        !this.player.onGround,
+        this.player.isCrouching,
+        this.player.isClimbing,
+        this.player.isDoubleJumping,
+        chargeRatio,
+        this.player.invincibleTimer > 0,
+        this.gameTime
+      );
+    }
+
+    // Draw Particles
+    this.renderer.drawParticles(this.particles);
+
+    ctx.restore(); // Restore world translation
+    ctx.restore(); // Restore screen shake
+
+    // 3. Draw HUD on top
+    this.renderer.drawHUD(
+      this.player.score,
+      this.highScore,
+      this.currentStageNum,
+      this.stage.name,
+      this.player.lives,
+      this.player.armorState,
+      this.player.currentWeapon,
+      this.player.isChargingMagic ? Math.min(1.0, this.player.magicChargeTimer / this.player.maxChargeTime) : 0,
+      this.player.possessionTimer,
+      this.player.possessedType,
+      this.stage.boss
+    );
+  }
+}
+
+// Boot game on window load
+window.addEventListener('DOMContentLoaded', () => {
+  const game = new Game();
+  window.gameInstance = game;
+
+  // Support direct stage URL hashes (e.g. #stage1, #stage6, #map)
+  const hash = window.location.hash;
+  if (hash.startsWith('#stage')) {
+    const sNum = parseInt(hash.replace('#stage', ''), 10);
+    if (sNum >= 1 && sNum <= 6) {
+      game.warpToStage(sNum);
+    }
+  } else if (hash === '#map') {
+    game.goToMap();
+  }
+
+  game.start();
+});
+
+  </script>
 </body>
 </html>
