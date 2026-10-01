@@ -1,139 +1,3453 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Arkanoid · Gemini 3.8 Flash Run (Scaffolding)</title>
-<style>
-  :root {
-    --bg: #07090e;
-    --card: #111726;
-    --border: #1f2a3e;
-    --amber: #f59e0b;
-    --cyan: #38bdf8;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
-  }
-  .scaffold-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    max-width: 680px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .scaffold-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan));
-  }
-  .badge-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  h1 {
-    font-size: 24px;
-    margin-bottom: 4px;
-    color: #fff;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--cyan);
-    margin-bottom: 20px;
-  }
-  .info-box {
-    background: #090d16;
-    border: 1px solid #1a2436;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    color: #cbd5e1;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .btn {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid transparent;
-  }
-  .btn-primary {
-    background: var(--amber);
-    color: #090d16;
-  }
-  .btn-secondary {
-    background: #1e293b;
-    color: #fff;
-    border-color: #334155;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
-</style>
+  <meta charset="utf-8">
+  <title>Arkanoid: The Secret of Brick Island</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background-color: #08080c;
+      background-image: 
+        radial-gradient(circle at 50% 30%, #1c152b 0%, #07070a 100%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 2px, transparent 2px, transparent 4px);
+      color: #e0e0e0;
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Vintage Arcade Cabinet Shell */
+    #arcade-container {
+      position: relative;
+      padding: 16px 20px 20px 20px;
+      background: linear-gradient(145deg, #2b1f14 0%, #150f0a 40%, #0d0906 100%);
+      border: 6px solid #4a3421;
+      border-radius: 18px;
+      box-shadow: 
+        0 0 50px rgba(0, 0, 0, 0.9),
+        inset 0 0 15px rgba(255, 170, 0, 0.15),
+        0 12px 30px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 95vw;
+    }
+
+    /* Cabinet Marquee */
+    #marquee {
+      width: 100%;
+      background: linear-gradient(180deg, #aa0000 0%, #550000 50%, #220000 100%);
+      border: 3px solid #ffaa00;
+      border-radius: 8px;
+      padding: 8px 16px;
+      margin-bottom: 12px;
+      text-align: center;
+      box-shadow: 
+        0 0 15px rgba(255, 85, 0, 0.5),
+        inset 0 0 10px rgba(255, 255, 85, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    #marquee::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    #marquee-title {
+      color: #ffff55;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow: 
+        2px 2px 0 #aa0000,
+        -2px -2px 0 #550000,
+        0 0 10px #ffaa00;
+      text-transform: uppercase;
+    }
+    #marquee-subtitle {
+      color: #55ffff;
+      font-size: 10px;
+      letter-spacing: 2px;
+      margin-top: 2px;
+      text-shadow: 1px 1px 0 #0000aa;
+    }
+
+    /* CRT Screen Housing */
+    #screen-housing {
+      position: relative;
+      background: #020204;
+      border: 8px solid #1a171e;
+      border-radius: 12px;
+      box-shadow: 
+        inset 0 0 25px rgba(0, 0, 0, 0.95),
+        0 4px 10px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+    }
+
+    /* 320x200 Canvas */
+    #gameCanvas {
+      display: block;
+      width: 640px;
+      height: 400px;
+      max-width: 90vw;
+      max-height: calc(90vw * 200 / 320);
+      aspect-ratio: 320 / 200;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -webkit-crisp-edges;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background-color: #000;
+      cursor: crosshair;
+    }
+
+    @media (min-width: 1024px) {
+      #gameCanvas {
+        width: 800px;
+        height: 500px;
+      }
+    }
+
+    /* Subtle CRT Scanlines Overlay */
+    .scanlines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+      ), linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.03),
+        rgba(0, 255, 0, 0.01),
+        rgba(0, 0, 255, 0.03)
+      );
+      background-size: 100% 4px, 6px 100%;
+      pointer-events: none;
+      border-radius: 6px;
+    }
+
+    /* CRT Glass Vignette & Reflection */
+    .vignette {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.75);
+      pointer-events: none;
+      border-radius: 6px;
+    }
+
+    /* Bottom Arcade Controls & Badge */
+    #cabinet-footer {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding: 0 4px;
+      font-size: 11px;
+      color: #aa8866;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #110e0b;
+      border: 1px solid #553311;
+      border-radius: 4px;
+      color: #ffaa55;
+    }
+    .keys-hint {
+      color: #887766;
+      font-size: 10px;
+    }
+    .keys-hint span {
+      color: #ffff55;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-<div class="scaffold-card">
-  <div class="badge-row">
-    <span class="badge">Gemini 3.8 Flash Run</span>
-    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
-  </div>
-  <h1>Arkanoid: The Secret of Brick Island</h1>
-  <div class="subtitle">Benchmark Challenge 1 · LucasArts Retro Tribute</div>
 
-  <div class="info-box">
-    <p><strong>Status:</strong> Ready for Gemini 3.8 Flash one-shot generation.</p>
-    <p style="margin-top: 8px;">
-      Feed <code>gemini-3.8/arkanoid/PROMPT.md</code> in a clean zero-shot context window to Gemini 3.8 Flash. Once generated, replace this file with the output code to play and evaluate.
-    </p>
+  <div id="arcade-container">
+    <div id="marquee">
+      <div id="marquee-title">Arkanoid</div>
+      <div id="marquee-subtitle">The Secret of Brick Island</div>
+    </div>
+
+    <div id="screen-housing">
+      <canvas id="gameCanvas" width="320" height="200"></canvas>
+      <div class="scanlines"></div>
+      <div class="vignette"></div>
+    </div>
+
+    <div id="cabinet-footer">
+      <div class="badge">EGA 320x200 • OPL2 FM AUDIO</div>
+      <div class="keys-hint"><span>MOUSE / A,D / ARROWS</span> Move | <span>SPACE</span> Fire/Launch | <span>P</span> Pause | <span>M</span> Mute | <span>1-7</span> Warp</div>
+    </div>
   </div>
 
-  <div class="actions">
-    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
-    <a href="../../opus-5.5/arkanoid/index.html" class="btn btn-secondary">🕹️ Compare with Opus 5.5 Run</a>
-    <a href="../index.html" class="btn btn-outline">&larr; Gemini 3.8 Hub</a>
-  </div>
-</div>
+  <script>
+  (function() {
+    'use strict';
+
+    // =========================================================================
+    // 1. EGA PALETTE & COLOR REGISTERS
+    // =========================================================================
+    const EGA = {
+      BLACK:          '#000000',
+      BLUE:           '#0000aa',
+      GREEN:          '#00aa00',
+      CYAN:           '#00aaaa',
+      RED:            '#aa0000',
+      MAGENTA:        '#aa00aa',
+      BROWN:          '#aa5500',
+      LIGHT_GRAY:     '#aaaaaa',
+      DARK_GRAY:      '#555555',
+      BRIGHT_BLUE:    '#5555ff',
+      BRIGHT_GREEN:   '#55ff55',
+      BRIGHT_CYAN:    '#55ffff',
+      BRIGHT_RED:     '#ff5555',
+      BRIGHT_MAGENTA: '#ff55ff',
+      YELLOW:         '#ffff55',
+      WHITE:          '#ffffff',
+      // Extended shades for extra luster
+      GOLD:           '#ffaa00',
+      ORANGE:         '#ff5500',
+      DARK_GREEN:     '#005500',
+      PURPLE:         '#5500aa',
+      TEAL:           '#00aa55',
+      NAVY:           '#000055'
+    };
+
+    // Brick Color Theme Mapping
+    const BRICK_THEMES = {
+      'C': { color: EGA.CYAN,           hi: EGA.BRIGHT_CYAN,    sh: EGA.BLUE,       pts: 100, hp: 1 },
+      'G': { color: EGA.GREEN,          hi: EGA.BRIGHT_GREEN,   sh: EGA.DARK_GREEN, pts: 110, hp: 1 },
+      'Y': { color: EGA.YELLOW,         hi: EGA.WHITE,          sh: EGA.GOLD,       pts: 120, hp: 1 },
+      'O': { color: EGA.ORANGE,         hi: EGA.YELLOW,         sh: EGA.RED,        pts: 130, hp: 1 },
+      'R': { color: EGA.RED,            hi: EGA.BRIGHT_RED,     sh: EGA.BROWN,      pts: 140, hp: 1 },
+      'P': { color: EGA.MAGENTA,        hi: EGA.BRIGHT_MAGENTA, sh: EGA.PURPLE,     pts: 150, hp: 1 },
+      'B': { color: EGA.BLUE,           hi: EGA.BRIGHT_BLUE,    sh: EGA.NAVY,       pts: 160, hp: 1 },
+      'W': { color: EGA.LIGHT_GRAY,     hi: EGA.WHITE,          sh: EGA.DARK_GRAY,  pts: 100, hp: 1 },
+      'A': { color: EGA.LIGHT_GRAY,     hi: EGA.WHITE,          sh: EGA.DARK_GRAY,  pts: 200, hp: 2, armored: true },
+      'K': { color: EGA.GOLD,           hi: EGA.YELLOW,         sh: EGA.BROWN,      pts: 300, hp: 3, armored: true },
+      'S': { color: EGA.DARK_GRAY,      hi: EGA.LIGHT_GRAY,     sh: EGA.BLACK,      pts: 0,   hp: 99999, steel: true },
+      'X': { color: EGA.BRIGHT_GREEN,   hi: EGA.YELLOW,         sh: EGA.DARK_GREEN, pts: 500, hp: 1, grog: true },
+      'M': { color: EGA.BRIGHT_MAGENTA, hi: EGA.BRIGHT_CYAN,    sh: EGA.PURPLE,     pts: 250, hp: 1, loom: true },
+      'V': { color: EGA.BRIGHT_BLUE,    hi: EGA.BRIGHT_MAGENTA, sh: EGA.NAVY,       pts: 200, hp: 1, vortex: true }
+    };
+
+    // =========================================================================
+    // 2. 4x5 RETRO BITMAP FONT ENGINE
+    // =========================================================================
+    const FONT_DATA = {
+      'A': 0x69f99,
+      'B': 0xe9e9e,
+      'C': 0x78887,
+      'D': 0xe999e,
+      'E': 0xf8e8f,
+      'F': 0xf8e88,
+      'G': 0x78b97,
+      'H': 0x99f99,
+      'I': 0xe444e,
+      'J': 0x222a4,
+      'K': 0x9bcb9,
+      'L': 0x8888f,
+      'M': 0x9f999,
+      'N': 0x9db99,
+      'O': 0x69996,
+      'P': 0xe9e88,
+      'Q': 0x69961,
+      'R': 0xe9eb9,
+      'S': 0x7861e,
+      'T': 0xf4444,
+      'U': 0x99996,
+      'V': 0x99964,
+      'W': 0x999f9,
+      'X': 0x96699,
+      'Y': 0x99644,
+      'Z': 0xf248f,
+      '0': 0x69996,
+      '1': 0x4c44e,
+      '2': 0xe168f,
+      '3': 0xe161e,
+      '4': 0x99f11,
+      '5': 0xf8e1e,
+      '6': 0x78f96,
+      '7': 0xf1244,
+      '8': 0x69696,
+      '9': 0x69f16,
+      ' ': 0x0,
+      '!': 0x44404,
+      '?': 0xe1604,
+      '.': 0x4,
+      ':': 0x4040,
+      '-': 0xe00,
+      '+': 0x4e40,
+      '/': 0x12480,
+      '\'': 0x44000,
+      '"': 0xaa000,
+      '(': 0x24442,
+      ')': 0x42224,
+      '=': 0xe0e0,
+      '<': 0x12421,
+      '>': 0x42124
+    };
+
+    function drawChar(ctx, ch, x, y, color, scale) {
+      const code = FONT_DATA[ch.toUpperCase()] || 0;
+      if (!code) return;
+      ctx.fillStyle = color;
+      for (let r = 0; r < 5; r++) {
+        const shift = (4 - r) * 4;
+        const nibble = (code >> shift) & 0xf;
+        for (let c = 0; c < 4; c++) {
+          if (nibble & (8 >> c)) {
+            ctx.fillRect(x + c * scale, y + r * scale, scale, scale);
+          }
+        }
+      }
+    }
+
+    function drawText(ctx, str, x, y, color, scale = 1, shadow = true) {
+      const charW = 4 * scale;
+      const spacing = 1 * scale;
+      str = String(str);
+      if (shadow) {
+        let curX = x + scale;
+        let curY = y + scale;
+        for (let i = 0; i < str.length; i++) {
+          drawChar(ctx, str[i], curX, curY, EGA.BLACK, scale);
+          curX += charW + spacing;
+        }
+      }
+      let curX = x;
+      for (let i = 0; i < str.length; i++) {
+        drawChar(ctx, str[i], curX, y, color, scale);
+        curX += charW + spacing;
+      }
+    }
+
+    function getTextWidth(str, scale = 1) {
+      return str.length * (5 * scale);
+    }
+
+    function drawTextCentered(ctx, str, y, color, scale = 1, shadow = true) {
+      const w = getTextWidth(str, scale);
+      const x = Math.floor((320 - w) / 2);
+      drawText(ctx, str, x, y, color, scale, shadow);
+    }
+
+    function drawTextCenteredInField(ctx, str, y, color, scale = 1, shadow = true) {
+      const w = getTextWidth(str, scale);
+      const fieldCenter = Math.floor((FIELD_X_MIN + FIELD_X_MAX) / 2);
+      const x = Math.floor(fieldCenter - w / 2);
+      drawText(ctx, str, x, y, color, scale, shadow);
+    }
+
+    // =========================================================================
+    // 3. ADLIB / OPL2 FM SYNTHESIZER & MULTI-CHANNEL SEQUENCER
+    // =========================================================================
+    class OPL2Synthesizer {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.compressor = null;
+        this.noiseBuffer = null;
+        this.isMuted = false;
+        this.isPlaying = false;
+        this.timerId = null;
+
+        // Sequencer State
+        this.currentWorld = 1;
+        this.currentStep = 0;
+        this.nextStepTime = 0;
+        this.stepDuration = 0.125; // default 120 bpm
+      }
+
+      init() {
+        if (this.ctx) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+
+        // Dynamics Compressor to act as brickwall limiter preventing clipping
+        this.compressor = this.ctx.createDynamicsCompressor();
+        this.compressor.threshold.setValueAtTime(-4, this.ctx.currentTime);
+        this.compressor.knee.setValueAtTime(8, this.ctx.currentTime);
+        this.compressor.ratio.setValueAtTime(12, this.ctx.currentTime);
+        this.compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
+        this.compressor.release.setValueAtTime(0.1, this.ctx.currentTime);
+        this.compressor.connect(this.ctx.destination);
+
+        // Master Gain
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
+        this.masterGain.connect(this.compressor);
+
+        // Build 2.0 second white noise buffer for AdLib percussion
+        const bufferSize = this.ctx.sampleRate * 2;
+        this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = this.noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+
+        // Start sequencer clock loop
+        this.startSequencer();
+      }
+
+      resume() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggleMute() {
+        this.isMuted = !this.isMuted;
+        if (this.masterGain && this.ctx) {
+          this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.7, this.ctx.currentTime);
+        }
+        return this.isMuted;
+      }
+
+      // Convert MIDI note number to Frequency in Hz
+      midiToFreq(m) {
+        if (!m) return 0;
+        return 440 * Math.pow(2, (m - 69) / 12);
+      }
+
+      // 2-Operator FM Synthesizer Voice (OPL2 Modulator -> Carrier)
+      playFMVoice(freq, duration, patch, time, destGain) {
+        if (!this.ctx || this.isMuted || !freq) return;
+
+        const modOsc = this.ctx.createOscillator();
+        const modGain = this.ctx.createGain();
+        const carOsc = this.ctx.createOscillator();
+        const carGain = this.ctx.createGain();
+
+        modOsc.type = patch.modType || 'sine';
+        carOsc.type = patch.carType || 'sine';
+
+        const carFreq = freq * (patch.carRatio || 1.0);
+        const modFreq = freq * (patch.modRatio || 1.0);
+
+        carOsc.frequency.setValueAtTime(carFreq, time);
+        modOsc.frequency.setValueAtTime(modFreq, time);
+
+        // Optional pitch glide for Sax or Lead
+        if (patch.glide) {
+          carOsc.frequency.linearRampToValueAtTime(carFreq * Math.pow(2, patch.glide / 12), time + duration * 0.4);
+        }
+
+        // Modulator Modulation Index & Envelope
+        const modIndex = (patch.modIndex || 2.0) * freq;
+        modGain.gain.setValueAtTime(modIndex, time);
+        modGain.gain.exponentialRampToValueAtTime(Math.max(1, modIndex * (patch.modSustain || 0.2)), time + duration);
+
+        // Connect Modulator to Carrier Frequency
+        modOsc.connect(modGain);
+        modGain.connect(carOsc.frequency);
+
+        // Carrier ADSR Volume Envelope
+        const att = patch.attack || 0.01;
+        const dec = patch.decay || 0.2;
+        const sus = patch.sustain !== undefined ? patch.sustain : 0.3;
+        const rel = patch.release || 0.1;
+        const maxVol = (patch.vol || 0.3);
+
+        carGain.gain.setValueAtTime(0.0001, time);
+        carGain.gain.linearRampToValueAtTime(maxVol, time + att);
+        carGain.gain.exponentialRampToValueAtTime(Math.max(0.0001, maxVol * sus), time + att + dec);
+        carGain.gain.setValueAtTime(Math.max(0.0001, maxVol * sus), time + duration);
+        carGain.gain.exponentialRampToValueAtTime(0.0001, time + duration + rel);
+
+        // Connect Carrier to Destination
+        carOsc.connect(carGain);
+        carGain.connect(destGain);
+
+        modOsc.start(time);
+        carOsc.start(time);
+        modOsc.stop(time + duration + rel + 0.05);
+        carOsc.stop(time + duration + rel + 0.05);
+      }
+
+      // Punchy AdLib Low-Pass Filtered Bass
+      playBassVoice(freq, duration, time, destGain) {
+        if (!this.ctx || this.isMuted || !freq) return;
+
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, time);
+
+        // Low-pass filter envelope for fat punch
+        filter.type = 'lowpass';
+        filter.Q.setValueAtTime(3, time);
+        filter.frequency.setValueAtTime(750, time);
+        filter.frequency.exponentialRampToValueAtTime(100, time + duration * 0.8);
+
+        // Gain envelope
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.linearRampToValueAtTime(0.4, time + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.15, time + 0.15);
+        gain.gain.setValueAtTime(0.15, time + duration);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + duration + 0.08);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(destGain);
+
+        osc.start(time);
+        osc.stop(time + duration + 0.1);
+      }
+
+      // Snappy OPL2 Noise Percussion
+      playDrumVoice(type, time, destGain) {
+        if (!this.ctx || this.isMuted || !type) return;
+
+        // Kick Drum
+        if (type === 1 || type === 5) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(150, time);
+          osc.frequency.exponentialRampToValueAtTime(38, time + 0.08);
+          gain.gain.setValueAtTime(0.6, time);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
+          osc.connect(gain);
+          gain.connect(destGain);
+          osc.start(time);
+          osc.stop(time + 0.1);
+        }
+
+        // Snare Drum (Band-pass noise + quick sine punch)
+        if (type === 2 || type === 6) {
+          if (this.noiseBuffer) {
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.noiseBuffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1200, time);
+            filter.Q.setValueAtTime(1.5, time);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.35, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(destGain);
+            noise.start(time);
+            noise.stop(time + 0.13);
+          }
+
+          // Snare tonal body
+          const pop = this.ctx.createOscillator();
+          const popGain = this.ctx.createGain();
+          pop.frequency.setValueAtTime(180, time);
+          pop.frequency.exponentialRampToValueAtTime(60, time + 0.07);
+          popGain.gain.setValueAtTime(0.2, time);
+          popGain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+          pop.connect(popGain);
+          popGain.connect(destGain);
+          pop.start(time);
+          pop.stop(time + 0.09);
+        }
+
+        // Closed Hi-Hat
+        if (type === 3 || type === 5 || type === 6) {
+          if (this.noiseBuffer) {
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.noiseBuffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(7000, time);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.18, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.035);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(destGain);
+            noise.start(time);
+            noise.stop(time + 0.04);
+          }
+        }
+
+        // Open Hi-Hat
+        if (type === 4) {
+          if (this.noiseBuffer) {
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.noiseBuffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(6500, time);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.2, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(destGain);
+            noise.start(time);
+            noise.stop(time + 0.16);
+          }
+        }
+
+        // Crash Cymbal Accent
+        if (type === 7) {
+          if (this.noiseBuffer) {
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.noiseBuffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(4500, time);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.3, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(destGain);
+            noise.start(time);
+            noise.stop(time + 0.55);
+          }
+        }
+      }
+
+      // =======================================================================
+      // THE 7 DISTINCT SOUNDTRACKS FOR THE 7 WORLDS
+      // =======================================================================
+      getSoundtracks() {
+        return {
+          // World 1: Monkey Island (Levels 1-6) - Caribbean Reggae & Steel Pan
+          1: {
+            name: "The Monkey Island Theme",
+            bpm: 130,
+            patch: {
+              modRatio: 3.5, carRatio: 1.0, modIndex: 2.2, modType: 'sine', carType: 'sine',
+              attack: 0.005, decay: 0.22, sustain: 0.15, release: 0.1, vol: 0.32
+            },
+            harmPatch: {
+              modRatio: 2.0, carRatio: 1.0, modIndex: 1.5, modType: 'sine', carType: 'sine',
+              attack: 0.01, decay: 0.18, sustain: 0.1, release: 0.1, vol: 0.18
+            },
+            steps: 32,
+            lead: [
+              62, 0, 65, 67, 0, 69, 65, 62,  60, 0, 62, 0, 0, 0, 0, 0,
+              65, 0, 67, 69, 0, 72, 70, 69,  67, 0, 69, 0, 0, 0, 0, 0
+            ],
+            harm: [
+              0, 0, 57, 0, 0, 0, 60, 0,  0, 0, 57, 0, 0, 0, 55, 0,
+              0, 0, 60, 0, 0, 0, 65, 0,  0, 0, 62, 0, 0, 0, 64, 0
+            ],
+            bass: [
+              38, 0, 0, 38, 0, 41, 0, 43,  38, 0, 0, 38, 0, 36, 0, 37,
+              41, 0, 0, 41, 0, 45, 0, 43,  38, 0, 0, 38, 0, 45, 0, 38
+            ],
+            drums: [
+              3, 3, 6, 3, 1, 3, 6, 3,  3, 3, 6, 3, 1, 3, 6, 3,
+              3, 3, 6, 3, 1, 3, 6, 3,  3, 3, 6, 3, 1, 3, 6, 4
+            ]
+          },
+
+          // World 2: Day of the Tentacle (Levels 7-12) - Quirky Chromatic March
+          2: {
+            name: "The Purple Tentacle March",
+            bpm: 125,
+            patch: {
+              modRatio: 1.0, carRatio: 1.0, modIndex: 3.8, modType: 'sine', carType: 'square',
+              attack: 0.005, decay: 0.18, sustain: 0.25, release: 0.08, vol: 0.25
+            },
+            harmPatch: {
+              modRatio: 1.0, carRatio: 2.0, modIndex: 2.5, modType: 'sine', carType: 'triangle',
+              attack: 0.01, decay: 0.15, sustain: 0.2, release: 0.08, vol: 0.18
+            },
+            steps: 32,
+            lead: [
+              60, 0, 63, 62, 61, 60, 55, 0,  60, 0, 63, 67, 66, 65, 62, 0,
+              63, 0, 60, 0, 56, 0, 55, 0,   60, 62, 63, 65, 67, 0, 0, 0
+            ],
+            harm: [
+              0, 0, 55, 0, 0, 0, 51, 0,  0, 0, 58, 0, 0, 0, 55, 0,
+              0, 0, 51, 0, 0, 0, 50, 0,  0, 0, 55, 0, 0, 0, 55, 0
+            ],
+            bass: [
+              36, 0, 0, 36, 35, 0, 0, 35,  34, 0, 0, 34, 33, 0, 32, 31,
+              36, 0, 0, 36, 35, 0, 0, 35,  34, 0, 33, 0, 31, 0, 36, 0
+            ],
+            drums: [
+              1, 3, 2, 3, 1, 3, 2, 3,  1, 3, 2, 3, 1, 1, 2, 3,
+              1, 3, 2, 3, 1, 3, 2, 3,  1, 2, 1, 2, 2, 2, 6, 7
+            ]
+          },
+
+          // World 3: Fate of Atlantis (Levels 13-18) - Mysterious Ambient Crypt
+          3: {
+            name: "The Atlantis Crypt",
+            bpm: 80,
+            patch: {
+              modRatio: 2.005, carRatio: 1.0, modIndex: 1.2, modType: 'sine', carType: 'sine',
+              attack: 0.15, decay: 0.6, sustain: 0.5, release: 0.4, vol: 0.3
+            },
+            harmPatch: {
+              modRatio: 3.0, carRatio: 1.0, modIndex: 0.9, modType: 'sine', carType: 'triangle',
+              attack: 0.2, decay: 0.8, sustain: 0.6, release: 0.5, vol: 0.2
+            },
+            steps: 32,
+            lead: [
+              69, 0, 0, 0, 72, 0, 0, 0,  71, 0, 67, 0, 64, 0, 0, 0,
+              69, 0, 0, 0, 74, 0, 72, 0,  76, 0, 0, 0, 69, 0, 0, 0
+            ],
+            harm: [
+              57, 0, 0, 0, 60, 0, 0, 0,  59, 0, 55, 0, 52, 0, 0, 0,
+              57, 0, 0, 0, 62, 0, 60, 0,  64, 0, 0, 0, 57, 0, 0, 0
+            ],
+            bass: [
+              33, 0, 0, 0, 33, 0, 0, 0,  29, 0, 0, 0, 29, 0, 0, 0,
+              26, 0, 0, 0, 26, 0, 0, 0,  28, 0, 0, 0, 33, 0, 0, 0
+            ],
+            drums: [
+              1, 0, 0, 0, 0, 0, 3, 0,  1, 0, 0, 0, 0, 0, 4, 0,
+              1, 0, 0, 0, 0, 0, 3, 0,  0, 0, 1, 0, 0, 0, 7, 0
+            ]
+          },
+
+          // World 4: Space Combat (Levels 19-24) - Driving 16th Space Dogfight
+          4: {
+            name: "Space Combat Flight",
+            bpm: 144,
+            patch: {
+              modRatio: 2.0, carRatio: 1.0, modIndex: 3.2, modType: 'square', carType: 'sawtooth',
+              attack: 0.01, decay: 0.16, sustain: 0.35, release: 0.1, vol: 0.28
+            },
+            harmPatch: {
+              modRatio: 1.5, carRatio: 1.0, modIndex: 2.0, modType: 'sine', carType: 'sawtooth',
+              attack: 0.005, decay: 0.12, sustain: 0.2, release: 0.08, vol: 0.18
+            },
+            steps: 32,
+            lead: [
+              64, 0, 67, 69, 71, 0, 74, 71,  69, 0, 67, 64, 67, 69, 71, 0,
+              74, 0, 76, 0, 74, 71, 69, 67,  69, 71, 69, 67, 64, 0, 0, 0
+            ],
+            harm: [
+              0, 64, 0, 67, 0, 71, 0, 67,  0, 64, 0, 67, 0, 71, 0, 67,
+              0, 65, 0, 69, 0, 72, 0, 69,  0, 62, 0, 65, 0, 71, 0, 67
+            ],
+            bass: [
+              28, 28, 28, 28, 31, 31, 28, 28,  33, 33, 31, 31, 26, 26, 27, 27,
+              28, 28, 28, 28, 31, 31, 28, 28,  33, 33, 35, 35, 36, 36, 35, 31
+            ],
+            drums: [
+              1, 3, 6, 3, 1, 3, 6, 3,  1, 3, 6, 3, 1, 1, 6, 3,
+              1, 3, 6, 3, 1, 3, 6, 3,  1, 6, 1, 6, 2, 2, 6, 7
+            ]
+          },
+
+          // World 5: Loom (Levels 25-30) - 4-Voice Polyphonic Counterpoint
+          5: {
+            name: "The Loom of Fate",
+            bpm: 96,
+            patch: {
+              modRatio: 1.0, carRatio: 1.0, modIndex: 0.8, modType: 'sine', carType: 'sine',
+              attack: 0.04, decay: 0.35, sustain: 0.5, release: 0.25, vol: 0.26
+            },
+            harmPatch: {
+              modRatio: 1.0, carRatio: 1.0, modIndex: 0.7, modType: 'sine', carType: 'sine',
+              attack: 0.04, decay: 0.35, sustain: 0.5, release: 0.25, vol: 0.22
+            },
+            steps: 32,
+            lead: [
+              62, 0, 64, 65, 67, 0, 65, 64,  62, 0, 69, 0, 67, 65, 64, 0,
+              65, 0, 67, 69, 70, 0, 69, 67,  65, 0, 74, 0, 72, 70, 69, 0
+            ],
+            harm: [
+              57, 0, 58, 60, 62, 0, 60, 58,  57, 0, 62, 0, 60, 58, 57, 0,
+              58, 0, 60, 62, 63, 0, 62, 60,  58, 0, 67, 0, 65, 63, 62, 0
+            ],
+            bass: [
+              38, 0, 45, 0, 50, 0, 48, 0,  46, 0, 43, 0, 45, 0, 38, 0,
+              41, 0, 48, 0, 53, 0, 51, 0,  50, 0, 46, 0, 48, 0, 38, 0
+            ],
+            drums: [
+              0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0
+            ]
+          },
+
+          // World 6: Sam & Max (Levels 31-32) - Walking Bass Blues & Sax Lead
+          6: {
+            name: "The Road to Sam & Max",
+            bpm: 130,
+            patch: {
+              modRatio: 1.0, carRatio: 1.0, modIndex: 2.4, modType: 'sine', carType: 'sawtooth',
+              attack: 0.02, decay: 0.2, sustain: 0.4, release: 0.12, glide: 0.5, vol: 0.28
+            },
+            harmPatch: {
+              modRatio: 2.0, carRatio: 1.0, modIndex: 1.6, modType: 'sine', carType: 'triangle',
+              attack: 0.015, decay: 0.15, sustain: 0.2, release: 0.1, vol: 0.18
+            },
+            steps: 32,
+            lead: [
+              65, 0, 68, 69, 72, 0, 74, 75,  74, 72, 69, 65, 67, 68, 69, 0,
+              72, 0, 75, 77, 79, 0, 77, 75,  72, 69, 65, 67, 65, 0, 0, 0
+            ],
+            harm: [
+              0, 0, 60, 0, 0, 0, 63, 0,  0, 0, 60, 0, 0, 0, 62, 0,
+              0, 0, 65, 0, 0, 0, 68, 0,  0, 0, 65, 0, 0, 0, 60, 0
+            ],
+            bass: [
+              41, 0, 45, 0, 48, 0, 50, 0,  51, 0, 50, 0, 48, 0, 45, 0,
+              46, 0, 50, 0, 53, 0, 55, 0,  51, 0, 48, 0, 45, 0, 41, 0
+            ],
+            drums: [
+              3, 0, 6, 3, 3, 0, 6, 3,  3, 0, 6, 3, 3, 0, 6, 3,
+              3, 0, 6, 3, 3, 0, 6, 3,  3, 0, 6, 3, 1, 2, 6, 7
+            ]
+          },
+
+          // World 7: LeChuck Battle (Level 33) - Bombastic Heavy Metal
+          7: {
+            name: "LeChuck's Battle Anthem",
+            bpm: 152,
+            patch: {
+              modRatio: 2.0, carRatio: 1.0, modIndex: 5.5, modType: 'square', carType: 'sawtooth',
+              attack: 0.005, decay: 0.25, sustain: 0.45, release: 0.15, vol: 0.35
+            },
+            harmPatch: {
+              modRatio: 1.5, carRatio: 1.0, modIndex: 4.0, modType: 'sawtooth', carType: 'sawtooth',
+              attack: 0.005, decay: 0.2, sustain: 0.35, release: 0.12, vol: 0.22
+            },
+            steps: 32,
+            lead: [
+              62, 62, 65, 67, 68, 67, 65, 62,  65, 67, 68, 69, 72, 69, 65, 62,
+              74, 0, 72, 0, 68, 0, 67, 0,     65, 67, 68, 65, 62, 0, 0, 0
+            ],
+            harm: [
+              50, 0, 0, 50, 53, 0, 0, 53,  55, 0, 0, 55, 56, 0, 55, 53,
+              50, 0, 0, 50, 53, 0, 0, 53,  55, 0, 56, 0, 57, 0, 50, 0
+            ],
+            bass: [
+              38, 38, 38, 38, 41, 41, 41, 41,  43, 43, 43, 43, 44, 44, 43, 41,
+              38, 38, 38, 38, 41, 41, 41, 41,  43, 43, 44, 44, 45, 45, 38, 38
+            ],
+            drums: [
+              1, 1, 6, 1, 1, 1, 6, 1,  1, 1, 6, 1, 1, 1, 6, 1,
+              1, 1, 6, 1, 1, 1, 6, 1,  1, 6, 1, 6, 2, 2, 7, 7
+            ]
+          }
+        };
+      }
+
+      setWorldTrack(w) {
+        this.currentWorld = w;
+        const tracks = this.getSoundtracks();
+        const trk = tracks[w] || tracks[1];
+        // 16th note duration = (60 / bpm) / 4
+        this.stepDuration = (60 / trk.bpm) / 4;
+        this.currentStep = 0;
+      }
+
+      startSequencer() {
+        if (this.timerId) return;
+        this.nextStepTime = this.ctx.currentTime + 0.1;
+
+        const scheduleAhead = () => {
+          if (!this.ctx) return;
+          const tracks = this.getSoundtracks();
+          const trk = tracks[this.currentWorld] || tracks[1];
+          const lookahead = 0.15;
+
+          while (this.nextStepTime < this.ctx.currentTime + lookahead) {
+            const step = this.currentStep;
+            const time = this.nextStepTime;
+            const dur = this.stepDuration * 0.9;
+
+            // Channel 0: Melody Lead
+            const leadMidi = trk.lead[step % trk.steps];
+            if (leadMidi) {
+              const freq = this.midiToFreq(leadMidi);
+              this.playFMVoice(freq, dur, trk.patch, time, this.masterGain);
+            }
+
+            // Channel 1: Harmony / Counterpoint
+            const harmMidi = trk.harm[step % trk.steps];
+            if (harmMidi) {
+              const freq = this.midiToFreq(harmMidi);
+              this.playFMVoice(freq, dur, trk.harmPatch, time, this.masterGain);
+            }
+
+            // Channel 2: Bassline
+            const bassMidi = trk.bass[step % trk.steps];
+            if (bassMidi) {
+              const freq = this.midiToFreq(bassMidi);
+              this.playBassVoice(freq, dur, time, this.masterGain);
+            }
+
+            // Channel 3: Drums
+            const drumCode = trk.drums[step % trk.steps];
+            if (drumCode) {
+              this.playDrumVoice(drumCode, time, this.masterGain);
+            }
+
+            this.currentStep = (this.currentStep + 1) % trk.steps;
+            this.nextStepTime += this.stepDuration;
+          }
+        };
+
+        this.timerId = setInterval(scheduleAhead, 25);
+      }
+
+      // =======================================================================
+      // HIGH-FIDELITY RETRO SOUND EFFECTS (SFX)
+      // =======================================================================
+      playSfx(type) {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const dest = this.masterGain;
+
+        switch (type) {
+          case 'paddle': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.linearRampToValueAtTime(540, now + 0.05);
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.07);
+            break;
+          }
+
+          case 'brick': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(480, now);
+            osc.frequency.exponentialRampToValueAtTime(140, now + 0.07);
+            gain.gain.setValueAtTime(0.35, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.09);
+            break;
+          }
+
+          case 'clink': {
+            // Metallic ring for armored bricks
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1800, now);
+            osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.14);
+            break;
+          }
+
+          case 'steel': {
+            // Dull metallic thud
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(120, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 0.08);
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.1);
+            break;
+          }
+
+          case 'explode': {
+            // Grog barrel explosive rumble
+            if (this.noiseBuffer) {
+              const noise = this.ctx.createBufferSource();
+              noise.buffer = this.noiseBuffer;
+              const filter = this.ctx.createBiquadFilter();
+              filter.type = 'lowpass';
+              filter.frequency.setValueAtTime(800, now);
+              filter.frequency.exponentialRampToValueAtTime(60, now + 0.45);
+
+              const gain = this.ctx.createGain();
+              gain.gain.setValueAtTime(0.7, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+
+              noise.connect(filter);
+              filter.connect(gain);
+              gain.connect(dest);
+              noise.start(now);
+              noise.stop(now + 0.5);
+            }
+            break;
+          }
+
+          case 'laser': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(1200, now);
+            osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.1);
+            break;
+          }
+
+          case 'laserHit': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.06);
+            break;
+          }
+
+          case 'powerup': {
+            // Two-tone fanfare
+            [523.25, 659.25, 783.99].forEach((f, idx) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(f, now + idx * 0.07);
+              gain.gain.setValueAtTime(0.001, now + idx * 0.07);
+              gain.gain.linearRampToValueAtTime(0.3, now + idx * 0.07 + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.15);
+              osc.connect(gain);
+              gain.connect(dest);
+              osc.start(now + idx * 0.07);
+              osc.stop(now + idx * 0.07 + 0.16);
+            });
+            break;
+          }
+
+          case 'spawn': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.13);
+            break;
+          }
+
+          case 'catch': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.linearRampToValueAtTime(450, now + 0.08);
+            osc.frequency.linearRampToValueAtTime(350, now + 0.15);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.17);
+            break;
+          }
+
+          case 'launch': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+            gain.gain.setValueAtTime(0.35, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.13);
+            break;
+          }
+
+          case 'die': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.exponentialRampToValueAtTime(70, now + 0.5);
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.6);
+            break;
+          }
+
+          case 'clear': {
+            // LucasArts Triumphant Chord (D - F# - A - D)
+            [293.66, 369.99, 440.00, 587.33].forEach((f) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(f, now);
+              gain.gain.setValueAtTime(0.2, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+              osc.connect(gain);
+              gain.connect(dest);
+              osc.start(now);
+              osc.stop(now + 0.85);
+            });
+            break;
+          }
+
+          case 'bossRoar': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(90, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+            gain.gain.setValueAtTime(0.5, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.5);
+            break;
+          }
+
+          case 'bossHit': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
+            gain.gain.setValueAtTime(0.5, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.2);
+            break;
+          }
+
+          case 'insult': {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start(now);
+            osc.stop(now + 0.15);
+            break;
+          }
+        }
+      }
+    }
+
+    // Instantiate Audio Synthesizer
+    const audio = new OPL2Synthesizer();
+
+    // =========================================================================
+    // 4. LEVEL DATABASE (ALL 33 LUCASARTS LEVELS)
+    // =========================================================================
+    const ALL_LEVELS = [
+  {
+    "name": "The Rubber Chicken with a Pulley",
+    "world": 1,
+    "worldName": "M\u00eal\u00e9e Island",
+    "sub": "Level 1: The Iconic Inventory Item",
+    "map": [
+      "....RRRR......",
+      "...RYYYYR.....",
+      "..OYYYYYY.....",
+      "..OYYYYYY.....",
+      "...YYYYYY.....",
+      "..YYYYYYYY....",
+      ".YYYYSSYYYY...",
+      ".YYYYAAYYYY...",
+      ".YYYYYYYYYY...",
+      "..YYYYYYYY....",
+      "...XX..XX.....",
+      "...OO..OO....."
+    ]
+  },
+  {
+    "name": "Scumm Bar Grog Mug",
+    "world": 1,
+    "worldName": "M\u00eal\u00e9e Island",
+    "sub": "Level 2: 100% Pure Caustic Grog",
+    "map": [
+      "..WWWWWWWW....",
+      "..WWWWWWWW....",
+      "..OOOOOOOOOO..",
+      "..OXXXXXXXXO..",
+      "..OXXXXXXXXO..",
+      "..OXXXXXXXXO..",
+      "..OXXXXXXXXO..",
+      "..OOOOOOOOOO..",
+      "..OOOOOOOO....",
+      "....AAAA......"
+    ]
+  },
+  {
+    "name": "Guybrush's Pirate Hat & Cutlass",
+    "world": 1,
+    "worldName": "M\u00eal\u00e9e Island",
+    "sub": "Level 3: Mighty Pirate Regalia",
+    "map": [
+      "....WWWWWW....",
+      "...WWYYYYWW...",
+      "..WWWWYYWWWW..",
+      ".WWWWWWWWWWWW.",
+      "..............",
+      ".....AAAA.....",
+      "....AAAAAA....",
+      "...AAWWWWAA...",
+      "..AAWWWWWWAA..",
+      ".AAWWWWWWWWAA.",
+      ".SSSS..SSSS...",
+      "...YY..YY....."
+    ]
+  },
+  {
+    "name": "Stan's Previously Owned Plaid",
+    "world": 1,
+    "worldName": "M\u00eal\u00e9e Island",
+    "sub": "Level 4: Hypnotic Salesman Fabric",
+    "map": [
+      "YYRRCCPPYYRRCC",
+      "RRYYPPCCRRYYPP",
+      "CCPPYYRRCCPPYY",
+      "PPCCRRYYPPCCRR",
+      "YYRRSSPPYYRRCC",
+      "RRYYAACCRRYYPP",
+      "CCPPYYRRCCPPYY",
+      "PPCCRRYYPPCCRR",
+      "YYRRCCPPYYRRCC",
+      "RRYYPPCCRRYYPP"
+    ]
+  },
+  {
+    "name": "Murray the Demonic Skull",
+    "world": 1,
+    "worldName": "M\u00eal\u00e9e Island",
+    "sub": "Level 5: Evil Mastermind of the Underworld",
+    "map": [
+      "...AWWWWWWA...",
+      "..AWWWWWWWWA..",
+      ".AWWRRWWRRWWA.",
+      ".AWWRRWWRRWWA.",
+      ".AWWWWWWWWWWA.",
+      "..AWWAAAAWWA..",
+      "...AAAWWAAA...",
+      "....AAAAAA....",
+      "...WWXWWXWW...",
+      "...WWXWWXWW...",
+      "....WWWWWW...."
+    ]
+  },
+  {
+    "name": "The Ghost Ship of LeChuck",
+    "world": 1,
+    "worldName": "M\u00eal\u00e9e Island",
+    "sub": "Level 6: Spectral Galleon on the Sea",
+    "map": [
+      "......GG......",
+      ".....GGGG.....",
+      "....GGCCGG....",
+      "...GGCCCCGG...",
+      "..GGCCCCCCGG..",
+      "......SS......",
+      "....GGCCGG....",
+      "..OOOOOOOOOO..",
+      ".OOSSOOSSOOSO.",
+      ".OOOOOOOOOOOO.",
+      "..AAAAAAAAAA..",
+      "....XXXXXX...."
+    ]
+  },
+  {
+    "name": "The Purple Tentacle",
+    "world": 2,
+    "worldName": "Day of the Tentacle",
+    "sub": "Level 7: World Domination in Purple",
+    "map": [
+      ".....PPPP.....",
+      "....PPPPPP....",
+      "....PPRRPP....",
+      "...PPPPPPPP...",
+      "...PWWPPWWP...",
+      "....PPPPPP....",
+      "....PPPPPP....",
+      ".....PPPP.....",
+      ".....PPPP.....",
+      "....PPPPPP....",
+      "...PPPPPPPP...",
+      "..AAAAAAAAAA..",
+      "..SSSSSSSSSS.."
+    ]
+  },
+  {
+    "name": "Green Tentacle's Rock Drum",
+    "world": 2,
+    "worldName": "Day of the Tentacle",
+    "sub": "Level 8: Percussion Heavy Metal",
+    "map": [
+      "....GG..GG....",
+      "....GG..GG....",
+      "....GGGGGG....",
+      "....GGGGGG....",
+      "..YYYY..YYYY..",
+      "...YY....YY...",
+      "..AAAAAAAAAA..",
+      ".AAWWWWWWWWAA.",
+      ".AAWWGGGGWWAA.",
+      ".AAWWWWWWWWAA.",
+      "..AAAAAAAAAA..",
+      "...SS....SS..."
+    ]
+  },
+  {
+    "name": "The Chron-o-John",
+    "world": 2,
+    "worldName": "Day of the Tentacle",
+    "sub": "Level 9: Temporal Transport Module",
+    "map": [
+      "...OOOOOOOO...",
+      "...OWWWWWWO...",
+      "...OWWWWWWO...",
+      "...OWWWWWWO...",
+      "...OWWWWWWO...",
+      "..WWWWWWWWWW..",
+      "..WWVVVVVVWW..",
+      "..WWVVVVVVWW..",
+      "..WWWWWWWWWW..",
+      "...AWWWWWWWA..",
+      "....AAAAAA....",
+      "...SSSSSSSS..."
+    ]
+  },
+  {
+    "name": "Super Battery & Sludge Vat",
+    "world": 2,
+    "worldName": "Day of the Tentacle",
+    "sub": "Level 10: Dr. Fred's Toxic Invention",
+    "map": [
+      "..YY..YY..YY..",
+      "..YY..YY..YY..",
+      ".AAAAAAAAAAAA.",
+      "ACCGGGGGGGCCAA",
+      "ACCGGGGGGGCCAA",
+      "ACGGXXXXXXXXAA",
+      "ACGGXXXXXXXXAA",
+      "ACCGGGGGGGCCAA",
+      ".AAAAAAAAAAAA.",
+      "..SS..SS..SS.."
+    ]
+  },
+  {
+    "name": "George Washington's Cherry Tree",
+    "world": 2,
+    "worldName": "Day of the Tentacle",
+    "sub": "Level 11: I Cannot Tell a Lie",
+    "map": [
+      "...GGGGGGGG...",
+      "..GGGRGGGRGG..",
+      ".GGGGRGGGGRGG.",
+      ".GGGGGGGGGGGG.",
+      "..GGGRGGGRGG..",
+      "...GGGGGGGG...",
+      ".....OOOO.....",
+      ".....OOAA.....",
+      ".....OOSSAA...",
+      ".....OOOO.....",
+      "....OOOOOO....",
+      "...OOOOOOOO..."
+    ]
+  },
+  {
+    "name": "Tentacle World Domination Flag",
+    "world": 2,
+    "worldName": "Day of the Tentacle",
+    "sub": "Level 12: The Banner of the Future",
+    "map": [
+      "S.RRRRRRRRRRRR",
+      "S.RRRRRPPRRRRR",
+      "S.YYYYPPPPYYYY",
+      "S.YYYPPRRPPYYY",
+      "S.BBBPWWPPWBBB",
+      "S.BBBBPPPPBBBB",
+      "S.RRRRRPPRRRRR",
+      "S.RRRRRRRRRRRR",
+      "S.............",
+      "S.AAAAAAAAAAAA"
+    ]
+  },
+  {
+    "name": "The Orichalcum Bead & Idol",
+    "world": 3,
+    "worldName": "Fate of Atlantis",
+    "sub": "Level 13: The Lost Power Source",
+    "map": [
+      "..YY......YY..",
+      "..YYYY..YYYY..",
+      "...YYYYYYYY...",
+      "...YOOOOOOY...",
+      "..YORROORROY..",
+      "..YOXXOOXXOY..",
+      "..YOOOOOOOOY..",
+      "...YAAAAAAY...",
+      "....YAAAAY....",
+      ".....YYYY.....",
+      "....SSSSSS...."
+    ]
+  },
+  {
+    "name": "The Three Stones of Atlantis",
+    "world": 3,
+    "worldName": "Fate of Atlantis",
+    "sub": "Level 14: Sunstone, Moonstone, Worldstone",
+    "map": [
+      "...BBBBBBBB...",
+      "..BBWWWWWWBB..",
+      ".BBWWYYYYWWBB.",
+      ".BBWWYSSYWWBB.",
+      ".BBWWYSSYWWBB.",
+      ".BBWWYYYYWWBB.",
+      "..BBWWWWWWBB..",
+      "...BBBBBBBB...",
+      "....AAAAAA....",
+      "...XXXXXXXX..."
+    ]
+  },
+  {
+    "name": "Sophia's Medallion of Nur-Ab-Sal",
+    "world": 3,
+    "worldName": "Fate of Atlantis",
+    "sub": "Level 15: Ancient King's Spirit Vessel",
+    "map": [
+      "......YY......",
+      "....YYYYYY....",
+      "..YYYYYYYYYY..",
+      ".YYCCYYYYCCYY.",
+      ".YYCCRRRRCCYY.",
+      ".YYCCXXXXCCYY.",
+      ".YYCCRRRRCCYY.",
+      "..YYCCYYCCYY..",
+      "....YYYYYY....",
+      "......YY......"
+    ]
+  },
+  {
+    "name": "German U-Boat 26",
+    "world": 3,
+    "worldName": "Fate of Atlantis",
+    "sub": "Level 16: Iron Shark of the Deep",
+    "map": [
+      ".......AA.....",
+      "......AAAA....",
+      "....AAAAAAAA..",
+      "...SSSSSSSSSS.",
+      "..AAAAAAAAAAAA",
+      ".AAAAAAAAAAAAA",
+      ".AXXXXXXXXXXAA",
+      ".AAAAAAAAAAAAA",
+      "..SSSSSSSSSS..",
+      "...AAAAAAAA..."
+    ]
+  },
+  {
+    "name": "The Colossus of Atlantis",
+    "world": 3,
+    "worldName": "Fate of Atlantis",
+    "sub": "Level 17: Giant Bronze Automaton",
+    "map": [
+      "....KKKKKK....",
+      "...KKCYYCKK...",
+      "...KKYYYYKK...",
+      "..KKKKKKKKKK..",
+      ".KKKKKSSKKKKK.",
+      ".KKKKCCCCKKKK.",
+      ".KKKKCCCCKKKK.",
+      "..KKKKKKKKKK..",
+      "...KKAAAAKK...",
+      "...KK....KK...",
+      "..SSSS..SSSS.."
+    ]
+  },
+  {
+    "name": "The Godmaker Forge",
+    "world": 3,
+    "worldName": "Fate of Atlantis",
+    "sub": "Level 18: Molten Transformation Vault",
+    "map": [
+      ".SSSSSSSSSSSS.",
+      ".SOOOYYYYOOOS.",
+      ".SORRRRRRRROS.",
+      ".SOXXWCCWXXOS.",
+      ".SOXXWCCWXXOS.",
+      ".SORRRRRRRROS.",
+      ".SOOOYYYYOOOS.",
+      ".AAAAAAAAAAAA.",
+      "...KKKKKKKK...",
+      "..SSSS..SSSS.."
+    ]
+  },
+  {
+    "name": "Imperial TIE Starfighter",
+    "world": 4,
+    "worldName": "Space Combat",
+    "sub": "Level 19: Twin Ion Engine Threat",
+    "map": [
+      "SS..........SS",
+      "SSAA......AASS",
+      "SSAAAA..AAAASS",
+      "SSAAWWCCWWAASS",
+      "SSSSWWCCWWSSSS",
+      "SSAAWWCCWWAASS",
+      "SSAAAA..AAAASS",
+      "SSAA......AASS",
+      "SS..........SS",
+      "....GG..GG...."
+    ]
+  },
+  {
+    "name": "Trench Run Hyperdrive Core",
+    "world": 4,
+    "worldName": "Space Combat",
+    "sub": "Level 20: Stay on Target!",
+    "map": [
+      "SSSS......SSSS",
+      "AAAA......AAAA",
+      "SSSS......SSSS",
+      "AAAA..CC..AAAA",
+      "SSSS..CC..SSSS",
+      "AAAA..CC..AAAA",
+      "SSSS..XX..SSSS",
+      "AAAA..XX..AAAA",
+      "SSSS......SSSS",
+      "AAAAAAAAAAAAAA"
+    ]
+  },
+  {
+    "name": "Asteroid Attila",
+    "world": 4,
+    "worldName": "Space Combat",
+    "sub": "Level 21: Explosive Nuclear Excavation",
+    "map": [
+      "...OOOOOOOO...",
+      "..OOOOOOOOOO..",
+      ".OOXXOOOOXXOO.",
+      ".OOOOOOOOOOOO.",
+      ".OOAAOOOOAAOO.",
+      "..OOOOOOOOOO..",
+      "...OOXXXXOO...",
+      "....AAAAAA....",
+      ".....SSSS.....",
+      ".....SSSS....."
+    ]
+  },
+  {
+    "name": "Alien Light Bridge",
+    "world": 4,
+    "worldName": "Space Combat",
+    "sub": "Level 22: Prismatic Alien Crossing",
+    "map": [
+      "KK..........KK",
+      "KK..RRRRRR..KK",
+      "KK..OOOOOO..KK",
+      "KK..YYYYYY..KK",
+      "KK..GGGGGG..KK",
+      "KK..CCCCCC..KK",
+      "KK..BBBBBB..KK",
+      "KK..PPPPPP..KK",
+      "KK..........KK",
+      "SSSS......SSSS"
+    ]
+  },
+  {
+    "name": "The Alien Cocytus Pyramid",
+    "world": 4,
+    "worldName": "Space Combat",
+    "sub": "Level 23: Tomb of the Ancient Builders",
+    "map": [
+      "......GG......",
+      ".....GGGG.....",
+      "....PPWWPP....",
+      "....PPPPPP....",
+      "...PPPPPPPP...",
+      "...PPAAAAPP...",
+      "..PPPPPPPPPP..",
+      "..PPAAAAAAPP..",
+      ".PPPPPPPPPPPP.",
+      "SSSSSSSSSSSSSS"
+    ]
+  },
+  {
+    "name": "The Eye of the Universe",
+    "world": 4,
+    "worldName": "Space Combat",
+    "sub": "Level 24: Swirling Cosmic Nexus",
+    "map": [
+      "...WW....WW...",
+      "..WWYY..YYWW..",
+      ".WWYYYYYYYYWW.",
+      ".YYCCSSSSCCYY.",
+      "..CCSSXXSSCC..",
+      "..CCSSXXSSCC..",
+      ".YYCCSSSSCCYY.",
+      ".WWYYYYYYYYWW.",
+      "..WWYY..YYWW..",
+      "...WW....WW..."
+    ]
+  },
+  {
+    "name": "Bobbin Threadbare's Distaff",
+    "world": 5,
+    "worldName": "The Loom of Fate",
+    "sub": "Level 25: Staff of Weaving Runes",
+    "map": [
+      ".....MMMM.....",
+      "....MCCPPM....",
+      "....MCWWPM....",
+      ".....MMMM.....",
+      "......OO......",
+      ".....MOOM.....",
+      "......OO......",
+      "......OO......",
+      ".....MOOM.....",
+      "......OO......",
+      "......OO......",
+      ".....SSSS....."
+    ]
+  },
+  {
+    "name": "The Great Loom & Weaver Sanctuary",
+    "world": 5,
+    "worldName": "The Loom of Fate",
+    "sub": "Level 26: The Tapestry of Reality",
+    "map": [
+      "OOOOOOOOOOOOOO",
+      "O.C.P.W.C.P.W.",
+      "O.C.P.W.C.P.W.",
+      "O.C.P.YYYYP.W.",
+      "O.C.P.W.C.P.W.",
+      "O.C.P.W.C.P.W.",
+      "O.C.P.W.C.P.W.",
+      "O.C.P.W.C.P.W.",
+      "OOOOOOOOOOOOOO",
+      "SSSS......SSSS"
+    ]
+  },
+  {
+    "name": "The Draft of Opening",
+    "world": 5,
+    "worldName": "The Loom of Fate",
+    "sub": "Level 27: C-D-E-D Unlocks the Seals",
+    "map": [
+      "....KKKKKK....",
+      "...KK....KK...",
+      "...KK....KK...",
+      "..KKKKKKKKKK..",
+      "..KKKKWWKKKK..",
+      "..KKKKMMKKKK..",
+      "..KKKKMMKKKK..",
+      "..KKKKWWKKKK..",
+      "..KKKKKKKKKK..",
+      "...XXXXXXXX..."
+    ]
+  },
+  {
+    "name": "The Dragon of Mount Straw",
+    "world": 5,
+    "worldName": "The Loom of Fate",
+    "sub": "Level 28: Slumbering Scaled Guardian",
+    "map": [
+      "....GGGGGG....",
+      "...GGCCCCGG...",
+      "..GGCRRRRCGG..",
+      "..GGCRXXRCGG..",
+      "...GGCCCCGG...",
+      "....GGGGGG....",
+      ".YYYYYYYYYYYY.",
+      "YYYYRRRRYYYYYY",
+      "YYYYPPPPYYYYYY",
+      "AAAAAAAAAAAAAA"
+    ]
+  },
+  {
+    "name": "Crystal Spire of the Glassmakers",
+    "world": 5,
+    "worldName": "The Loom of Fate",
+    "sub": "Level 29: Refracting Prismatic Shards",
+    "map": [
+      "......WW......",
+      ".....WWWW.....",
+      "....WWCCWW....",
+      "...WWCCCCWW...",
+      "...WWMMMMWW...",
+      "..WWPPCCPPWW..",
+      "..WWPPCCPPWW..",
+      ".WWKKKKKKKKWW.",
+      ".WWKKKKKKKKWW.",
+      "SSSSSSSSSSSSSS"
+    ]
+  },
+  {
+    "name": "The Void & The Scythe of Chaos",
+    "world": 5,
+    "worldName": "The Loom of Fate",
+    "sub": "Level 30: Fracture in the Cosmic Pattern",
+    "map": [
+      "PP..SSSSSSSS..",
+      "PP..SAAAAAAA..",
+      "PP..SWWWWWWW..",
+      "PP......WWWW..",
+      "PP......WWWW..",
+      "PP......WWWW..",
+      "PP......AAAA..",
+      "PP......SSSS..",
+      "PP............",
+      "PPPPPPPPPPPPPP"
+    ]
+  },
+  {
+    "name": "The 1960 DeSoto Police Cruiser",
+    "world": 6,
+    "worldName": "Sam & Max Highway",
+    "sub": "Level 31: Freelance Police on Wheels",
+    "map": [
+      "......RR......",
+      "....WWXXWW....",
+      "...WWWWWWWW...",
+      "..AAAAAAAAAA..",
+      ".AAAAAAAAAAAA.",
+      ".AAWWWWWWWWAA.",
+      ".AAWWWWWWWWAA.",
+      "AAAAAAAAAAAAAA",
+      ".YY..SSSS..YY.",
+      ".SS........SS."
+    ]
+  },
+  {
+    "name": "Max: Hyperkinetic Rabbity-Thing",
+    "world": 6,
+    "worldName": "Sam & Max Highway",
+    "sub": "Level 32: Unhinged Grinning lagomorph",
+    "map": [
+      "..WW......WW..",
+      "..WW......WW..",
+      "..WWWW..WWWW..",
+      "...WWWWWWWW...",
+      "...WWRRRRWW...",
+      "..WWWWWWWWWW..",
+      ".WWAAAAAAAAWW.",
+      ".WWAWWWWWWWAW.",
+      ".WWAAAAAAAAWW.",
+      "..WWWWWWWWWW..",
+      "...AAAAAAAA..."
+    ]
+  },
+  {
+    "name": "LeChuck's Demonic Fortress",
+    "world": 7,
+    "worldName": "LeChuck's Hellfire",
+    "sub": "Level 33: The Final Confrontation",
+    "map": [
+      "SS..RR..RR..SS",
+      "SS..RR..RR..SS",
+      "SSSSRRRRRRSSSS",
+      "SSOOXXXXXXOOSS",
+      "SSOORRRRRROOSS",
+      "SS..KKKKKK..SS",
+      "SS..KKKKKK..SS",
+      "AAAA..SS..AAAA",
+      "AAAA..SS..AAAA",
+      "SSSSSSSSSSSSSS"
+    ]
+  }
+];
+
+    // =========================================================================
+    // 5. GAME ENGINE, ENTITIES & WORLD MECHANICS
+    // =========================================================================
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    ctx.imageSmoothingEnabled = false;
+
+    // Game States
+    const STATE_TITLE       = 0;
+    const STATE_STARTING    = 1;
+    const STATE_PLAYING     = 2;
+    const STATE_PAUSED      = 3;
+    const STATE_LEVEL_CLEAR = 4;
+    const STATE_GAME_OVER   = 5;
+    const STATE_VICTORY     = 6;
+
+    let gameState = STATE_TITLE;
+    let score = 0;
+    let highScore = 50000;
+    let lives = 3;
+    let currentLevelIndex = 0;
+    let stateTimer = 0;
+    let comboCount = 0;
+    let screenShake = 0;
+
+    // Field Geometry
+    const FIELD_X_MIN = 12;
+    const FIELD_X_MAX = 236; // 14 cols * 16px = 224px
+    const FIELD_Y_MIN = 14;
+    const FIELD_Y_MAX = 205; // Death pit
+
+    // Paddle Entity
+    const paddle = {
+      x: 106,
+      y: 184,
+      w: 36,
+      h: 6,
+      baseW: 36,
+      expandW: 52,
+      targetX: 106,
+      expandTimer: 0,
+      laserTimer: 0,
+      catchActive: false,
+      laserCooldown: 0
+    };
+
+    // Balls Array (Multi-ball / Chrono Duplication Support)
+    let balls = [];
+
+    function createBall(x, y, vx, vy, stuck = false, offset = 0) {
+      return {
+        x: x,
+        y: y,
+        vx: vx,
+        vy: vy,
+        radius: 3,
+        speed: 2.3,
+        stuck: stuck,
+        stuckOffset: offset,
+        trail: []
+      };
+    }
+
+    function resetBallsOnPaddle() {
+      balls = [createBall(paddle.x + paddle.w / 2, paddle.y - 3, 1.4, -1.8, true, 0)];
+    }
+
+    // Active Entities
+    let bricks = [];
+    let powerUps = [];
+    let lasers = [];
+    let particles = [];
+    let floatingTexts = [];
+    let enemyProjectiles = [];
+
+    // Thematic World Mechanics State
+    const worldMechanics = {
+      // World 1: Insult Sword Fighting Dialogue
+      insultActive: false,
+      insultText: "",
+      insultResponse: "",
+      insultTimer: 0,
+      insultList: [
+        { q: "YOU FIGHT LIKE A DAIRY FARMER!", a: "HOW APPROPRIATE. YOU FIGHT LIKE A COW!" },
+        { q: "SOON YOU'LL BE WEARING MY SWORD LIKE A SHISH KEBAB!", a: "FIRST YOU'D BETTER STOP WAVING IT LIKE A FEATHER-DUSTER." },
+        { q: "I'VE SPOKEN WITH APES MORE POLITE THAN YOU!", a: "I'M GLAD TO HEAR YOU ATTENDED YOUR FAMILY REUNION!" },
+        { q: "HAVE YOU STOPPED WEARING DIAPERS YET?", a: "WHY, DID YOU WANT TO BORROW ONE?" },
+        { q: "MY NAME IS GUYBRUSH THREEPWOOD!", a: "AND I'M A MIGHTY PIRATE!" }
+      ],
+
+      // World 2: Chrono Anomaly Vortex
+      vortexAngle: 0,
+
+      // World 3: Atlantean Gravity Wells
+      gravityWell: { x: 124, y: 75, active: false, strength: 18 },
+
+      // World 4: Space Debris Drifting
+      spaceDebris: [],
+
+      // World 5: Loom Musical Draft Runes
+      loomDraft: [],
+      loomRunes: ['C', 'D', 'E', 'F'],
+
+      // World 6: Sam & Max Bumper
+      bumper: { x: 124, y: 120, radius: 14, active: false },
+
+      // World 7: LeChuck Animated Boss Entity
+      leChuck: {
+        active: false,
+        x: 124,
+        y: 28,
+        w: 32,
+        h: 26,
+        hp: 35,
+        maxHp: 35,
+        hitTimer: 0,
+        attackTimer: 0,
+        shootCooldown: 90,
+        defeated: false
+      }
+    };
+
+    // Trigger World 1 Insult Banner
+    function triggerInsult() {
+      const pair = worldMechanics.insultList[Math.floor(Math.random() * worldMechanics.insultList.length)];
+      worldMechanics.insultActive = true;
+      worldMechanics.insultText = pair.q;
+      worldMechanics.insultResponse = pair.a;
+      worldMechanics.insultTimer = 180;
+      audio.playSfx('insult');
+      score += 500;
+      addFloatingText("+500 INSULT COMBO!", 124, 60, EGA.YELLOW);
+    }
+
+    // Particle Generator
+    function spawnParticles(x, y, color, count = 8, speed = 2.0) {
+      for (let i = 0; i < count; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = (Math.random() * 0.8 + 0.4) * speed;
+        particles.push({
+          x: x,
+          y: y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 0.5,
+          color: color,
+          life: Math.floor(Math.random() * 20 + 20),
+          maxLife: 40,
+          size: Math.random() > 0.5 ? 2 : 1
+        });
+      }
+    }
+
+    // Floating Score Texts
+    function addFloatingText(text, x, y, color = EGA.YELLOW) {
+      floatingTexts.push({
+        text: text,
+        x: x,
+        y: y,
+        color: color,
+        life: 50
+      });
+    }
+
+    // Load Level Function
+    function loadLevel(index) {
+      currentLevelIndex = index % ALL_LEVELS.length;
+      const levelData = ALL_LEVELS[currentLevelIndex];
+      const worldNum = levelData.world;
+
+      // Update Audio Music Track
+      audio.setWorldTrack(worldNum);
+
+      // Reset Active Power-ups & Paddle
+      paddle.expandTimer = 0;
+      paddle.laserTimer = 0;
+      paddle.catchActive = false;
+      paddle.w = paddle.baseW;
+      paddle.x = 106;
+      paddle.targetX = 106;
+
+      resetBallsOnPaddle();
+      powerUps = [];
+      lasers = [];
+      enemyProjectiles = [];
+      comboCount = 0;
+
+      // Setup World Mechanics
+      worldMechanics.insultActive = false;
+      worldMechanics.gravityWell.active = (worldNum === 3);
+      worldMechanics.bumper.active = (worldNum === 6);
+      worldMechanics.loomDraft = [];
+      worldMechanics.spaceDebris = [];
+      if (worldNum === 4) {
+        for (let i = 0; i < 3; i++) {
+          worldMechanics.spaceDebris.push({
+            x: Math.random() * 180 + 30,
+            y: Math.random() * 40 + 30,
+            vx: (Math.random() - 0.5) * 0.8,
+            size: 6,
+            hp: 2
+          });
+        }
+      }
+
+      // Boss Setup on Level 33
+      if (currentLevelIndex === 32) {
+        worldMechanics.leChuck.active = true;
+        worldMechanics.leChuck.hp = 35;
+        worldMechanics.leChuck.maxHp = 35;
+        worldMechanics.leChuck.hitTimer = 0;
+        worldMechanics.leChuck.defeated = false;
+        audio.playSfx('bossRoar');
+      } else {
+        worldMechanics.leChuck.active = false;
+      }
+
+      // Build Bricks Grid
+      bricks = [];
+      const mapRows = levelData.map;
+      const startY = 22;
+      const brickW = 16;
+      const brickH = 8;
+
+      for (let r = 0; r < mapRows.length; r++) {
+        const rowStr = mapRows[r];
+        for (let c = 0; c < rowStr.length; c++) {
+          const char = rowStr[c];
+          if (char === '.' || char === ' ') continue;
+
+          const theme = BRICK_THEMES[char] || BRICK_THEMES['C'];
+          bricks.push({
+            r: r,
+            c: c,
+            x: FIELD_X_MIN + c * brickW,
+            y: startY + r * brickH,
+            w: brickW,
+            h: brickH,
+            char: char,
+            color: theme.color,
+            hi: theme.hi,
+            sh: theme.sh,
+            pts: theme.pts,
+            hp: theme.hp,
+            maxHp: theme.hp,
+            armored: !!theme.armored,
+            steel: !!theme.steel,
+            grog: !!theme.grog,
+            loom: !!theme.loom,
+            vortex: !!theme.vortex
+          });
+        }
+      }
+
+      gameState = STATE_STARTING;
+      stateTimer = 90; // 1.5s intro banner
+    }
+
+    // Detonate Explosive Grog Brick (3x3 Chain Reaction)
+    function explodeGrogBrick(originBrick) {
+      originBrick.hp = 0;
+      score += originBrick.pts;
+      addFloatingText("+" + originBrick.pts + " GROG BLAST!", originBrick.x, originBrick.y, EGA.BRIGHT_GREEN);
+      audio.playSfx('explode');
+      screenShake = 12;
+      spawnParticles(originBrick.x + 8, originBrick.y + 4, EGA.BRIGHT_GREEN, 24, 3.5);
+      spawnParticles(originBrick.x + 8, originBrick.y + 4, EGA.YELLOW, 16, 2.5);
+
+      // Check all 8 adjacent bricks
+      for (const b of bricks) {
+        if (b.hp <= 0) continue;
+        const dc = Math.abs(b.c - originBrick.c);
+        const dr = Math.abs(b.r - originBrick.r);
+        if (dc <= 1 && dr <= 1 && !(dc === 0 && dr === 0)) {
+          if (b.steel) {
+            // Shatter steel into gold breakable bricks!
+            b.steel = false;
+            b.hp = 1;
+            b.color = EGA.GOLD;
+            b.hi = EGA.YELLOW;
+            b.sh = EGA.BROWN;
+            b.pts = 300;
+            spawnParticles(b.x + 8, b.y + 4, EGA.GOLD, 8);
+          } else if (b.grog) {
+            // Chain detonate
+            setTimeout(() => { if (b.hp > 0) explodeGrogBrick(b); }, 60);
+          } else {
+            b.hp = 0;
+            score += b.pts;
+            spawnParticles(b.x + 8, b.y + 4, b.color, 10);
+            maybeSpawnPowerUp(b.x + 4, b.y);
+          }
+        }
+      }
+    }
+
+    // Power-Up Drops
+    function maybeSpawnPowerUp(x, y) {
+      if (Math.random() < 0.22) {
+        const types = ['L', 'E', 'C', 'S', 'P'];
+        const weights = [0.25, 0.25, 0.22, 0.18, 0.10]; // P is rarest (+1 Life)
+        let r = Math.random();
+        let chosen = 'E';
+        for (let i = 0; i < types.length; i++) {
+          if (r < weights[i]) {
+            chosen = types[i];
+            break;
+          }
+          r -= weights[i];
+        }
+        powerUps.push({
+          x: x,
+          y: y,
+          type: chosen,
+          vy: 0.9,
+          w: 14,
+          h: 7,
+          rot: 0
+        });
+        audio.playSfx('spawn');
+      }
+    }
+
+    // Apply Collected Power-Up
+    function applyPowerUp(type) {
+      audio.playSfx('powerup');
+      score += 250;
+      switch (type) {
+        case 'L': // Laser
+          paddle.laserTimer = 750; // ~12.5 seconds
+          addFloatingText("LASERS ARMED!", paddle.x, paddle.y - 12, EGA.BRIGHT_RED);
+          break;
+        case 'E': // Expand
+          paddle.expandTimer = 900; // ~15 seconds
+          paddle.w = paddle.expandW;
+          addFloatingText("RUBBER CHICKEN EXPAND!", paddle.x, paddle.y - 12, EGA.BRIGHT_BLUE);
+          break;
+        case 'C': // Catch
+          paddle.catchActive = true;
+          addFloatingText("MAGNETIC CATCH!", paddle.x, paddle.y - 12, EGA.BRIGHT_GREEN);
+          break;
+        case 'S': // Slow
+          for (const b of balls) {
+            b.speed = 2.2;
+            const currentSpeed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+            if (currentSpeed > 0) {
+              b.vx = (b.vx / currentSpeed) * 2.2;
+              b.vy = (b.vy / currentSpeed) * 2.2;
+            }
+          }
+          addFloatingText("TIME SLOW!", paddle.x, paddle.y - 12, EGA.GOLD);
+          break;
+        case 'P': // Player (+1 Life)
+          lives++;
+          addFloatingText("EXTRA LIFE!", paddle.x, paddle.y - 12, EGA.YELLOW);
+          break;
+      }
+    }
+
+    // Fire Twin Lasers
+    function fireLasers() {
+      if (paddle.laserTimer <= 0 || paddle.laserCooldown > 0) return;
+      paddle.laserCooldown = 16;
+      audio.playSfx('laser');
+      lasers.push({ x: paddle.x + 2, y: paddle.y - 4, vy: -5 });
+      lasers.push({ x: paddle.x + paddle.w - 4, y: paddle.y - 4, vy: -5 });
+    }
+
+    // Launch Stuck Balls
+    function launchBalls() {
+      let launched = false;
+      for (const b of balls) {
+        if (b.stuck) {
+          b.stuck = false;
+          const hitFactor = (b.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+          const angle = hitFactor * (60 * Math.PI / 180);
+          b.vx = b.speed * Math.sin(angle);
+          b.vy = -b.speed * Math.cos(angle);
+          launched = true;
+        }
+      }
+      if (launched) audio.playSfx('launch');
+    }
+
+    // =========================================================================
+    // 6. INPUT HANDLING (MOUSE & KEYBOARD)
+    // =========================================================================
+    const keys = {};
+
+    window.addEventListener('keydown', (e) => {
+      audio.init();
+      audio.resume();
+
+      keys[e.key] = true;
+      keys[e.code] = true;
+
+      // Spacebar launch or shoot
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        if (gameState === STATE_TITLE) {
+          loadLevel(0);
+        } else if (gameState === STATE_GAME_OVER) {
+          score = 0;
+          lives = 3;
+          loadLevel(0);
+        } else if (gameState === STATE_VICTORY) {
+          gameState = STATE_TITLE;
+        } else if (gameState === STATE_PLAYING) {
+          launchBalls();
+          fireLasers();
+        }
+      }
+
+      // Pause toggle
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        if (gameState === STATE_PLAYING) {
+          gameState = STATE_PAUSED;
+        } else if (gameState === STATE_PAUSED) {
+          gameState = STATE_PLAYING;
+        }
+      }
+
+      // Mute toggle
+      if (e.key === 'm' || e.key === 'M') {
+        const muted = audio.toggleMute();
+        addFloatingText(muted ? "SOUND MUTED" : "SOUND UNMUTED", 124, 100, EGA.YELLOW);
+      }
+
+      // Warp directly to Worlds 1 - 7
+      if (e.key >= '1' && e.key <= '7') {
+        const worldWarps = [0, 6, 12, 18, 24, 30, 32];
+        const wIdx = parseInt(e.key) - 1;
+        score += 1000;
+        loadLevel(worldWarps[wIdx]);
+        addFloatingText("WARPED TO WORLD " + (wIdx + 1), 124, 90, EGA.BRIGHT_CYAN);
+      }
+
+      // Level skip cheat (N)
+      if (e.key === 'n' || e.key === 'N') {
+        loadLevel(currentLevelIndex + 1);
+        addFloatingText("LEVEL SKIP", 124, 90, EGA.BRIGHT_MAGENTA);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keys[e.key] = false;
+      keys[e.code] = false;
+    });
+
+    // Mouse Tracking
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const mouseCanvasX = (e.clientX - rect.left) * scaleX;
+      paddle.targetX = mouseCanvasX - paddle.w / 2;
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      audio.init();
+      audio.resume();
+
+      if (gameState === STATE_TITLE) {
+        loadLevel(0);
+      } else if (gameState === STATE_GAME_OVER) {
+        score = 0;
+        lives = 3;
+        loadLevel(0);
+      } else if (gameState === STATE_VICTORY) {
+        gameState = STATE_TITLE;
+      } else if (gameState === STATE_PLAYING) {
+        launchBalls();
+        fireLasers();
+      }
+    });
+
+    // =========================================================================
+    // 7. ROBUST PHYSICS & SUB-STEPPED COLLISION ENGINE
+    // =========================================================================
+    function updatePhysics() {
+      // Screen shake decay
+      if (screenShake > 0) screenShake *= 0.85;
+      if (screenShake < 0.2) screenShake = 0;
+
+      // Paddle Keyboard movement
+      const moveSpeed = 4.2;
+      if (keys['ArrowLeft'] || keys['KeyA'] || keys['a']) {
+        paddle.targetX -= moveSpeed;
+      }
+      if (keys['ArrowRight'] || keys['KeyD'] || keys['d']) {
+        paddle.targetX += moveSpeed;
+      }
+
+      // Smooth Paddle Tracking & Boundary Clamping
+      paddle.x += (paddle.targetX - paddle.x) * 0.45;
+      if (paddle.x < FIELD_X_MIN) paddle.x = FIELD_X_MIN;
+      if (paddle.x + paddle.w > FIELD_X_MAX) paddle.x = FIELD_X_MAX - paddle.w;
+
+      // Paddle Power-up Timers
+      if (paddle.laserTimer > 0) paddle.laserTimer--;
+      if (paddle.laserCooldown > 0) paddle.laserCooldown--;
+      if (paddle.expandTimer > 0) {
+        paddle.expandTimer--;
+        if (paddle.expandTimer <= 0) paddle.w = paddle.baseW;
+      }
+
+      // World 1: Insult timer decay
+      if (worldMechanics.insultTimer > 0) {
+        worldMechanics.insultTimer--;
+        if (worldMechanics.insultTimer <= 0) worldMechanics.insultActive = false;
+      }
+
+      // Update Lasers
+      for (let i = lasers.length - 1; i >= 0; i--) {
+        const l = lasers[i];
+        l.y += l.vy;
+        if (l.y < FIELD_Y_MIN) {
+          lasers.splice(i, 1);
+          continue;
+        }
+
+        // Laser vs Boss LeChuck
+        if (worldMechanics.leChuck.active && !worldMechanics.leChuck.defeated) {
+          const boss = worldMechanics.leChuck;
+          if (l.x >= boss.x && l.x <= boss.x + boss.w && l.y >= boss.y && l.y <= boss.y + boss.h) {
+            boss.hp -= 1;
+            boss.hitTimer = 10;
+            audio.playSfx('bossHit');
+            spawnParticles(l.x, l.y, EGA.BRIGHT_RED, 8);
+            lasers.splice(i, 1);
+            score += 200;
+            if (boss.hp <= 0) defeatBoss();
+            continue;
+          }
+        }
+
+        // Laser vs Bricks
+        let laserHit = false;
+        for (const b of bricks) {
+          if (b.hp <= 0) continue;
+          if (l.x >= b.x && l.x <= b.x + b.w && l.y >= b.y && l.y <= b.y + b.h) {
+            laserHit = true;
+            lasers.splice(i, 1);
+            audio.playSfx('laserHit');
+            spawnParticles(l.x, l.y, b.color, 4);
+
+            if (b.steel) {
+              // Absorbed by steel
+            } else if (b.grog) {
+              explodeGrogBrick(b);
+            } else {
+              b.hp -= 1;
+              if (b.hp <= 0) {
+                score += b.pts;
+                spawnParticles(b.x + 8, b.y + 4, b.color, 10);
+                maybeSpawnPowerUp(b.x + 4, b.y);
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      // Update Power-ups
+      for (let i = powerUps.length - 1; i >= 0; i--) {
+        const p = powerUps[i];
+        p.y += p.vy;
+        p.rot += 0.05;
+
+        // Catch power-up with paddle
+        if (p.y + p.h >= paddle.y && p.y <= paddle.y + paddle.h &&
+            p.x + p.w >= paddle.x && p.x <= paddle.x + paddle.w) {
+          applyPowerUp(p.type);
+          powerUps.splice(i, 1);
+          continue;
+        }
+
+        // Fallen into abyss
+        if (p.y > FIELD_Y_MAX) {
+          powerUps.splice(i, 1);
+        }
+      }
+
+      // World 4: Space Debris Movement
+      if (worldMechanics.spaceDebris.length > 0) {
+        for (const d of worldMechanics.spaceDebris) {
+          d.x += d.vx;
+          if (d.x < FIELD_X_MIN) { d.x = FIELD_X_MIN; d.vx = Math.abs(d.vx); }
+          if (d.x > FIELD_X_MAX - d.size) { d.x = FIELD_X_MAX - d.size; d.vx = -Math.abs(d.vx); }
+        }
+      }
+
+      // World 7: LeChuck Boss AI & Attacks
+      if (worldMechanics.leChuck.active && !worldMechanics.leChuck.defeated) {
+        const boss = worldMechanics.leChuck;
+        if (boss.hitTimer > 0) boss.hitTimer--;
+
+        // Horizontal hover sweep
+        boss.x = 124 + Math.sin(Date.now() * 0.0018) * 75 - boss.w / 2;
+        boss.y = 26 + Math.cos(Date.now() * 0.003) * 6;
+
+        boss.attackTimer++;
+        if (boss.attackTimer >= boss.shootCooldown) {
+          boss.attackTimer = 0;
+          audio.playSfx('bossRoar');
+          // Fire spectral voodoo projectile towards paddle
+          const startX = boss.x + boss.w / 2;
+          const startY = boss.y + boss.h;
+          const targetX = paddle.x + paddle.w / 2;
+          const dx = targetX - startX;
+          const dy = paddle.y - startY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          enemyProjectiles.push({
+            x: startX,
+            y: startY,
+            vx: (dx / dist) * 1.6,
+            vy: (dy / dist) * 1.6,
+            size: 4
+          });
+        }
+      }
+
+      // Update Enemy Projectiles
+      for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+        const ep = enemyProjectiles[i];
+        ep.x += ep.vx;
+        ep.y += ep.vy;
+
+        // Hit paddle?
+        if (ep.y >= paddle.y && ep.y <= paddle.y + paddle.h &&
+            ep.x >= paddle.x && ep.x <= paddle.x + paddle.w) {
+          enemyProjectiles.splice(i, 1);
+          screenShake = 10;
+          audio.playSfx('die');
+          lives--;
+          addFloatingText("VOODOO HIT! -1 LIFE", paddle.x, paddle.y - 12, EGA.BRIGHT_RED);
+          if (lives <= 0) {
+            gameState = STATE_GAME_OVER;
+            audio.playSfx('gameover');
+          }
+          continue;
+        }
+
+        if (ep.y > FIELD_Y_MAX) {
+          enemyProjectiles.splice(i, 1);
+        }
+      }
+
+      // =======================================================================
+      // SUB-STEPPED BALL MOVEMENT & COLLISION (Prevents Tunneling)
+      // =======================================================================
+      const SUB_STEPS = 2;
+      const subDt = 1.0 / SUB_STEPS;
+
+      for (let step = 0; step < SUB_STEPS; step++) {
+        for (let bIdx = balls.length - 1; bIdx >= 0; bIdx--) {
+          const ball = balls[bIdx];
+
+          if (ball.stuck) {
+            ball.x = paddle.x + paddle.w / 2 + ball.stuckOffset;
+            ball.y = paddle.y - ball.radius;
+            continue;
+          }
+
+          // Advance ball position
+          ball.x += ball.vx * subDt;
+          ball.y += ball.vy * subDt;
+
+          // Trail update
+          if (step === 0) {
+            ball.trail.unshift({ x: ball.x, y: ball.y });
+            if (ball.trail.length > 4) ball.trail.pop();
+          }
+
+          // Left Wall
+          if (ball.x - ball.radius < FIELD_X_MIN) {
+            ball.x = FIELD_X_MIN + ball.radius;
+            ball.vx = Math.abs(ball.vx);
+            audio.playSfx('paddle');
+            spawnParticles(ball.x, ball.y, EGA.CYAN, 3);
+          }
+          // Right Wall
+          if (ball.x + ball.radius > FIELD_X_MAX) {
+            ball.x = FIELD_X_MAX - ball.radius;
+            ball.vx = -Math.abs(ball.vx);
+            audio.playSfx('paddle');
+            spawnParticles(ball.x, ball.y, EGA.CYAN, 3);
+          }
+          // Top Wall
+          if (ball.y - ball.radius < FIELD_Y_MIN) {
+            ball.y = FIELD_Y_MIN + ball.radius;
+            ball.vy = Math.abs(ball.vy);
+            audio.playSfx('paddle');
+            spawnParticles(ball.x, ball.y, EGA.CYAN, 3);
+          }
+
+          // World 3: Atlantean Gravity Well Slingshot Physics
+          if (worldMechanics.gravityWell.active) {
+            const gw = worldMechanics.gravityWell;
+            const gdx = gw.x - ball.x;
+            const gdy = gw.y - ball.y;
+            const gdistSq = gdx * gdx + gdy * gdy;
+            if (gdistSq < 3600 && gdistSq > 36) { // within 60px
+              const gdist = Math.sqrt(gdistSq);
+              const force = (worldMechanics.gravityWell.strength / gdistSq) * subDt;
+              ball.vx += (gdx / gdist) * force;
+              ball.vy += (gdy / gdist) * force;
+            }
+          }
+
+          // World 6: Sam & Max Carnival Bumper
+          if (worldMechanics.bumper.active) {
+            const bmp = worldMechanics.bumper;
+            const bdx = ball.x - bmp.x;
+            const bdy = ball.y - bmp.y;
+            const bdist = Math.sqrt(bdx * bdx + bdy * bdy);
+            if (bdist < bmp.radius + ball.radius) {
+              const nx = bdx / bdist;
+              const ny = bdy / bdist;
+              ball.vx = nx * 3.5;
+              ball.vy = ny * 3.5;
+              ball.x = bmp.x + nx * (bmp.radius + ball.radius + 1);
+              ball.y = bmp.y + ny * (bmp.radius + ball.radius + 1);
+              audio.playSfx('clink');
+              score += 150;
+              spawnParticles(ball.x, ball.y, EGA.YELLOW, 12, 3);
+              addFloatingText("+150 BUMPER!", bmp.x, bmp.y - 10, EGA.YELLOW);
+            }
+          }
+
+          // World 7: Ball vs LeChuck Boss
+          if (worldMechanics.leChuck.active && !worldMechanics.leChuck.defeated) {
+            const boss = worldMechanics.leChuck;
+            const closestX = Math.max(boss.x, Math.min(ball.x, boss.x + boss.w));
+            const closestY = Math.max(boss.y, Math.min(ball.y, boss.y + boss.h));
+            const distX = ball.x - closestX;
+            const distY = ball.y - closestY;
+            if (distX * distX + distY * distY < ball.radius * ball.radius) {
+              boss.hp -= 2;
+              boss.hitTimer = 12;
+              screenShake = 8;
+              audio.playSfx('bossHit');
+              spawnParticles(closestX, closestY, EGA.BRIGHT_RED, 14, 3);
+              score += 500;
+              addFloatingText("-2 BOSS HP!", closestX, closestY - 8, EGA.BRIGHT_RED);
+              if (Math.abs(distX) > Math.abs(distY)) {
+                ball.vx = -ball.vx;
+              } else {
+                ball.vy = -ball.vy;
+              }
+              if (boss.hp <= 0) defeatBoss();
+            }
+          }
+
+          // Paddle Collision Check
+          if (ball.vy > 0 &&
+              ball.y + ball.radius >= paddle.y &&
+              ball.y - ball.radius <= paddle.y + paddle.h &&
+              ball.x >= paddle.x - ball.radius &&
+              ball.x <= paddle.x + paddle.w + ball.radius) {
+
+            comboCount = 0; // reset brick combo
+
+            if (paddle.catchActive) {
+              ball.stuck = true;
+              ball.stuckOffset = ball.x - (paddle.x + paddle.w / 2);
+              ball.y = paddle.y - ball.radius;
+              audio.playSfx('catch');
+            } else {
+              // Arkanoid Deflection Angle calculation (-65 deg to +65 deg)
+              const hitFactor = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+              const clampedHit = Math.max(-0.95, Math.min(0.95, hitFactor));
+              const angle = clampedHit * (65 * Math.PI / 180);
+
+              ball.speed = Math.min(4.0, ball.speed + 0.04);
+              ball.vx = ball.speed * Math.sin(angle);
+              ball.vy = -ball.speed * Math.cos(angle);
+              ball.y = paddle.y - ball.radius;
+
+              audio.playSfx('paddle');
+              spawnParticles(ball.x, paddle.y, EGA.WHITE, 6);
+            }
+          }
+
+          // AABB vs Circle Brick Collisions
+          for (const b of bricks) {
+            if (b.hp <= 0) continue;
+
+            const cx = Math.max(b.x, Math.min(ball.x, b.x + b.w));
+            const cy = Math.max(b.y, Math.min(ball.y, b.y + b.h));
+            const dx = ball.x - cx;
+            const dy = ball.y - cy;
+            const distSq = dx * dx + dy * dy;
+
+            if (distSq < ball.radius * ball.radius) {
+              // Collision Normal Resolution
+              if (Math.abs(dx) > Math.abs(dy)) {
+                ball.vx = -ball.vx;
+                ball.x = cx + Math.sign(dx || 1) * (ball.radius + 0.5);
+              } else {
+                ball.vy = -ball.vy;
+                ball.y = cy + Math.sign(dy || 1) * (ball.radius + 0.5);
+              }
+
+              // Process Brick Damage
+              if (b.steel) {
+                audio.playSfx('steel');
+                spawnParticles(cx, cy, EGA.LIGHT_GRAY, 4);
+              } else if (b.grog) {
+                explodeGrogBrick(b);
+              } else {
+                b.hp -= 1;
+                comboCount++;
+
+                // World 1: Insult combo popup every 5 hits!
+                if (currentLevelIndex < 6 && comboCount >= 5 && comboCount % 5 === 0) {
+                  triggerInsult();
+                }
+
+                // World 2: Chrono Anomaly Vortex Ball Cloning
+                if (b.vortex && balls.length < 3) {
+                  audio.playSfx('spawn');
+                  balls.push(createBall(ball.x, ball.y, -ball.vx, ball.vy));
+                  addFloatingText("CHRONO DUPLICATION!", ball.x, ball.y - 10, EGA.BRIGHT_CYAN);
+                }
+
+                // World 5: Loom Musical Draft Weaving
+                if (b.loom) {
+                  audio.playSfx('powerup');
+                  worldMechanics.loomDraft.push('C');
+                  if (worldMechanics.loomDraft.length >= 3) {
+                    worldMechanics.loomDraft = [];
+                    // Draft of Opening: Unlocks all steel bricks into gold!
+                    addFloatingText("DRAFT OF OPENING!", 124, 70, EGA.BRIGHT_MAGENTA);
+                    for (const sb of bricks) {
+                      if (sb.steel && sb.hp > 0) {
+                        sb.steel = false;
+                        sb.hp = 1;
+                        sb.color = EGA.GOLD;
+                        sb.hi = EGA.YELLOW;
+                        sb.sh = EGA.BROWN;
+                        sb.pts = 300;
+                        spawnParticles(sb.x + 8, sb.y + 4, EGA.GOLD, 8);
+                      }
+                    }
+                  }
+                }
+
+                if (b.hp > 0) {
+                  audio.playSfx('clink');
+                  score += 50;
+                  spawnParticles(cx, cy, b.color, 4);
+                } else {
+                  audio.playSfx('brick');
+                  score += b.pts;
+                  spawnParticles(b.x + 8, b.y + 4, b.color, 10);
+                  maybeSpawnPowerUp(b.x + 4, b.y);
+                }
+              }
+
+              // Only hit one brick per sub-step to avoid anomalous multi-bounce
+              break;
+            }
+          }
+
+          // Death Pit Check
+          if (ball.y - ball.radius > FIELD_Y_MAX) {
+            balls.splice(bIdx, 1);
+            if (balls.length === 0) {
+              lives--;
+              audio.playSfx('die');
+              screenShake = 8;
+              if (lives <= 0) {
+                gameState = STATE_GAME_OVER;
+                audio.playSfx('gameover');
+              } else {
+                paddle.expandTimer = 0;
+                paddle.laserTimer = 0;
+                paddle.catchActive = false;
+                paddle.w = paddle.baseW;
+                resetBallsOnPaddle();
+              }
+            }
+          }
+        }
+      }
+
+      // Check Level Clear condition
+      if (gameState === STATE_PLAYING && bricks.length > 0) {
+        let breakableCount = 0;
+        for (const b of bricks) {
+          if (!b.steel && b.hp > 0) breakableCount++;
+        }
+        if (worldMechanics.leChuck.active && !worldMechanics.leChuck.defeated) {
+          breakableCount += worldMechanics.leChuck.hp;
+        }
+
+        if (breakableCount === 0) {
+          gameState = STATE_LEVEL_CLEAR;
+          stateTimer = 120; // 2 seconds clear screen
+          audio.playSfx('clear');
+          score += 1000 + (lives * 500);
+        }
+      }
+
+      // Update High Score
+      if (score > highScore) highScore = score;
+
+      // Update Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08; // gravity
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      // Update Floating Texts
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y -= 0.35;
+        ft.life--;
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+      }
+    }
+
+    function defeatBoss() {
+      const boss = worldMechanics.leChuck;
+      boss.defeated = true;
+      boss.hp = 0;
+      screenShake = 25;
+      audio.playSfx('explode');
+      spawnParticles(boss.x + boss.w / 2, boss.y + boss.h / 2, EGA.BRIGHT_GREEN, 50, 4);
+      spawnParticles(boss.x + boss.w / 2, boss.y + boss.h / 2, EGA.YELLOW, 30, 3);
+      score += 10000;
+      addFloatingText("LECHUCK DESTROYED! +10,000", 124, 50, EGA.YELLOW);
+      setTimeout(() => {
+        gameState = STATE_VICTORY;
+      }, 1500);
+    }
+
+    // =========================================================================
+    // 8. PROCEDURAL EGA BACKGROUNDS & CANVAS RENDERING
+    // =========================================================================
+    function drawEgaBackground(worldNum) {
+      // Clear playfield
+      ctx.fillStyle = EGA.BLACK;
+      ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, FIELD_Y_MAX - FIELD_Y_MIN);
+
+      switch (worldNum) {
+        case 1: { // Mêlée Island Night Sky
+          ctx.fillStyle = EGA.NAVY;
+          ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, 70);
+          // Stars
+          ctx.fillStyle = EGA.WHITE;
+          for (let i = 0; i < 18; i++) {
+            const sx = FIELD_X_MIN + ((i * 37) % (FIELD_X_MAX - FIELD_X_MIN - 10));
+            const sy = FIELD_Y_MIN + ((i * 19) % 60);
+            ctx.fillRect(sx, sy, 1, 1);
+          }
+          // Crescent Moon
+          ctx.fillStyle = EGA.YELLOW;
+          ctx.beginPath();
+          ctx.arc(205, 30, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = EGA.NAVY;
+          ctx.beginPath();
+          ctx.arc(202, 28, 7, 0, Math.PI * 2);
+          ctx.fill();
+          // Scumm Bar & Mansion Silhouettes
+          ctx.fillStyle = '#0a0a14';
+          ctx.fillRect(FIELD_X_MIN, 130, 80, 50);
+          ctx.fillRect(FIELD_X_MIN + 60, 115, 30, 65);
+          ctx.fillStyle = EGA.YELLOW;
+          ctx.fillRect(FIELD_X_MIN + 70, 125, 4, 6);
+          break;
+        }
+
+        case 2: { // Day of the Tentacle - Dr. Fred's Lab
+          ctx.fillStyle = '#140c1e';
+          ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, 180);
+          // Toxic Sludge Pipes
+          ctx.fillStyle = EGA.DARK_GREEN;
+          ctx.fillRect(FIELD_X_MIN, 18, FIELD_X_MAX - FIELD_X_MIN, 5);
+          ctx.fillStyle = EGA.BRIGHT_GREEN;
+          ctx.fillRect(FIELD_X_MIN, 20, FIELD_X_MAX - FIELD_X_MIN, 1);
+          // Checkered Floor Tiles
+          for (let c = 0; c < 14; c++) {
+            ctx.fillStyle = (c % 2 === 0) ? '#221533' : '#140c1e';
+            ctx.fillRect(FIELD_X_MIN + c * 16, 170, 16, 20);
+          }
+          break;
+        }
+
+        case 3: { // Fate of Atlantis - Submerged Temple
+          ctx.fillStyle = '#081820';
+          ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, 180);
+          // Atlantean Pillars
+          ctx.fillStyle = '#183040';
+          ctx.fillRect(24, FIELD_Y_MIN, 12, 170);
+          ctx.fillRect(212, FIELD_Y_MIN, 12, 170);
+          // Molten Orichalcum channel
+          ctx.fillStyle = EGA.RED;
+          ctx.fillRect(FIELD_X_MIN, 175, FIELD_X_MAX - FIELD_X_MIN, 6);
+          ctx.fillStyle = EGA.GOLD;
+          ctx.fillRect(FIELD_X_MIN, 177, FIELD_X_MAX - FIELD_X_MIN, 2);
+          break;
+        }
+
+        case 4: { // Space Combat / The Dig - Starfield & Nebula
+          ctx.fillStyle = EGA.BLACK;
+          ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, 180);
+          // Nebula haze
+          ctx.fillStyle = 'rgba(85, 0, 170, 0.25)';
+          ctx.fillRect(50, 30, 120, 80);
+          ctx.fillStyle = 'rgba(0, 170, 170, 0.15)';
+          ctx.fillRect(80, 50, 100, 60);
+          // Twinkling space stars
+          ctx.fillStyle = EGA.WHITE;
+          for (let i = 0; i < 28; i++) {
+            const sx = FIELD_X_MIN + ((i * 43) % (FIELD_X_MAX - FIELD_X_MIN - 6));
+            const sy = FIELD_Y_MIN + ((i * 29) % 150);
+            ctx.fillRect(sx, sy, 1, 1);
+          }
+          break;
+        }
+
+        case 5: { // The Loom of Fate - Cosmic Weavers Tapestry
+          ctx.fillStyle = '#100820';
+          ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, 180);
+          // Shimmering aurora threads
+          ctx.strokeStyle = 'rgba(85, 255, 255, 0.15)';
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 8; i++) {
+            ctx.beginPath();
+            ctx.moveTo(FIELD_X_MIN + i * 28, FIELD_Y_MIN);
+            ctx.lineTo(FIELD_X_MIN + i * 28 + 20, 180);
+            ctx.stroke();
+          }
+          break;
+        }
+
+        case 6: { // Sam & Max - Route 66 Highway Sunset
+          ctx.fillStyle = '#2b0c2b';
+          ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, 60);
+          ctx.fillStyle = EGA.BROWN;
+          ctx.fillRect(FIELD_X_MIN, 60, FIELD_X_MAX - FIELD_X_MIN, 40);
+          ctx.fillStyle = '#1a1a1a';
+          ctx.fillRect(FIELD_X_MIN, 100, FIELD_X_MAX - FIELD_X_MIN, 80);
+          // Highway yellow divider
+          ctx.fillStyle = EGA.YELLOW;
+          for (let i = 0; i < 6; i++) {
+            ctx.fillRect(FIELD_X_MIN + 25 + i * 36, 140, 18, 2);
+          }
+          break;
+        }
+
+        case 7: { // LeChuck's Demonic Hellfire
+          ctx.fillStyle = '#1a0000';
+          ctx.fillRect(FIELD_X_MIN, FIELD_Y_MIN, FIELD_X_MAX - FIELD_X_MIN, 180);
+          // Volcanic stalactites
+          ctx.fillStyle = '#330000';
+          for (let i = 0; i < 9; i++) {
+            ctx.fillRect(FIELD_X_MIN + i * 25, FIELD_Y_MIN, 16, 14 + (i % 3) * 6);
+          }
+          // Boiling Lava at bottom
+          ctx.fillStyle = EGA.RED;
+          ctx.fillRect(FIELD_X_MIN, 172, FIELD_X_MAX - FIELD_X_MIN, 18);
+          ctx.fillStyle = EGA.GOLD;
+          ctx.fillRect(FIELD_X_MIN, 175, FIELD_X_MAX - FIELD_X_MIN, 6);
+          ctx.fillStyle = EGA.YELLOW;
+          ctx.fillRect(FIELD_X_MIN, 178, FIELD_X_MAX - FIELD_X_MIN, 2);
+          break;
+        }
+      }
+    }
+
+    // Draw Side HUD & Verb Panel
+    function drawHUD() {
+      // Right HUD container: x = 236 to 320
+      ctx.fillStyle = '#16121e';
+      ctx.fillRect(236, 0, 84, 200);
+
+      // Dividing Border Bezel
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(236, 0, 3, 200);
+      ctx.fillStyle = EGA.LIGHT_GRAY;
+      ctx.fillRect(237, 0, 1, 200);
+
+      const levelData = ALL_LEVELS[currentLevelIndex] || ALL_LEVELS[0];
+
+      // Score Header
+      drawText(ctx, "HIGH SCORE", 244, 8, EGA.GOLD, 1);
+      const strHigh = String(highScore).padStart(6, '0');
+      drawText(ctx, strHigh, 244, 16, EGA.WHITE, 1);
+
+      drawText(ctx, "1UP SCORE", 244, 28, EGA.BRIGHT_GREEN, 1);
+      const strScore = String(score).padStart(6, '0');
+      drawText(ctx, strScore, 244, 36, EGA.YELLOW, 1);
+
+      // Level & World Info
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(244, 48, 70, 1);
+
+      drawText(ctx, "WORLD " + levelData.world, 244, 54, EGA.BRIGHT_CYAN, 1);
+      // Abbreviated world name to fit HUD
+      const wNames = ["MELEE ISLE", "TENTACLE", "ATLANTIS", "SPACE DIG", "THE LOOM", "SAM & MAX", "LECHUCK"];
+      drawText(ctx, wNames[levelData.world - 1] || "LUCAS", 244, 62, EGA.LIGHT_GRAY, 1);
+
+      const lvlStr = "LV " + String(currentLevelIndex + 1).padStart(2, '0') + "/33";
+      drawText(ctx, lvlStr, 244, 72, EGA.WHITE, 1);
+
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(244, 82, 70, 1);
+
+      // Active Power-up Badge
+      drawText(ctx, "POWER-UP", 244, 88, EGA.GOLD, 1);
+      if (paddle.laserTimer > 0) {
+        drawText(ctx, "LASER", 244, 96, EGA.BRIGHT_RED, 1);
+        ctx.fillStyle = EGA.BRIGHT_RED;
+        ctx.fillRect(244, 104, (paddle.laserTimer / 750) * 68, 2);
+      } else if (paddle.expandTimer > 0) {
+        drawText(ctx, "EXPAND", 244, 96, EGA.BRIGHT_BLUE, 1);
+        ctx.fillStyle = EGA.BRIGHT_BLUE;
+        ctx.fillRect(244, 104, (paddle.expandTimer / 900) * 68, 2);
+      } else if (paddle.catchActive) {
+        drawText(ctx, "MAGNET", 244, 96, EGA.BRIGHT_GREEN, 1);
+      } else {
+        drawText(ctx, "STANDARD", 244, 96, EGA.DARK_GRAY, 1);
+      }
+
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(244, 112, 70, 1);
+
+      // Lives Display (Mini golden Guybrush icons)
+      drawText(ctx, "LIVES", 244, 118, EGA.GOLD, 1);
+      for (let i = 0; i < Math.min(6, lives); i++) {
+        const lx = 244 + (i % 3) * 22;
+        const ly = 127 + Math.floor(i / 3) * 8;
+        // Mini Guybrush head / paddle icon
+        ctx.fillStyle = EGA.GOLD;
+        ctx.fillRect(lx, ly, 16, 4);
+        ctx.fillStyle = EGA.WHITE;
+        ctx.fillRect(lx + 5, ly + 1, 6, 2);
+      }
+
+      // World 7 Boss HP Bar
+      if (worldMechanics.leChuck.active) {
+        ctx.fillStyle = EGA.DARK_GRAY;
+        ctx.fillRect(244, 148, 70, 1);
+        drawText(ctx, "LECHUCK HP", 244, 154, EGA.BRIGHT_RED, 1);
+        const hpRatio = Math.max(0, worldMechanics.leChuck.hp / worldMechanics.leChuck.maxHp);
+        ctx.fillStyle = EGA.RED;
+        ctx.fillRect(244, 163, 68, 5);
+        ctx.fillStyle = EGA.BRIGHT_GREEN;
+        ctx.fillRect(244, 163, hpRatio * 68, 5);
+      }
+
+      // World 5 Loom Draft Indicators
+      if (levelData.world === 5) {
+        ctx.fillStyle = EGA.DARK_GRAY;
+        ctx.fillRect(244, 148, 70, 1);
+        drawText(ctx, "LOOM DRAFT", 244, 154, EGA.BRIGHT_MAGENTA, 1);
+        ['C', 'D', 'E', 'F'].forEach((rune, idx) => {
+          const rx = 244 + idx * 17;
+          ctx.fillStyle = (idx < worldMechanics.loomDraft.length) ? EGA.BRIGHT_CYAN : EGA.DARK_GRAY;
+          ctx.fillRect(rx, 163, 14, 10);
+          drawText(ctx, rune, rx + 4, 165, EGA.WHITE, 1, false);
+        });
+      }
+
+      // Vintage LucasArts Copyright Footer
+      drawText(ctx, "LUCASARTS", 244, 185, EGA.DARK_GRAY, 1, false);
+      drawText(ctx, "HOMAGE", 244, 192, '#3a344a', 1, false);
+    }
+
+    // Draw Paddle Sprite
+    function drawPaddle() {
+      // Main Paddle Body
+      ctx.fillStyle = EGA.LIGHT_GRAY;
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+
+      // Top Highlight & Bottom Shadow (Beveled 3D retro look)
+      ctx.fillStyle = EGA.WHITE;
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, 1);
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(paddle.x, paddle.y + paddle.h - 1, paddle.w, 1);
+
+      // Red End Caps
+      ctx.fillStyle = EGA.RED;
+      ctx.fillRect(paddle.x, paddle.y, 4, paddle.h);
+      ctx.fillRect(paddle.x + paddle.w - 4, paddle.y, 4, paddle.h);
+
+      // Center Core
+      if (paddle.catchActive) {
+        // Glowing Green Magnetic field
+        ctx.fillStyle = EGA.BRIGHT_GREEN;
+        ctx.fillRect(paddle.x + paddle.w / 2 - 4, paddle.y + 1, 8, paddle.h - 2);
+      } else {
+        // Glowing Blue Power Core
+        ctx.fillStyle = EGA.BRIGHT_CYAN;
+        ctx.fillRect(paddle.x + paddle.w / 2 - 3, paddle.y + 1, 6, paddle.h - 2);
+      }
+
+      // Blasters mounted if Laser Active
+      if (paddle.laserTimer > 0) {
+        ctx.fillStyle = EGA.BRIGHT_RED;
+        ctx.fillRect(paddle.x - 2, paddle.y - 3, 3, 5);
+        ctx.fillRect(paddle.x + paddle.w - 1, paddle.y - 3, 3, 5);
+        ctx.fillStyle = EGA.YELLOW;
+        ctx.fillRect(paddle.x - 1, paddle.y - 4, 1, 2);
+        ctx.fillRect(paddle.x + paddle.w, paddle.y - 4, 1, 2);
+      }
+    }
+
+    // Draw Balls
+    function drawBalls() {
+      for (const b of balls) {
+        // Ghost motion blur trail
+        for (let t = 0; t < b.trail.length; t++) {
+          const pt = b.trail[t];
+          ctx.fillStyle = (t === 0) ? EGA.CYAN : EGA.BLUE;
+          ctx.fillRect(pt.x - 1.5, pt.y - 1.5, 3, 3);
+        }
+
+        // Main Ball
+        ctx.fillStyle = EGA.WHITE;
+        ctx.fillRect(b.x - b.radius, b.y - b.radius, b.radius * 2, b.radius * 2);
+        // Cyan Core highlight
+        ctx.fillStyle = EGA.BRIGHT_CYAN;
+        ctx.fillRect(b.x - 1, b.y - 1, 2, 2);
+      }
+    }
+
+    // Draw Bricks
+    function drawBricks() {
+      for (const b of bricks) {
+        if (b.hp <= 0) continue;
+
+        // Brick Body
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+
+        // Top & Left 3D Highlights
+        ctx.fillStyle = b.hi;
+        ctx.fillRect(b.x, b.y, b.w, 1);
+        ctx.fillRect(b.x, b.y, 1, b.h);
+
+        // Bottom & Right 3D Shadows
+        ctx.fillStyle = b.sh;
+        ctx.fillRect(b.x, b.y + b.h - 1, b.w, 1);
+        ctx.fillRect(b.x + b.w - 1, b.y, 1, b.h);
+
+        // Armored Brick Cracking Overlays
+        if (b.armored && b.hp < b.maxHp) {
+          ctx.fillStyle = EGA.BLACK;
+          ctx.fillRect(b.x + 3, b.y + 2, 3, 1);
+          ctx.fillRect(b.x + 5, b.y + 3, 3, 1);
+          ctx.fillRect(b.x + 7, b.y + 4, 3, 1);
+          if (b.hp === 1 && b.maxHp === 3) {
+            ctx.fillRect(b.x + 10, b.y + 2, 2, 4);
+          }
+        }
+
+        // Steel Brick Rivets
+        if (b.steel) {
+          ctx.fillStyle = EGA.LIGHT_GRAY;
+          ctx.fillRect(b.x + 2, b.y + 2, 2, 2);
+          ctx.fillRect(b.x + b.w - 4, b.y + 2, 2, 2);
+          ctx.fillRect(b.x + 2, b.y + b.h - 4, 2, 2);
+          ctx.fillRect(b.x + b.w - 4, b.y + b.h - 4, 2, 2);
+        }
+
+        // Grog Explosive Icon (Crossbones / Hazard)
+        if (b.grog) {
+          ctx.fillStyle = EGA.YELLOW;
+          ctx.fillRect(b.x + 4, b.y + 2, 8, 4);
+          ctx.fillStyle = EGA.RED;
+          ctx.fillRect(b.x + 7, b.y + 2, 2, 4);
+          ctx.fillRect(b.x + 5, b.y + 3, 6, 2);
+        }
+
+        // Loom Musical Rune Brick
+        if (b.loom) {
+          ctx.fillStyle = EGA.WHITE;
+          ctx.fillRect(b.x + 6, b.y + 2, 4, 4);
+          ctx.fillStyle = EGA.BRIGHT_CYAN;
+          ctx.fillRect(b.x + 7, b.y + 3, 2, 2);
+        }
+
+        // Temporal Vortex Brick
+        if (b.vortex) {
+          ctx.fillStyle = EGA.BRIGHT_MAGENTA;
+          ctx.fillRect(b.x + 5, b.y + 2, 6, 4);
+          ctx.fillStyle = EGA.WHITE;
+          ctx.fillRect(b.x + 7, b.y + 3, 2, 2);
+        }
+      }
+    }
+
+    // Draw Power-Ups
+    function drawPowerUps() {
+      for (const p of powerUps) {
+        // Pill capsule shape
+        let bgCol = EGA.BLUE;
+        if (p.type === 'L') bgCol = EGA.RED;
+        if (p.type === 'C') bgCol = EGA.GREEN;
+        if (p.type === 'S') bgCol = EGA.ORANGE;
+        if (p.type === 'P') bgCol = EGA.GOLD;
+
+        ctx.fillStyle = bgCol;
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+
+        // Highlight
+        ctx.fillStyle = EGA.WHITE;
+        ctx.fillRect(p.x, p.y, p.w, 1);
+
+        // Letter Glyph in center
+        drawText(ctx, p.type, p.x + 5, p.y + 1, EGA.WHITE, 1, false);
+      }
+    }
+
+    // Draw Lasers
+    function drawLasers() {
+      ctx.fillStyle = EGA.BRIGHT_RED;
+      for (const l of lasers) {
+        ctx.fillRect(l.x, l.y, 2, 6);
+        ctx.fillStyle = EGA.YELLOW;
+        ctx.fillRect(l.x, l.y + 1, 2, 2);
+      }
+    }
+
+    // Draw LeChuck Animated Boss Sprite (Level 33)
+    function drawLeChuckBoss() {
+      const boss = worldMechanics.leChuck;
+      if (!boss.active || boss.defeated) return;
+
+      const bx = Math.floor(boss.x);
+      const by = Math.floor(boss.y);
+
+      // Hit damage white flash
+      if (boss.hitTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0) {
+        ctx.fillStyle = EGA.WHITE;
+        ctx.fillRect(bx, by, boss.w, boss.h);
+        return;
+      }
+
+      // Ghost Pirate Hat
+      ctx.fillStyle = '#1c1524';
+      ctx.fillRect(bx + 4, by, 24, 7);
+      ctx.fillRect(bx, by + 4, 32, 4);
+      // Golden Skull & Crossbones on Hat
+      ctx.fillStyle = EGA.GOLD;
+      ctx.fillRect(bx + 14, by + 2, 4, 3);
+
+      // Ghostly Green Decaying Face
+      ctx.fillStyle = EGA.GREEN;
+      ctx.fillRect(bx + 7, by + 8, 18, 9);
+      // Piercing Red Evil Eyes
+      ctx.fillStyle = EGA.BRIGHT_RED;
+      ctx.fillRect(bx + 10, by + 10, 3, 2);
+      ctx.fillRect(bx + 19, by + 10, 3, 2);
+
+      // Flaming Spectral Beard (Flickers in real-time)
+      const flameShift = (Math.floor(Date.now() / 100) % 2);
+      ctx.fillStyle = EGA.BRIGHT_GREEN;
+      ctx.fillRect(bx + 5, by + 16, 22, 6);
+      ctx.fillStyle = EGA.BRIGHT_CYAN;
+      ctx.fillRect(bx + 7 + flameShift, by + 20, 18, 5);
+      ctx.fillStyle = EGA.YELLOW;
+      ctx.fillRect(bx + 12, by + 23, 8, 3);
+
+      // Epaulets & Coat
+      ctx.fillStyle = EGA.RED;
+      ctx.fillRect(bx + 4, by + 17, 4, 7);
+      ctx.fillRect(bx + 24, by + 17, 4, 7);
+      ctx.fillStyle = EGA.GOLD;
+      ctx.fillRect(bx + 3, by + 16, 5, 2);
+      ctx.fillRect(bx + 24, by + 16, 5, 2);
+    }
+
+    // Draw Enemy Projectiles (Voodoo Fireballs)
+    function drawEnemyProjectiles() {
+      for (const ep of enemyProjectiles) {
+        ctx.fillStyle = EGA.BRIGHT_GREEN;
+        ctx.fillRect(ep.x - 2, ep.y - 2, 5, 5);
+        ctx.fillStyle = EGA.YELLOW;
+        ctx.fillRect(ep.x - 1, ep.y - 1, 3, 3);
+        ctx.fillStyle = EGA.WHITE;
+        ctx.fillRect(ep.x, ep.y, 1, 1);
+      }
+    }
+
+    // Draw Playfield Surrounding Walls
+    function drawPlayfieldWalls() {
+      // Top Wall
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(FIELD_X_MIN - 4, FIELD_Y_MIN - 4, (FIELD_X_MAX - FIELD_X_MIN) + 8, 4);
+      ctx.fillStyle = EGA.LIGHT_GRAY;
+      ctx.fillRect(FIELD_X_MIN - 4, FIELD_Y_MIN - 4, (FIELD_X_MAX - FIELD_X_MIN) + 8, 1);
+
+      // Left Wall
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(FIELD_X_MIN - 4, FIELD_Y_MIN - 4, 4, FIELD_Y_MAX - FIELD_Y_MIN + 4);
+      ctx.fillStyle = EGA.LIGHT_GRAY;
+      ctx.fillRect(FIELD_X_MIN - 4, FIELD_Y_MIN - 4, 1, FIELD_Y_MAX - FIELD_Y_MIN + 4);
+
+      // Right Wall Bezel
+      ctx.fillStyle = EGA.DARK_GRAY;
+      ctx.fillRect(FIELD_X_MAX, FIELD_Y_MIN - 4, 4, FIELD_Y_MAX - FIELD_Y_MIN + 4);
+      ctx.fillStyle = EGA.LIGHT_GRAY;
+      ctx.fillRect(FIELD_X_MAX + 3, FIELD_Y_MIN - 4, 1, FIELD_Y_MAX - FIELD_Y_MIN + 4);
+    }
+
+    // Draw Particles
+    function drawParticles() {
+      for (const p of particles) {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      }
+    }
+
+    // Draw Floating Text Popups
+    function drawFloatingTexts() {
+      for (const ft of floatingTexts) {
+        drawText(ctx, ft.text, ft.x, ft.y, ft.color, 1);
+      }
+    }
+
+    // Draw Insult Sword Fighting Dialogue Banner (World 1)
+    function drawInsultDialogue() {
+      if (!worldMechanics.insultActive) return;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.fillRect(16, 20, 216, 24);
+      ctx.strokeStyle = EGA.GOLD;
+      ctx.strokeRect(16, 20, 216, 24);
+
+      drawText(ctx, worldMechanics.insultText, 20, 24, EGA.YELLOW, 1);
+      drawText(ctx, worldMechanics.insultResponse, 20, 32, EGA.BRIGHT_CYAN, 1);
+    }
+
+    // =========================================================================
+    // 9. SCREEN OVERLAYS: TITLE, START, CLEAR, GAME OVER, VICTORY
+    // =========================================================================
+    function drawTitleScreen() {
+      ctx.fillStyle = '#06050b';
+      ctx.fillRect(0, 0, 320, 200);
+
+      // Starfield background
+      ctx.fillStyle = EGA.WHITE;
+      for (let i = 0; i < 35; i++) {
+        const sx = (i * 67 + 13) % 320;
+        const sy = (i * 41 + 7) % 200;
+        ctx.fillRect(sx, sy, 1, 1);
+      }
+
+      // Title Banner
+      drawTextCentered(ctx, "ARKANOID", 24, EGA.GOLD, 3);
+      drawTextCentered(ctx, "THE SECRET OF BRICK ISLAND", 52, EGA.BRIGHT_CYAN, 1);
+
+      // Retro Golden Skull Motif
+      ctx.fillStyle = EGA.GOLD;
+      ctx.fillRect(150, 72, 20, 14);
+      ctx.fillStyle = EGA.WHITE;
+      ctx.fillRect(152, 74, 16, 10);
+      ctx.fillStyle = EGA.BLACK;
+      ctx.fillRect(155, 76, 3, 3);
+      ctx.fillRect(162, 76, 3, 3);
+      ctx.fillRect(156, 82, 8, 2);
+
+      // Instructions
+      const blink = Math.floor(Date.now() / 450) % 2 === 0;
+      if (blink) {
+        drawTextCentered(ctx, "PRESS SPACE OR CLICK TO EMBARK", 104, EGA.YELLOW, 1);
+      }
+
+      // LucasArts Worlds Tribute
+      drawTextCentered(ctx, "FEATURING 7 WORLDS & 33 MOSAIC LEVELS", 126, EGA.LIGHT_GRAY, 1);
+      drawTextCentered(ctx, "MONKEY ISLE • TENTACLE • ATLANTIS • LOOM • SAM & MAX", 138, EGA.CYAN, 1);
+      drawTextCentered(ctx, "OPL2 FM ADLIB SYNTHESIS ENGINE", 152, EGA.GOLD, 1);
+
+      // Controls Note
+      drawTextCentered(ctx, "KEYS: MOUSE / A,D / ARROWS • SPACE TO FIRE", 172, EGA.LIGHT_GRAY, 1);
+      drawTextCentered(ctx, "WARP KEYS 1-7 JUMP DIRECTLY TO ANY WORLD", 182, EGA.BROWN, 1);
+    }
+
+    function drawStartingBanner() {
+      const levelData = ALL_LEVELS[currentLevelIndex];
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(FIELD_X_MIN, 75, FIELD_X_MAX - FIELD_X_MIN, 45);
+
+      drawTextCenteredInField(ctx, "WORLD " + levelData.world + ": " + levelData.worldName.toUpperCase(), 82, EGA.BRIGHT_CYAN, 1);
+      drawTextCenteredInField(ctx, levelData.name.toUpperCase(), 94, EGA.YELLOW, 1);
+      drawTextCenteredInField(ctx, levelData.sub.toUpperCase(), 106, EGA.LIGHT_GRAY, 1);
+    }
+
+    function drawLevelClearScreen() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(FIELD_X_MIN, 70, FIELD_X_MAX - FIELD_X_MIN, 50);
+
+      drawTextCenteredInField(ctx, "LEVEL COMPLETED!", 80, EGA.BRIGHT_GREEN, 2);
+      drawTextCenteredInField(ctx, "BONUS: +1000 PTS + LIFE BONUS", 102, EGA.YELLOW, 1);
+    }
+
+    function drawGameOverScreen() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.fillRect(FIELD_X_MIN, 50, FIELD_X_MAX - FIELD_X_MIN, 95);
+
+      drawTextCenteredInField(ctx, "GAME OVER", 62, EGA.BRIGHT_RED, 2);
+      drawTextCenteredInField(ctx, "YOU DIED LIKE A DOG ON BRICK ISLAND", 84, EGA.LIGHT_GRAY, 1);
+
+      let rank = "SWAB";
+      if (score > 10000) rank = "CABIN BOY";
+      if (score > 25000) rank = "DECKHAND";
+      if (score > 50000) rank = "FIRST MATE";
+      if (score > 100000) rank = "MIGHTY PIRATE!";
+      drawTextCenteredInField(ctx, "FINAL RANK: " + rank, 100, EGA.GOLD, 1);
+
+      const blink = Math.floor(Date.now() / 400) % 2 === 0;
+      if (blink) {
+        drawTextCenteredInField(ctx, "PRESS SPACEBAR TO RESTART", 124, EGA.YELLOW, 1);
+      }
+    }
+
+    function drawVictoryScreen() {
+      ctx.fillStyle = '#06050e';
+      ctx.fillRect(0, 0, 320, 200);
+
+      drawTextCentered(ctx, "VICTORY!", 20, EGA.GOLD, 3);
+      drawTextCentered(ctx, "THE SECRET OF BRICK ISLAND HAS BEEN WON!", 48, EGA.BRIGHT_GREEN, 1);
+
+      // Pixel Art Guybrush with Root Beer bottle celebrating!
+      const gx = 150;
+      const gy = 68;
+      // Head
+      ctx.fillStyle = EGA.GOLD;
+      ctx.fillRect(gx + 4, gy, 8, 8);
+      // Pirate Coat
+      ctx.fillStyle = EGA.BLUE;
+      ctx.fillRect(gx + 2, gy + 8, 12, 14);
+      // White shirt
+      ctx.fillStyle = EGA.WHITE;
+      ctx.fillRect(gx + 6, gy + 9, 4, 8);
+      // Root beer bottle in hand
+      ctx.fillStyle = EGA.BROWN;
+      ctx.fillRect(gx + 15, gy + 5, 4, 10);
+      ctx.fillStyle = EGA.WHITE;
+      ctx.fillRect(gx + 16, gy + 3, 2, 3); // froth
+
+      drawTextCentered(ctx, "GUYBRUSH THREEPWOOD ANNIHILATED LECHUCK", 102, EGA.YELLOW, 1);
+      drawTextCentered(ctx, "WITH 100% PURE ROOT BEER!", 114, EGA.BRIGHT_CYAN, 1);
+
+      drawTextCentered(ctx, "FINAL SCORE: " + score, 134, EGA.WHITE, 1);
+
+      drawTextCentered(ctx, "THANK YOU FOR PLAYING OUR RETRO LUCASARTS TRIBUTE!", 155, EGA.LIGHT_GRAY, 1);
+
+      const blink = Math.floor(Date.now() / 450) % 2 === 0;
+      if (blink) {
+        drawTextCentered(ctx, "PRESS SPACEBAR TO RETURN TO MAIN MENU", 176, EGA.GOLD, 1);
+      }
+    }
+
+    function drawPausedScreen() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(FIELD_X_MIN, 80, FIELD_X_MAX - FIELD_X_MIN, 35);
+      drawTextCenteredInField(ctx, "GAME PAUSED", 88, EGA.YELLOW, 2);
+      drawTextCenteredInField(ctx, "PRESS P OR ESCAPE TO RESUME", 104, EGA.WHITE, 1);
+    }
+
+    // =========================================================================
+    // 10. MAIN ANIMATION LOOP
+    // =========================================================================
+    function gameLoop() {
+      // Screen Shake Transform
+      ctx.save();
+      if (screenShake > 0) {
+        const sx = (Math.random() - 0.5) * screenShake;
+        const sy = (Math.random() - 0.5) * screenShake;
+        ctx.translate(sx, sy);
+      }
+
+      const levelData = ALL_LEVELS[currentLevelIndex] || ALL_LEVELS[0];
+
+      if (gameState === STATE_TITLE) {
+        drawTitleScreen();
+      } else if (gameState === STATE_VICTORY) {
+        drawVictoryScreen();
+      } else {
+        // Draw World Background
+        drawEgaBackground(levelData.world);
+
+        // Draw Playfield Boundaries
+        drawPlayfieldWalls();
+
+        // Draw Game Entities
+        drawBricks();
+        drawPowerUps();
+        drawLasers();
+        if (worldMechanics.leChuck.active) drawLeChuckBoss();
+        drawEnemyProjectiles();
+        drawPaddle();
+        drawBalls();
+        drawParticles();
+        drawFloatingTexts();
+        drawInsultDialogue();
+
+        // Update Physics if actively playing
+        if (gameState === STATE_PLAYING) {
+          updatePhysics();
+        }
+
+        // Draw Right HUD Panel
+        drawHUD();
+
+        // State Banners
+        if (gameState === STATE_STARTING) {
+          drawStartingBanner();
+          stateTimer--;
+          if (stateTimer <= 0) gameState = STATE_PLAYING;
+        } else if (gameState === STATE_LEVEL_CLEAR) {
+          drawLevelClearScreen();
+          stateTimer--;
+          if (stateTimer <= 0) loadLevel(currentLevelIndex + 1);
+        } else if (gameState === STATE_GAME_OVER) {
+          drawGameOverScreen();
+        } else if (gameState === STATE_PAUSED) {
+          drawPausedScreen();
+        }
+      }
+
+      ctx.restore();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Launch Game Loop on Load
+    requestAnimationFrame(gameLoop);
+
+  })();
+  </script>
 </body>
 </html>
