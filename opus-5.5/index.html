@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SLOPANOID ARCADE · The One-Shot Retro Collection</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #07040d;
+    --card-bg: #120b1e;
+    --border: #4d2673;
+    --border-glow: #a855f7;
+    --gold: #ffcc00;
+    --cyan: #38bdf8;
+    --magenta: #f43f5e;
+    --green: #22c55e;
+    --text: #e2e8f0;
+    --sub: #94a3b8;
+  }
+  html, body {
+    min-height: 100%;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    overflow-x: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+    position: relative;
+    background: radial-gradient(circle at 50% 15%, #240d42 0%, #0d061a 50%, #05020a 100%);
+  }
+
+  /* Scanline CRT overlay */
+  .crt::after {
+    content: " ";
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 26, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+    background-size: 100% 4px;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  /* Starfield Background Canvas */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.65;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  /* Arcade Header / Marquee */
+  header {
+    text-align: center;
+    width: 100%;
+    padding: 24px 20px 20px;
+    background: linear-gradient(180deg, #1f0b38 0%, #0d041c 100%);
+    border: 3px solid var(--border-glow);
+    border-radius: 16px;
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.35), inset 0 0 25px rgba(0, 0, 0, 0.8);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, #f43f5e, #ffcc00, #38bdf8, transparent);
+  }
+
+  .logo-title {
+    font-size: clamp(28px, 6vw, 54px);
+    font-weight: 900;
+    letter-spacing: clamp(4px, 1.2vw, 10px);
+    color: var(--gold);
+    text-shadow: 3px 3px 0 #990000, 0 0 20px rgba(255, 204, 0, 0.7);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .tagline {
+    font-size: clamp(12px, 2.2vw, 16px);
+    color: var(--cyan);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+  }
+
+  /* One-Shot Prompt Statement Box */
+  .manifesto-box {
+    width: 100%;
+    background: rgba(18, 11, 30, 0.85);
+    border: 2px solid #581c87;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border-left: 6px solid var(--magenta);
+    line-height: 1.6;
+  }
+  .manifesto-badge {
+    display: inline-block;
+    background: var(--magenta);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+  }
+  .manifesto-text {
+    font-size: 15px;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+  }
+  .manifesto-text strong {
+    color: #fff;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+  }
+  .prompt-quicklinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+    color: var(--sub);
+  }
+  .prompt-quicklinks span {
+    font-weight: bold;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .prompt-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: #1e1136;
+    border: 1px solid #7e22ce;
+    color: var(--cyan);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+  .prompt-pill:hover {
+    background: #3b0764;
+    border-color: var(--cyan);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Games Grid */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+    gap: 28px;
+    width: 100%;
+  }
+
+  .game-card {
+    background: linear-gradient(180deg, #160d26 0%, #0d0618 100%);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .game-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--border-glow);
+    box-shadow: 0 16px 40px rgba(168, 85, 247, 0.35);
+  }
+
+  .game-badge {
+    align-self: flex-start;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #23123d;
+    border: 1px solid #7e22ce;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: inline-block;
+  }
+
+  /* Pixel icon artwork in header of card */
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .game-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+    font-size: 26px;
+  }
+  .icon-arkanoid {
+    background: linear-gradient(135deg, #b91c1c, #450a0a);
+    border-color: #ef4444;
+  }
+  .icon-xenon2 {
+    background: linear-gradient(135deg, #0369a1, #082f49);
+    border-color: #38bdf8;
+  }
+  .icon-gng {
+    background: linear-gradient(135deg, #15803d, #052e16);
+    border-color: #22c55e;
+  }
+  .icon-lemmings {
+    background: linear-gradient(135deg, #7e22ce, #2e1065);
+    border-color: #c084fc;
+  }
+
+  .card-title-group {
+    flex-grow: 1;
+  }
+  .game-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .game-subtitle {
+    font-size: 12px;
+    color: var(--cyan);
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .game-desc {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    flex-grow: 1;
+  }
+
+  .feature-list {
+    list-style: none;
+    margin-bottom: 22px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .feature-list li {
+    position: relative;
+    padding-left: 18px;
+    color: #cbd5e1;
+    line-height: 1.4;
+  }
+  .feature-list li::before {
+    content: "▶";
+    position: absolute;
+    left: 0; top: 0;
+    font-size: 9px;
+    color: var(--gold);
+  }
+
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-play {
+    background: linear-gradient(180deg, #facc15 0%, #ca8a04 100%);
+    color: #0b0514;
+    border: 2px solid #fef08a;
+    box-shadow: 0 4px 15px rgba(250, 204, 21, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  .btn-play:hover {
+    background: linear-gradient(180deg, #fef08a 0%, #eab308 100%);
+    box-shadow: 0 6px 22px rgba(250, 204, 21, 0.6), inset 0 1px 0 rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    color: #000;
+  }
+
+  .btn-prompt {
+    background: #1a102e;
+    color: var(--cyan);
+    border: 1px solid #0284c7;
+    font-size: 12px;
+    padding: 9px 14px;
+  }
+  .btn-prompt:hover {
+    background: #0369a1;
+    color: #fff;
+    border-color: #38bdf8;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 16px;
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+    letter-spacing: 1px;
+    line-height: 1.8;
+  }
+  footer kbd {
+    color: var(--gold);
+    background: #1e1333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #4c1d95;
+    font-family: inherit;
+  }
+  footer a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body class="crt">
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+  <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: -16px; font-size: 13px;">
+    <a href="../index.html" style="color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: bold;">
+      &larr; Return to AI Models Benchmark Hub
+    </a>
+    <span style="color: var(--sub); font-size: 12px;">Model Evaluation: Claude Opus 5.5</span>
+  </div>
+  <header>
+    <h1 class="logo-title">SLOPANOID ARCADE</h1>
+    <div class="tagline">The Autonomous Retro Demoscene Collection</div>
+  </header>
+
+  <!-- Explanation of One-Shot Prompting -->
+  <section class="manifesto-box">
+    <div class="manifesto-badge">⚡ 100% Autonomous One-Shot Builds</div>
+    <p class="manifesto-text">
+      Every game in this collection was conceived, designed, composed, and coded in a <strong>single one-shot prompt</strong> with zero human micro-management.
+      There are <strong>zero external assets</strong> (no images, sprite sheets, sound clips, or music files) and <strong>zero third-party libraries</strong>.
+      Everything—from pixel-perfect 320&times;200 software framebuffers and EGA palettes to complex 8-channel Web Audio AdLib/OPL2 FM synthesis and Amiga MOD tracker engines—is generated completely self-contained in pure Vanilla JavaScript, HTML, and CSS.
+    </p>
+    <div class="prompt-quicklinks">
+      <span>Inspect the Prompts:</span>
+      <a class="prompt-pill" href="arkanoid/PROMPT.md">📜 Arkanoid Prompt</a>
+      <a class="prompt-pill" href="xenon2/PROMPT.md">📜 Xenon 2 Prompt</a>
+      <a class="prompt-pill" href="ghosts-n-goblins/PROMPT.md">📜 Ghosts 'n Goblins Prompt</a>
+      <a class="prompt-pill" href="lemmings/PROMPT.md">📜 Lemmings Prompt</a>
+    </div>
+  </section>
+
+  <!-- Games Showcase -->
+  <main class="games-grid">
+
+    <!-- GAME 1: ARKANOID -->
+    <article class="game-card">
+      <div>
+        <div class="card-header">
+          <div class="game-icon icon-arkanoid">🧱</div>
+          <div class="card-title-group">
+            <span class="game-badge">33 Levels · 7 Worlds</span>
+            <h2 class="game-title">Arkanoid</h2>
+            <div class="game-subtitle">The Secret of Brick Island</div>
+          </div>
+        </div>
+
+        <p class="game-desc">
+          An epic LucasArts tribute spanning 33 handcrafted pixel-art mosaics across 7 classic adventure game universes, powered by an authentic OPL2/AdLib FM synthesizer.
+        </p>
+
+        <ul class="feature-list">
+          <li><strong>Soundtrack:</strong> 7 full-length FM tracker arrangements (Monkey Island reggae, Tentacle chromatic march, Atlantis ambient, Loom 4-voice counterpoint, Sam &amp; Max swing-jazz, LeChuck metal).</li>
+          <li><strong>World Gimmicks:</strong> Insult sword fighting, past/future Chron-o-John portals, Orichalcum fireballs, Loom spell-weaving, and moving traffic lanes.</li>
+          <li><strong>Boss Fight:</strong> Multi-phase LeChuck boss hurling voodoo fire in a lava cavern.</li>
+          <li><strong>Power-Ups:</strong> Space-ranger lasers, Rubber chicken paddle, Compass catch, Hourglass slow, Gold Guy 1UP.</li>
+        </ul>
+      </div>
+
+      <div class="button-group">
+        <a class="btn btn-play" href="arkanoid/index.html">▶ Play Arkanoid <kbd>[1]</kbd></a>
+        <a class="btn btn-prompt" href="arkanoid/PROMPT.md">📄 Read One-Shot Prompt</a>
+      </div>
+    </article>
+
+    <!-- GAME 2: XENON 2: MEGABLAST -->
+    <article class="game-card">
+      <div>
+        <div class="card-header">
+          <div class="game-icon icon-xenon2">🚀</div>
+          <div class="card-title-group">
+            <span class="game-badge">8-Ch MOD Tracker</span>
+            <h2 class="game-title">Xenon 2</h2>
+            <div class="game-subtitle">Megablast · Bitmap Brothers Tribute</div>
+          </div>
+        </div>
+
+        <p class="game-desc">
+          A blistering vertical shmup celebrating The Bitmap Brothers' chrome aesthetics and Bomb the Bass's legendary soundtrack, rendered in pure software pixel buffers.
+        </p>
+
+        <ul class="feature-list">
+          <li><strong>Music Engine:</strong> 8-channel Amiga MOD sequencer synthesizing Bomb the Bass's "Megablast (Hip Hop on Precinct 13)" with real-time TB-303 acid sweeps.</li>
+          <li><strong>Crispin's Shop:</strong> Intergalactic shop docking with real-time dub filter sweeps where bought cannons, wing-pods, and tailguns mount directly onto the player sprite.</li>
+          <li><strong>Visuals:</strong> Specular metallic gradients, multi-layer parallax scrolling, reverse-thrusters, and animated organic bosses.</li>
+        </ul>
+      </div>
+
+      <div class="button-group">
+        <a class="btn btn-play" href="xenon2/index.html">▶ Play Xenon 2 <kbd>[2]</kbd></a>
+        <a class="btn btn-prompt" href="xenon2/PROMPT.md">📄 Read One-Shot Prompt</a>
+      </div>
+    </article>
+
+    <!-- GAME 3: GHOSTS 'N GOBLINS -->
+    <article class="game-card">
+      <div>
+        <div class="card-header">
+          <div class="game-icon icon-gng">⚔️</div>
+          <div class="card-title-group">
+            <span class="game-badge">Tactical Armor Eject</span>
+            <h2 class="game-title">Ghosts 'n Goblins</h2>
+            <div class="game-subtitle">The Cursed PC Gaming Museum</div>
+          </div>
+        </div>
+
+        <p class="game-desc">
+          Hardcore action platformer following Sir Arthur through haunted graveyards and demon towers with inventive armor mechanics and monster possession curses.
+        </p>
+
+        <ul class="feature-list">
+          <li><strong>Tactical Eject:</strong> Voluntarily shatter armor into a crushing anvil to trigger Strawberry Boxer Shorts mode (+35% speed &amp; double jumps).</li>
+          <li><strong>Possession Curse:</strong> Leap your soul into non-boss enemies to fly as a Gargoyle, spit acid as a Zombie, or fling bones as a Skeleton.</li>
+          <li><strong>Arsenal:</strong> 5 swap-on-pickup weapons (Lances, Daggers, Torches, Axes, Crossbows) plus Golden Armor charged screen-clearing magic.</li>
+        </ul>
+      </div>
+
+      <div class="button-group">
+        <a class="btn btn-play" href="ghosts-n-goblins/index.html">▶ Play Ghosts 'n Goblins <kbd>[3]</kbd></a>
+        <a class="btn btn-prompt" href="ghosts-n-goblins/PROMPT.md">📄 Read One-Shot Prompt</a>
+      </div>
+    </article>
+
+    <!-- GAME 4: LEMMINGS: BEAT TRIBE -->
+    <article class="game-card">
+      <div>
+        <div class="card-header">
+          <div class="game-icon icon-lemmings">🎵</div>
+          <div class="card-title-group">
+            <span class="game-badge">16 Levels · 5 Genre Worlds</span>
+            <h2 class="game-title">Lemmings</h2>
+            <div class="game-subtitle">Beat Tribe · Playing Is Composing</div>
+          </div>
+        </div>
+
+        <p class="game-desc">
+          A Psygnosis puzzle tribute where every level is a living music sequencer: the terrain is the score, the lemmings are the playheads, and saving the tribe completes the song.
+        </p>
+
+        <ul class="feature-list">
+          <li><strong>Note Terrain:</strong> Colour-coded ground plays scale degrees as lemmings walk over it, every footstep quantized to the song clock so a crowd of 50 grooves instead of clattering.</li>
+          <li><strong>Skills Are Instruments:</strong> Diggers drum, Builders arpeggiate, Blockers drone, Bashers sweep the bass, and Bombers crash with a pitch-dropping "Oh no!".</li>
+          <li><strong>Stem Unlocks:</strong> Every 20% saved adds drums, bass, chords, lead, then the full mix, and the results screen replays the song you composed.</li>
+          <li><strong>Worlds:</strong> Amiga chiptune, acid warehouse, synthwave, jungle breakbeat, and an orchestral finale, plus a creeping Silence that eats sound.</li>
+        </ul>
+      </div>
+
+      <div class="button-group">
+        <a class="btn btn-play" href="lemmings/index.html">▶ Play Lemmings <kbd>[4]</kbd></a>
+        <a class="btn btn-prompt" href="lemmings/PROMPT.md">📄 Read One-Shot Prompt</a>
+      </div>
+    </article>
+
+  </main>
+
+  <footer>
+    <p>Hotkeys: Press <kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>, or <kbd>4</kbd> to launch a game directly &middot; Press <kbd>P</kbd> to open prompt list</p>
+    <p style="margin-top: 6px;">All code and assets created self-contained in modern browsers. Check out the <a href="../README.md">README</a> or return to the <a href="../index.html">Benchmark Hub</a>.</p>
+  </footer>
+</div>
+
+<script>
+  // Simple retro sound effects on interaction
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let sndCtx = null;
+  function beep(freq, type, dur, vol) {
+    try {
+      if (!sndCtx) sndCtx = new AudioCtx();
+      if (sndCtx.state === 'suspended') sndCtx.resume();
+      const osc = sndCtx.createOscillator();
+      const gain = sndCtx.createGain();
+      osc.type = type || 'square';
+      osc.frequency.setValueAtTime(freq, sndCtx.currentTime);
+      gain.gain.setValueAtTime(vol || 0.05, sndCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, sndCtx.currentTime + (dur || 0.08));
+      osc.connect(gain);
+      gain.connect(sndCtx.destination);
+      osc.start();
+      osc.stop(sndCtx.currentTime + (dur || 0.08));
+    } catch(e) {}
+  }
+
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('mouseenter', () => beep(660, 'triangle', 0.04, 0.02));
+    link.addEventListener('click', () => beep(880, 'square', 0.1, 0.04));
+  });
+
+  // Keyboard navigation
+  window.addEventListener('keydown', (e) => {
+    if (e.key === '1') { beep(523, 'square', 0.1); window.location.href = 'arkanoid/index.html'; }
+    if (e.key === '2') { beep(659, 'square', 0.1); window.location.href = 'xenon2/index.html'; }
+    if (e.key === '3') { beep(784, 'square', 0.1); window.location.href = 'ghosts-n-goblins/index.html'; }
+    if (e.key === '4') { beep(1047, 'square', 0.1); window.location.href = 'lemmings/index.html'; }
+    if (e.key === 'p' || e.key === 'P') {
+      beep(440, 'triangle', 0.08);
+      document.querySelector('.manifesto-box').scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Animated starfield background
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    stars = Array.from({ length: 80 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() < 0.2 ? 2 : 1,
+      speed: 0.2 + Math.random() * 0.5,
+      color: ['#ff0055', '#00e5ff', '#ffcc00', '#ffffff', '#a855f7'][Math.floor(Math.random() * 5)]
+    }));
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of stars) {
+      s.y += s.speed;
+      if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
+      ctx.fillStyle = s.color;
+      ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>

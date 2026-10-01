@@ -2,604 +2,1335 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SLOPANOID ARCADE · The One-Shot Retro Collection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SLOPANOID · Autonomous Game Dev Benchmark</title>
+<meta name="description" content="An empirical multi-model benchmark testing whether frontier AI models can autonomously architect, compose, and code complete retro games in a single zero-shot prompt.">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #07040d;
-    --card-bg: #120b1e;
-    --border: #4d2673;
-    --border-glow: #a855f7;
-    --gold: #ffcc00;
-    --cyan: #38bdf8;
-    --magenta: #f43f5e;
-    --green: #22c55e;
-    --text: #e2e8f0;
-    --sub: #94a3b8;
+    --bg: #090d16;
+    --bg-card: #121929;
+    --bg-card-hover: #172136;
+    --border: #1e293b;
+    --border-accent: #334155;
+    --amber: #f59e0b;
+    --amber-light: #fbbf24;
+    --cyan: #0ea5e9;
+    --cyan-light: #38bdf8;
+    --emerald: #10b981;
+    --rose: #f43f5e;
+    --purple: #8b5cf6;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --radius-lg: 14px;
+    --radius-md: 10px;
+    --radius-sm: 6px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
   }
-  html, body {
-    min-height: 100%;
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
     background-color: var(--bg);
-    color: var(--text);
-    font-family: 'Courier New', Courier, monospace;
+    color: var(--text-primary);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    background: radial-gradient(circle at 50% 0%, #151d30 0%, #090d16 70%);
+    min-height: 100vh;
+    padding: 0 16px 80px;
     overflow-x: hidden;
   }
-  body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px 16px 64px;
-    position: relative;
-    background: radial-gradient(circle at 50% 15%, #240d42 0%, #0d061a 50%, #05020a 100%);
-  }
 
-  /* Scanline CRT overlay */
-  .crt::after {
-    content: " ";
+  /* Subtle background canvas */
+  #canvas-grid {
     position: fixed;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(rgba(18, 16, 26, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
-    background-size: 100% 4px;
-    z-index: 100;
-    pointer-events: none;
-    opacity: 0.7;
-  }
-
-  /* Starfield Background Canvas */
-  #bg-canvas {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.65;
+    opacity: 0.35;
   }
 
-  .container {
+  /* Layout Wrapper */
+  .layout-wrapper {
     position: relative;
     z-index: 1;
-    width: 100%;
-    max-width: 1140px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  /* Header & Hero */
+  header.hero {
+    padding-top: 56px;
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 32px;
   }
 
-  /* Arcade Header / Marquee */
-  header {
-    text-align: center;
+  .benchmark-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--amber);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 6px 14px;
+    border-radius: 9999px;
+    margin-bottom: 20px;
+  }
+
+  .benchmark-tag .status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--emerald);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--emerald);
+  }
+
+  h1.hero-title {
+    font-size: clamp(34px, 5.5vw, 62px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    color: #ffffff;
+  }
+
+  h1.hero-title span.accent {
+    color: var(--amber);
+    text-shadow: 0 0 28px rgba(245, 158, 11, 0.4);
+  }
+
+  p.hero-subtitle {
+    font-size: clamp(16px, 2vw, 19px);
+    color: var(--text-secondary);
+    max-width: 820px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  /* Key Metrics Bar */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
     width: 100%;
-    padding: 24px 20px 20px;
-    background: linear-gradient(180deg, #1f0b38 0%, #0d041c 100%);
-    border: 3px solid var(--border-glow);
-    border-radius: 16px;
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.35), inset 0 0 25px rgba(0, 0, 0, 0.8);
+    margin-bottom: 12px;
+  }
+
+  .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    text-align: left;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .metric-card:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-2px);
+  }
+
+  .metric-val {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .metric-val span.sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .metric-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .metric-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Section Styling */
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+
+  .section-title-group h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+
+  .section-title-group p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .section-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: var(--amber);
+    color: #0b0f19;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+  }
+
+  .btn-primary:hover {
+    background: var(--amber-light);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  }
+
+  .btn-secondary {
+    background: #1e293b;
+    color: var(--text-primary);
+    border-color: #334155;
+  }
+
+  .btn-secondary:hover {
+    background: #2a374f;
+    border-color: #475569;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--cyan-light);
+    border-color: rgba(14, 165, 233, 0.4);
+  }
+
+  .btn-outline:hover {
+    background: rgba(14, 165, 233, 0.1);
+    border-color: var(--cyan);
+    color: #ffffff;
+  }
+
+  .btn-sm {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  /* Featured Model Evaluation Spotlight: opus-5.5 */
+  .spotlight-card {
+    background: linear-gradient(180deg, #161e31 0%, #101625 100%);
+    border: 1px solid #293854;
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
     position: relative;
     overflow: hidden;
   }
-  header::before {
+
+  .spotlight-card::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, transparent, #f43f5e, #ffcc00, #38bdf8, transparent);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber), var(--cyan), var(--purple));
   }
 
-  .logo-title {
-    font-size: clamp(28px, 6vw, 54px);
-    font-weight: 900;
-    letter-spacing: clamp(4px, 1.2vw, 10px);
-    color: var(--gold);
-    text-shadow: 3px 3px 0 #990000, 0 0 20px rgba(255, 204, 0, 0.7);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-  }
-  .tagline {
-    font-size: clamp(12px, 2.2vw, 16px);
-    color: var(--cyan);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    font-weight: bold;
-    text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
-  }
-
-  /* One-Shot Prompt Statement Box */
-  .manifesto-box {
-    width: 100%;
-    background: rgba(18, 11, 30, 0.85);
-    border: 2px solid #581c87;
-    border-radius: 12px;
-    padding: 20px 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    border-left: 6px solid var(--magenta);
-    line-height: 1.6;
-  }
-  .manifesto-badge {
-    display: inline-block;
-    background: var(--magenta);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
-  }
-  .manifesto-text {
-    font-size: 15px;
-    color: #cbd5e1;
-    margin-bottom: 12px;
-  }
-  .manifesto-text strong {
-    color: #fff;
-    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
-  }
-  .prompt-quicklinks {
+  .spotlight-top {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .model-badge-row {
+    display: flex;
     align-items: center;
-    font-size: 13px;
-    color: var(--sub);
+    gap: 10px;
+    margin-bottom: 8px;
   }
-  .prompt-quicklinks span {
-    font-weight: bold;
-    color: var(--gold);
+
+  .model-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--emerald);
+    border: 1px solid rgba(16, 185, 129, 0.35);
   }
-  .prompt-pill {
+
+  .dir-path-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--amber);
+    background: #0d121c;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid #23304a;
+  }
+
+  .spotlight-heading h3 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+  }
+
+  .spotlight-heading p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 780px;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+
+  .spotlight-summary-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .stat-pill {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1;
+    background: #1a2336;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid #2d3b55;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    background: #1e1136;
-    border: 1px solid #7e22ce;
-    color: var(--cyan);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 12px;
-    transition: all 0.2s ease;
   }
-  .prompt-pill:hover {
-    background: #3b0764;
-    border-color: var(--cyan);
-    color: #fff;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-    transform: translateY(-1px);
+
+  .stat-pill strong {
+    color: #ffffff;
   }
 
   /* Games Grid */
   .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
-    gap: 28px;
-    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+    gap: 20px;
   }
 
   .game-card {
-    background: linear-gradient(180deg, #160d26 0%, #0d0618 100%);
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    padding: 24px;
+    background: #0f1524;
+    border: 1px solid #1f2c42;
+    border-radius: var(--radius-md);
+    padding: 22px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    transition: all 0.25s ease;
     position: relative;
-    overflow: hidden;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
-    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   }
+
   .game-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--border-glow);
-    box-shadow: 0 16px 40px rgba(168, 85, 247, 0.35);
+    border-color: #3b5074;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
   }
 
-  .game-badge {
-    align-self: flex-start;
-    font-size: 10px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: #23123d;
-    border: 1px solid #7e22ce;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    display: inline-block;
-  }
-
-  /* Pixel icon artwork in header of card */
-  .card-header {
+  .game-header {
     display: flex;
-    align-items: flex-start;
     gap: 16px;
-    margin-bottom: 16px;
+    align-items: flex-start;
+    margin-bottom: 14px;
   }
-  .game-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 10px;
+
+  .game-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 24px;
     flex-shrink: 0;
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
-    font-size: 26px;
-  }
-  .icon-arkanoid {
-    background: linear-gradient(135deg, #b91c1c, #450a0a);
-    border-color: #ef4444;
-  }
-  .icon-xenon2 {
-    background: linear-gradient(135deg, #0369a1, #082f49);
-    border-color: #38bdf8;
-  }
-  .icon-gng {
-    background: linear-gradient(135deg, #15803d, #052e16);
-    border-color: #22c55e;
-  }
-  .icon-lemmings {
-    background: linear-gradient(135deg, #7e22ce, #2e1065);
-    border-color: #c084fc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
 
-  .card-title-group {
-    flex-grow: 1;
+  .icon-box-arkanoid { background: linear-gradient(135deg, #7f1d1d, #450a0a); }
+  .icon-box-xenon { background: linear-gradient(135deg, #075985, #082f49); }
+  .icon-box-gng { background: linear-gradient(135deg, #166534, #052e16); }
+  .icon-box-lemmings { background: linear-gradient(135deg, #6b21a8, #3b0764); }
+
+  .game-title-area {
+    flex: 1;
   }
+
+  .game-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+
   .game-title {
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 800;
-    color: #fff;
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    color: #ffffff;
   }
-  .game-subtitle {
-    font-size: 12px;
-    color: var(--cyan);
-    font-weight: bold;
-    letter-spacing: 1px;
+
+  .challenge-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #1c2638;
+    color: var(--cyan-light);
+    border: 1px solid #2a3a55;
+  }
+
+  .game-subtitle {
+    font-size: 13px;
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .game-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex-grow: 1;
   }
 
   .game-desc {
     font-size: 13px;
-    color: #94a3b8;
-    line-height: 1.5;
-    margin-bottom: 18px;
-    flex-grow: 1;
+    color: var(--text-secondary);
+    line-height: 1.55;
   }
 
-  .feature-list {
-    list-style: none;
-    margin-bottom: 22px;
+  .specs-list {
+    background: #0a0e19;
+    border: 1px solid #182233;
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     font-size: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
   }
-  .feature-list li {
-    position: relative;
-    padding-left: 18px;
+
+  .spec-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
     color: #cbd5e1;
-    line-height: 1.4;
-  }
-  .feature-list li::before {
-    content: "▶";
-    position: absolute;
-    left: 0; top: 0;
-    font-size: 9px;
-    color: var(--gold);
   }
 
-  .button-group {
+  .spec-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cyan);
+    min-width: 90px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .game-footer-actions {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 10px;
-    margin-top: auto;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #1c273a;
   }
 
-  .btn {
+  /* Benchmark Multi-Model Matrix */
+  .matrix-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .matrix-table th {
+    background: #0d1322;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .matrix-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #162033;
+    color: #cbd5e1;
+    vertical-align: middle;
+  }
+
+  .matrix-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .matrix-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .model-name-cell {
+    font-weight: 700;
+    color: #ffffff;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
-    padding: 12px 18px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    text-align: center;
-  }
-  .btn-play {
-    background: linear-gradient(180deg, #facc15 0%, #ca8a04 100%);
-    color: #0b0514;
-    border: 2px solid #fef08a;
-    box-shadow: 0 4px 15px rgba(250, 204, 21, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  }
-  .btn-play:hover {
-    background: linear-gradient(180deg, #fef08a 0%, #eab308 100%);
-    box-shadow: 0 6px 22px rgba(250, 204, 21, 0.6), inset 0 1px 0 rgba(255, 255, 255, 1);
-    transform: translateY(-2px);
-    color: #000;
   }
 
-  .btn-prompt {
-    background: #1a102e;
-    color: var(--cyan);
-    border: 1px solid #0284c7;
+  .model-provider {
     font-size: 12px;
-    padding: 9px 14px;
+    color: var(--text-muted);
+    font-weight: normal;
   }
-  .btn-prompt:hover {
-    background: #0369a1;
-    color: #fff;
-    border-color: #38bdf8;
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-    transform: translateY(-1px);
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .status-verified {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--emerald);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .status-planned {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  /* Benchmark Rules & Protocol Grid */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .rule-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rule-number {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--amber);
+  }
+
+  .rule-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .rule-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Instructions for Re-running Experiment */
+  .instructions-box {
+    background: #0f1626;
+    border: 1px solid #1f2b40;
+    border-radius: var(--radius-md);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .code-block {
+    background: #070a12;
+    border: 1px solid #182233;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #cbd5e1;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  .code-block .comment {
+    color: var(--text-muted);
+  }
+
+  .code-block .keyword {
+    color: var(--amber);
+  }
+
+  /* Interactive Modal Player & Prompt Viewer */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 8, 15, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-backdrop.active {
+    display: flex;
+  }
+
+  .modal-container {
+    background: #111827;
+    border: 1px solid #2d3b55;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 960px;
+    height: 90vh;
+    max-height: 760px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  }
+
+  .modal-header {
+    background: #0c121e;
+    border-bottom: 1px solid #1f2c42;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .modal-close-btn:hover {
+    background: #1f2c42;
+    color: #ffffff;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    background: #000;
+  }
+
+  .modal-body iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .modal-prompt-content {
+    background: #0a0e17;
+    color: #cbd5e1;
+    padding: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    height: 100%;
+    overflow-y: auto;
   }
 
   /* Footer */
   footer {
-    margin-top: 16px;
-    text-align: center;
-    color: #64748b;
-    font-size: 12px;
-    letter-spacing: 1px;
-    line-height: 1.8;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
   }
-  footer kbd {
-    color: var(--gold);
-    background: #1e1333;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid #4c1d95;
-    font-family: inherit;
-  }
+
   footer a {
-    color: var(--cyan);
+    color: var(--cyan-light);
     text-decoration: none;
   }
+
   footer a:hover {
     text-decoration: underline;
   }
+
+  @media (max-width: 768px) {
+    .games-grid {
+      grid-template-columns: 1fr;
+    }
+    .modal-container {
+      height: 96vh;
+    }
+  }
 </style>
 </head>
-<body class="crt">
-<canvas id="bg-canvas"></canvas>
+<body>
 
-<div class="container">
-  <header>
-    <h1 class="logo-title">SLOPANOID ARCADE</h1>
-    <div class="tagline">The Autonomous Retro Demoscene Collection</div>
+<canvas id="canvas-grid"></canvas>
+
+<div class="layout-wrapper">
+
+  <!-- HERO SECTION -->
+  <header class="hero">
+    <div class="benchmark-tag">
+      <span class="status-dot"></span>
+      Autonomous Game Dev Benchmark · Single Turn Experiment
+    </div>
+    <h1 class="hero-title">
+      SLOPANOID <span class="accent">BENCHMARK</span>
+    </h1>
+    <p class="hero-subtitle">
+      An empirical experiment testing whether frontier AI models can autonomously architect, design, compose, and code complete retro games in a <strong>single one-shot prompt</strong> with zero human micro-management, zero external assets, and zero external libraries.
+    </p>
+
+    <!-- KEY EXPERIMENT METRICS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-val">4 <span class="sub">Archetypes</span></div>
+        <div class="metric-label">Benchmark Games</div>
+        <div class="metric-desc">Arkanoid, Xenon 2, Ghosts 'n Goblins, Lemmings</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">0 <span class="sub">Files</span></div>
+        <div class="metric-label">Zero External Assets</div>
+        <div class="metric-desc">100% Procedural canvas gfx &amp; Web Audio synthesis</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">100% <span class="sub">Vanilla</span></div>
+        <div class="metric-label">Zero Dependencies</div>
+        <div class="metric-desc">No Phaser, Tone.js, Howler, Three.js or frameworks</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">3 <span class="sub">Queued</span></div>
+        <div class="metric-label">Target Models</div>
+        <div class="metric-desc">Gemini 3.8 Flash, Gemini 4 Argon, Fable 5.1</div>
+      </div>
+    </div>
   </header>
 
-  <!-- Explanation of One-Shot Prompting -->
-  <section class="manifesto-box">
-    <div class="manifesto-badge">⚡ 100% Autonomous One-Shot Builds</div>
-    <p class="manifesto-text">
-      Every game in this collection was conceived, designed, composed, and coded in a <strong>single one-shot prompt</strong> with zero human micro-management.
-      There are <strong>zero external assets</strong> (no images, sprite sheets, sound clips, or music files) and <strong>zero third-party libraries</strong>.
-      Everything—from pixel-perfect 320&times;200 software framebuffers and EGA palettes to complex 8-channel Web Audio AdLib/OPL2 FM synthesis and Amiga MOD tracker engines—is generated completely self-contained in pure Vanilla JavaScript, HTML, and CSS.
-    </p>
-    <div class="prompt-quicklinks">
-      <span>Inspect the Prompts:</span>
-      <a class="prompt-pill" href="arkanoid/PROMPT.md">📜 Arkanoid Prompt</a>
-      <a class="prompt-pill" href="xenon2/PROMPT.md">📜 Xenon 2 Prompt</a>
-      <a class="prompt-pill" href="ghosts-n-goblins/PROMPT.md">📜 Ghosts 'n Goblins Prompt</a>
-      <a class="prompt-pill" href="lemmings/PROMPT.md">📜 Lemmings Prompt</a>
+  <!-- ACTIVE EVALUATION RUN: opus-5.5 -->
+  <section id="opus-5-5-showcase">
+    <div class="section-header">
+      <div class="section-title-group">
+        <h2>Active Evaluation: Claude Opus 5.5 (<code style="color: var(--amber);">opus-5.5/</code>)</h2>
+        <p>Complete test suite generated in a single turn per challenge by Anthropic's Claude Opus 5.5.</p>
+      </div>
+      <div class="section-actions">
+        <a href="opus-5.5/index.html" class="btn btn-primary" id="btn-launch-opus-arcade">
+          🕹️ Launch Opus 5.5 Arcade Cabinet
+        </a>
+      </div>
+    </div>
+
+    <div class="spotlight-card">
+      <div class="spotlight-top">
+        <div class="spotlight-heading">
+          <div class="model-badge-row">
+            <span class="model-tag">Verified Pass</span>
+            <span class="dir-path-badge">📁 opus-5.5/</span>
+          </div>
+          <h3>Claude Opus 5.5 Autonomous Run</h3>
+          <p>
+            The <code style="color: var(--amber);">opus-5.5/</code> directory contains all 4 benchmark games generated from the verbatim prompts below.
+            Opus 5.5 achieved a <strong>100% execution pass rate</strong>: compiling complex Web Audio OPL2 FM synths and Amiga Paula-style MOD tracker sequencing alongside 320&times;200 software framebuffers and multi-stage physics loops without human correction.
+          </p>
+          <div class="spotlight-summary-pills">
+            <span class="stat-pill"><strong>Games Playable:</strong> 4 / 4</span>
+            <span class="stat-pill"><strong>Assets Used:</strong> 0 KB External</span>
+            <span class="stat-pill"><strong>Audio Architecture:</strong> Web Audio OPL2 / MOD Tracker</span>
+            <span class="stat-pill"><strong>Human Intervention:</strong> Zero Edits</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 GAMES CARDS IN OPUS 5.5 -->
+      <div class="games-grid">
+
+        <!-- GAME 1: ARKANOID -->
+        <article class="game-card" id="card-arkanoid">
+          <div>
+            <div class="game-header">
+              <div class="game-icon-box icon-box-arkanoid">🧱</div>
+              <div class="game-title-area">
+                <div class="game-title-row">
+                  <h3 class="game-title">Arkanoid</h3>
+                  <span class="challenge-badge">LucasArts Tribute</span>
+                </div>
+                <div class="game-subtitle">The Secret of Brick Island</div>
+              </div>
+            </div>
+
+            <div class="game-body">
+              <p class="game-desc">
+                An expansive 33-level brick breaker across 7 classic adventure universes, powered by an authentic procedural OPL2/AdLib FM synthesizer with carrier-modulator synthesis.
+              </p>
+              <div class="specs-list">
+                <div class="spec-item"><span class="spec-label">Audio Synth</span> 7 world soundtracks (Monkey Island reggae, Tentacle march, Atlantis crypt, Loom 4-voice counterpoint)</div>
+                <div class="spec-item"><span class="spec-label">Mechanics</span> Insult sword fighting, Chron-o-John portals, Orichalcum fireballs, LeChuck multi-phase boss</div>
+                <div class="spec-item"><span class="spec-label">Rendering</span> 320&times;200 virtual viewport with 64-color EGA palette registers</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-footer-actions">
+            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/arkanoid/index.html', 'Arkanoid: The Secret of Brick Island (Opus 5.5)')">
+              ▶ Play in Hub
+            </button>
+            <a href="opus-5.5/arkanoid/index.html" target="_blank" class="btn btn-secondary btn-sm">
+              Launch Tab ↗
+            </a>
+            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/arkanoid/PROMPT.md', 'Arkanoid One-Shot Prompt')">
+              📜 Read Prompt
+            </button>
+          </div>
+        </article>
+
+        <!-- GAME 2: XENON 2 -->
+        <article class="game-card" id="card-xenon2">
+          <div>
+            <div class="game-header">
+              <div class="game-icon-box icon-box-xenon">🚀</div>
+              <div class="game-title-area">
+                <div class="game-title-row">
+                  <h3 class="game-title">Xenon 2</h3>
+                  <span class="challenge-badge">Amiga Demoscene</span>
+                </div>
+                <div class="game-subtitle">Megablast · Bitmap Brothers Tribute</div>
+              </div>
+            </div>
+
+            <div class="game-body">
+              <p class="game-desc">
+                A vertical shmup celebrating The Bitmap Brothers' chrome aesthetic and Bomb the Bass's soundtrack, featuring pure software rasterization and real-time audio filters.
+              </p>
+              <div class="specs-list">
+                <div class="spec-item"><span class="spec-label">Audio Synth</span> 8-channel Amiga MOD tracker sequencing Bomb the Bass with TB-303 acid resonant filter sweeps</div>
+                <div class="spec-item"><span class="spec-label">Crispin Shop</span> Modular ship upgrade system: cannons, wing-pods, and tailguns mount directly onto the sprite</div>
+                <div class="spec-item"><span class="spec-label">Rendering</span> Software pixel buffers, specular metallic gradients, and organic boss animations</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-footer-actions">
+            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/xenon2/index.html', 'Xenon 2: Megablast (Opus 5.5)')">
+              ▶ Play in Hub
+            </button>
+            <a href="opus-5.5/xenon2/index.html" target="_blank" class="btn btn-secondary btn-sm">
+              Launch Tab ↗
+            </a>
+            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/xenon2/PROMPT.md', 'Xenon 2 One-Shot Prompt')">
+              📜 Read Prompt
+            </button>
+          </div>
+        </article>
+
+        <!-- GAME 3: GHOSTS 'N GOBLINS -->
+        <article class="game-card" id="card-gng">
+          <div>
+            <div class="game-header">
+              <div class="game-icon-box icon-box-gng">⚔️</div>
+              <div class="game-title-area">
+                <div class="game-title-row">
+                  <h3 class="game-title">Ghosts 'n Goblins</h3>
+                  <span class="challenge-badge">Arcade Platformer</span>
+                </div>
+                <div class="game-subtitle">The Cursed PC Gaming Museum</div>
+              </div>
+            </div>
+
+            <div class="game-body">
+              <p class="game-desc">
+                Hardcore arcade action platformer following Sir Arthur through haunted graveyards with innovative tactical armor mechanics and monster possession mechanics.
+              </p>
+              <div class="specs-list">
+                <div class="spec-item"><span class="spec-label">Tactical Eject</span> Shatter armor into an anvil to enter Strawberry Boxer Shorts mode (+35% speed &amp; double jump)</div>
+                <div class="spec-item"><span class="spec-label">Possession</span> Leap your soul into non-boss enemies to fly as Gargoyle, spit acid as Zombie, or fling bones</div>
+                <div class="spec-item"><span class="spec-label">Arsenal</span> 5 swap weapons (Lances, Daggers, Torches, Axes, Crossbows) and Golden Armor screen-clears</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-footer-actions">
+            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/ghosts-n-goblins/index.html', 'Ghosts \'n Goblins: The Cursed PC Gaming Museum (Opus 5.5)')">
+              ▶ Play in Hub
+            </button>
+            <a href="opus-5.5/ghosts-n-goblins/index.html" target="_blank" class="btn btn-secondary btn-sm">
+              Launch Tab ↗
+            </a>
+            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/ghosts-n-goblins/PROMPT.md', 'Ghosts \'n Goblins One-Shot Prompt')">
+              📜 Read Prompt
+            </button>
+          </div>
+        </article>
+
+        <!-- GAME 4: LEMMINGS -->
+        <article class="game-card" id="card-lemmings">
+          <div>
+            <div class="game-header">
+              <div class="game-icon-box icon-box-lemmings">🎵</div>
+              <div class="game-title-area">
+                <div class="game-title-row">
+                  <h3 class="game-title">Lemmings</h3>
+                  <span class="challenge-badge">Sequencer Puzzle</span>
+                </div>
+                <div class="game-subtitle">Beat Tribe · Playing Is Composing</div>
+              </div>
+            </div>
+
+            <div class="game-body">
+              <p class="game-desc">
+                A Psygnosis puzzle tribute where every level is an interactive step sequencer: terrain is the score, lemmings are the playheads, and saving the tribe builds the track.
+              </p>
+              <div class="specs-list">
+                <div class="spec-item"><span class="spec-label">Quantization</span> Footsteps quantized to song clock; terrain plays scale degrees under walking lemmings</div>
+                <div class="spec-item"><span class="spec-label">Instruments</span> Diggers drum, Builders arpeggiate, Blockers drone, Bashers sweep bass, Bombers crash</div>
+                <div class="spec-item"><span class="spec-label">Stem System</span> 5 genre worlds (chiptune, acid, synthwave, jungle, orchestral) with results song replay</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-footer-actions">
+            <button class="btn btn-primary btn-sm" onclick="openGameModal('opus-5.5/lemmings/index.html', 'Lemmings: Beat Tribe (Opus 5.5)')">
+              ▶ Play in Hub
+            </button>
+            <a href="opus-5.5/lemmings/index.html" target="_blank" class="btn btn-secondary btn-sm">
+              Launch Tab ↗
+            </a>
+            <button class="btn btn-outline btn-sm" onclick="openPromptModal('opus-5.5/lemmings/PROMPT.md', 'Lemmings One-Shot Prompt')">
+              📜 Read Prompt
+            </button>
+          </div>
+        </article>
+
+      </div>
     </div>
   </section>
 
-  <!-- Games Showcase -->
-  <main class="games-grid">
+  <!-- MULTI-MODEL BENCHMARK MATRIX & ROADMAP -->
+  <section id="multi-model-roadmap">
+    <div class="section-header">
+      <div class="section-title-group">
+        <h2>Multi-Model Benchmark Matrix</h2>
+        <p>Evaluating frontier models under identical single-prompt zero-asset constraints against the Claude Opus 5.5 baseline.</p>
+      </div>
+    </div>
 
-    <!-- GAME 1: ARKANOID -->
-    <article class="game-card">
-      <div>
-        <div class="card-header">
-          <div class="game-icon icon-arkanoid">🧱</div>
-          <div class="card-title-group">
-            <span class="game-badge">33 Levels · 7 Worlds</span>
-            <h2 class="game-title">Arkanoid</h2>
-            <div class="game-subtitle">The Secret of Brick Island</div>
-          </div>
-        </div>
+    <div class="matrix-wrapper">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Model / Architecture</th>
+            <th>Provider</th>
+            <th>Benchmark Status</th>
+            <th>Playable Games</th>
+            <th>Audio Synthesis Engine</th>
+            <th>Target Directory</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="model-name-cell">
+                <span>Gemini 3.8 Flash</span>
+              </div>
+            </td>
+            <td><span class="model-provider">Google DeepMind</span></td>
+            <td><span class="status-badge status-planned">○ Queued</span></td>
+            <td>0 / 4 Scheduled</td>
+            <td>OPL2 FM &amp; Amiga MOD Tracker</td>
+            <td><code style="font-family: var(--font-mono); color: var(--text-muted);">gemini-3.8-flash/</code></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="model-name-cell">
+                <span>Gemini 4 Argon</span>
+              </div>
+            </td>
+            <td><span class="model-provider">Google DeepMind</span></td>
+            <td><span class="status-badge status-planned">○ Queued</span></td>
+            <td>0 / 4 Scheduled</td>
+            <td>OPL2 FM &amp; Amiga MOD Tracker</td>
+            <td><code style="font-family: var(--font-mono); color: var(--text-muted);">gemini-4-argon/</code></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="model-name-cell">
+                <span>Fable 5.1</span>
+              </div>
+            </td>
+            <td><span class="model-provider">Fable Studio</span></td>
+            <td><span class="status-badge status-planned">○ Queued</span></td>
+            <td>0 / 4 Scheduled</td>
+            <td>OPL2 FM &amp; Amiga MOD Tracker</td>
+            <td><code style="font-family: var(--font-mono); color: var(--text-muted);">fable-5.1/</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-        <p class="game-desc">
-          An epic LucasArts tribute spanning 33 handcrafted pixel-art mosaics across 7 classic adventure game universes, powered by an authentic OPL2/AdLib FM synthesizer.
+  <!-- BENCHMARK CONSTRAINTS & PROTOCOL -->
+  <section id="benchmark-protocol">
+    <div class="section-header">
+      <div class="section-title-group">
+        <h2>The 5 Golden Rules of the Benchmark</h2>
+        <p>Strict experimental controls designed to push AI models to the limits of autonomous synthesis.</p>
+      </div>
+    </div>
+
+    <div class="rules-grid">
+      <div class="rule-card">
+        <span class="rule-number">RULE 01</span>
+        <h3 class="rule-title">Pure One-Shot Prompt</h3>
+        <p class="rule-desc">
+          Zero human iteration or debugging. The model is given a single multi-page specification. Its very first output must run directly in a browser without edits.
         </p>
-
-        <ul class="feature-list">
-          <li><strong>Soundtrack:</strong> 7 full-length FM tracker arrangements (Monkey Island reggae, Tentacle chromatic march, Atlantis ambient, Loom 4-voice counterpoint, Sam &amp; Max swing-jazz, LeChuck metal).</li>
-          <li><strong>World Gimmicks:</strong> Insult sword fighting, past/future Chron-o-John portals, Orichalcum fireballs, Loom spell-weaving, and moving traffic lanes.</li>
-          <li><strong>Boss Fight:</strong> Multi-phase LeChuck boss hurling voodoo fire in a lava cavern.</li>
-          <li><strong>Power-Ups:</strong> Space-ranger lasers, Rubber chicken paddle, Compass catch, Hourglass slow, Gold Guy 1UP.</li>
-        </ul>
       </div>
 
-      <div class="button-group">
-        <a class="btn btn-play" href="arkanoid/index.html">▶ Play Arkanoid <kbd>[1]</kbd></a>
-        <a class="btn btn-prompt" href="arkanoid/PROMPT.md">📄 Read One-Shot Prompt</a>
-      </div>
-    </article>
-
-    <!-- GAME 2: XENON 2: MEGABLAST -->
-    <article class="game-card">
-      <div>
-        <div class="card-header">
-          <div class="game-icon icon-xenon2">🚀</div>
-          <div class="card-title-group">
-            <span class="game-badge">8-Ch MOD Tracker</span>
-            <h2 class="game-title">Xenon 2</h2>
-            <div class="game-subtitle">Megablast · Bitmap Brothers Tribute</div>
-          </div>
-        </div>
-
-        <p class="game-desc">
-          A blistering vertical shmup celebrating The Bitmap Brothers' chrome aesthetics and Bomb the Bass's legendary soundtrack, rendered in pure software pixel buffers.
+      <div class="rule-card">
+        <span class="rule-number">RULE 02</span>
+        <h3 class="rule-title">Zero External Assets</h3>
+        <p class="rule-desc">
+          No external spritesheets, images, audio samples, or fonts. 100% of graphics are drawn via canvas math and 100% of audio is synthesized via Web Audio nodes.
         </p>
-
-        <ul class="feature-list">
-          <li><strong>Music Engine:</strong> 8-channel Amiga MOD sequencer synthesizing Bomb the Bass's "Megablast (Hip Hop on Precinct 13)" with real-time TB-303 acid sweeps.</li>
-          <li><strong>Crispin's Shop:</strong> Intergalactic shop docking with real-time dub filter sweeps where bought cannons, wing-pods, and tailguns mount directly onto the player sprite.</li>
-          <li><strong>Visuals:</strong> Specular metallic gradients, multi-layer parallax scrolling, reverse-thrusters, and animated organic bosses.</li>
-        </ul>
       </div>
 
-      <div class="button-group">
-        <a class="btn btn-play" href="xenon2/index.html">▶ Play Xenon 2 <kbd>[2]</kbd></a>
-        <a class="btn btn-prompt" href="xenon2/PROMPT.md">📄 Read One-Shot Prompt</a>
-      </div>
-    </article>
-
-    <!-- GAME 3: GHOSTS 'N GOBLINS -->
-    <article class="game-card">
-      <div>
-        <div class="card-header">
-          <div class="game-icon icon-gng">⚔️</div>
-          <div class="card-title-group">
-            <span class="game-badge">Tactical Armor Eject</span>
-            <h2 class="game-title">Ghosts 'n Goblins</h2>
-            <div class="game-subtitle">The Cursed PC Gaming Museum</div>
-          </div>
-        </div>
-
-        <p class="game-desc">
-          Hardcore action platformer following Sir Arthur through haunted graveyards and demon towers with inventive armor mechanics and monster possession curses.
+      <div class="rule-card">
+        <span class="rule-number">RULE 03</span>
+        <h3 class="rule-title">Zero Dependencies</h3>
+        <p class="rule-desc">
+          Pure Vanilla JavaScript, HTML5 Canvas, and Web Audio API. Third-party game engines (Phaser, Three.js) or audio libraries (Tone.js, Howler) are strictly banned.
         </p>
-
-        <ul class="feature-list">
-          <li><strong>Tactical Eject:</strong> Voluntarily shatter armor into a crushing anvil to trigger Strawberry Boxer Shorts mode (+35% speed &amp; double jumps).</li>
-          <li><strong>Possession Curse:</strong> Leap your soul into non-boss enemies to fly as a Gargoyle, spit acid as a Zombie, or fling bones as a Skeleton.</li>
-          <li><strong>Arsenal:</strong> 5 swap-on-pickup weapons (Lances, Daggers, Torches, Axes, Crossbows) plus Golden Armor charged screen-clearing magic.</li>
-        </ul>
       </div>
 
-      <div class="button-group">
-        <a class="btn btn-play" href="ghosts-n-goblins/index.html">▶ Play Ghosts 'n Goblins <kbd>[3]</kbd></a>
-        <a class="btn btn-prompt" href="ghosts-n-goblins/PROMPT.md">📄 Read One-Shot Prompt</a>
-      </div>
-    </article>
-
-    <!-- GAME 4: LEMMINGS: BEAT TRIBE -->
-    <article class="game-card">
-      <div>
-        <div class="card-header">
-          <div class="game-icon icon-lemmings">🎵</div>
-          <div class="card-title-group">
-            <span class="game-badge">16 Levels · 5 Genre Worlds</span>
-            <h2 class="game-title">Lemmings</h2>
-            <div class="game-subtitle">Beat Tribe · Playing Is Composing</div>
-          </div>
-        </div>
-
-        <p class="game-desc">
-          A Psygnosis puzzle tribute where every level is a living music sequencer: the terrain is the score, the lemmings are the playheads, and saving the tribe completes the song.
+      <div class="rule-card">
+        <span class="rule-number">RULE 04</span>
+        <h3 class="rule-title">Demoscene Authenticity</h3>
+        <p class="rule-desc">
+          Strict adherence to classic PC / Amiga hardware constraints: 320&times;200 software framebuffers, EGA/VGA palettes, and authentic OPL2 FM / Amiga MOD tracker engines.
         </p>
-
-        <ul class="feature-list">
-          <li><strong>Note Terrain:</strong> Colour-coded ground plays scale degrees as lemmings walk over it, every footstep quantized to the song clock so a crowd of 50 grooves instead of clattering.</li>
-          <li><strong>Skills Are Instruments:</strong> Diggers drum, Builders arpeggiate, Blockers drone, Bashers sweep the bass, and Bombers crash with a pitch-dropping "Oh no!".</li>
-          <li><strong>Stem Unlocks:</strong> Every 20% saved adds drums, bass, chords, lead, then the full mix, and the results screen replays the song you composed.</li>
-          <li><strong>Worlds:</strong> Amiga chiptune, acid warehouse, synthwave, jungle breakbeat, and an orchestral finale, plus a creeping Silence that eats sound.</li>
-        </ul>
       </div>
 
-      <div class="button-group">
-        <a class="btn btn-play" href="lemmings/index.html">▶ Play Lemmings <kbd>[4]</kbd></a>
-        <a class="btn btn-prompt" href="lemmings/PROMPT.md">📄 Read One-Shot Prompt</a>
+      <div class="rule-card">
+        <span class="rule-number">RULE 05</span>
+        <h3 class="rule-title">Full Game Depth</h3>
+        <p class="rule-desc">
+          Not trivial tech demos. Each game must feature multi-level progression, unique audio arrangements per world, full boss fights, power-up systems, and win/loss states.
+        </p>
       </div>
-    </article>
+    </div>
+  </section>
 
-  </main>
+  <!-- HOW TO RE-RUN THE EXPERIMENT -->
+  <section id="how-to-re-run">
+    <div class="section-header">
+      <div class="section-title-group">
+        <h2>How to Re-Run the Experiment with a New Model</h2>
+        <p>Instructions for testing an AI model against the 4 Slopanoid challenges.</p>
+      </div>
+    </div>
 
+    <div class="instructions-box">
+      <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #cbd5e1;">
+        <li>
+          <strong>Create the target model directory:</strong> e.g., <code style="color: var(--amber); font-family: var(--font-mono);">mkdir gemini-3.8-flash</code>, <code style="color: var(--amber); font-family: var(--font-mono);">mkdir gemini-4-argon</code>, or <code style="color: var(--amber); font-family: var(--font-mono);">mkdir fable-5.1</code>.
+        </li>
+        <li>
+          <strong>Select a challenge prompt:</strong> Copy one of the 4 verbatim prompts:
+          <ul style="margin-top: 6px; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-family: var(--font-mono); font-size: 12px; color: var(--cyan-light);">
+            <li>opus-5.5/arkanoid/PROMPT.md</li>
+            <li>opus-5.5/xenon2/PROMPT.md</li>
+            <li>opus-5.5/ghosts-n-goblins/PROMPT.md</li>
+            <li>opus-5.5/lemmings/PROMPT.md</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Submit as a single prompt in a clean context:</strong> Do not add follow-up nudges or bug fix instructions.
+        </li>
+        <li>
+          <strong>Save output directly:</strong> Write the generated single file or folder into <code style="color: var(--amber); font-family: var(--font-mono);">&lt;model-name&gt;/&lt;game&gt;/index.html</code>.
+        </li>
+        <li>
+          <strong>Evaluate against the 5 Golden Rules:</strong> Verify that audio plays without external assets, controls respond cleanly, and canvas scales crisply.
+        </li>
+      </ol>
+
+      <div class="code-block">
+<span class="comment"># Example workflow to test a new model:</span>
+<span class="keyword">mkdir</span> -p gemini-3.8-flash/arkanoid
+<span class="comment"># Feed opus-5.5/arkanoid/PROMPT.md to your model in a single one-shot turn</span>
+<span class="comment"># Save model response to:</span>
+gemini-3.8-flash/arkanoid/index.html
+<span class="comment"># Verify locally:</span>
+open gemini-3.8-flash/arkanoid/index.html
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
   <footer>
-    <p>Hotkeys: Press <kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>, or <kbd>4</kbd> to launch a game directly &middot; Press <kbd>P</kbd> to open prompt list</p>
-    <p style="margin-top: 6px;">All code and assets created self-contained in modern browsers. Check out the <a href="README.md">README</a> or view the source repository.</p>
+    <div>
+      <strong>Slopanoid Benchmark</strong> · Open-source autonomous game generation research.
+    </div>
+    <div style="display: flex; gap: 16px;">
+      <a href="opus-5.5/index.html">Opus 5.5 Arcade</a>
+      <a href="README.md">README</a>
+      <a href="LICENSE">License (MIT)</a>
+    </div>
   </footer>
+
+</div>
+
+<!-- INTERACTIVE MODAL FOR GAME PLAYER & PROMPT VIEWER -->
+<div class="modal-backdrop" id="interactive-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <span id="modal-icon">🎮</span>
+        <h3 class="modal-title" id="modal-title">Interactive Viewer</h3>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a id="modal-external-link" href="#" target="_blank" class="btn btn-outline btn-sm" style="display: none;">
+          Open in New Tab ↗
+        </a>
+        <button class="modal-close-btn" onclick="closeModal()" title="Close (Esc)">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Content populated dynamically -->
+    </div>
+  </div>
 </div>
 
 <script>
-  // Simple retro sound effects on interaction
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  let sndCtx = null;
-  function beep(freq, type, dur, vol) {
-    try {
-      if (!sndCtx) sndCtx = new AudioCtx();
-      if (sndCtx.state === 'suspended') sndCtx.resume();
-      const osc = sndCtx.createOscillator();
-      const gain = sndCtx.createGain();
-      osc.type = type || 'square';
-      osc.frequency.setValueAtTime(freq, sndCtx.currentTime);
-      gain.gain.setValueAtTime(vol || 0.05, sndCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, sndCtx.currentTime + (dur || 0.08));
-      osc.connect(gain);
-      gain.connect(sndCtx.destination);
-      osc.start();
-      osc.stop(sndCtx.currentTime + (dur || 0.08));
-    } catch(e) {}
+  // Interactive modal logic
+  const modal = document.getElementById('interactive-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalIcon = document.getElementById('modal-icon');
+  const modalBody = document.getElementById('modal-body');
+  const modalExternalLink = document.getElementById('modal-external-link');
+
+  function openGameModal(url, title) {
+    modalTitle.textContent = title;
+    modalIcon.textContent = '🕹️';
+    modalExternalLink.href = url;
+    modalExternalLink.style.display = 'inline-flex';
+    modalBody.innerHTML = `<iframe src="${url}" allow="autoplay" title="${title}"></iframe>`;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
   }
 
-  document.querySelectorAll('a').forEach(link => {
-    link.addEventListener('mouseenter', () => beep(660, 'triangle', 0.04, 0.02));
-    link.addEventListener('click', () => beep(880, 'square', 0.1, 0.04));
-  });
+  function openPromptModal(url, title) {
+    modalTitle.textContent = title;
+    modalIcon.textContent = '📜';
+    modalExternalLink.href = url;
+    modalExternalLink.style.display = 'inline-flex';
+    modalExternalLink.textContent = 'View Raw File ↗';
+    modalBody.innerHTML = `<div class="modal-prompt-content" id="prompt-text">Loading prompt specifications...</div>`;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 
-  // Keyboard navigation
+    // Attempt to fetch prompt text; fallback gracefully if running file:// protocol
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('File fetch failed');
+        return response.text();
+      })
+      .then(text => {
+        const promptEl = document.getElementById('prompt-text');
+        if (promptEl) promptEl.textContent = text;
+      })
+      .catch(err => {
+        const promptEl = document.getElementById('prompt-text');
+        if (promptEl) {
+          promptEl.innerHTML = `<strong>Note:</strong> Browsers restrict direct fetch() on the <code>file://</code> protocol.<br><br>` +
+            `Click <strong><a href="${url}" target="_blank" style="color: var(--amber);">Open in New Tab ↗</a></strong> to view the full markdown specification directly, ` +
+            `or run a local HTTP server with <code>python3 -m http.server</code>.`;
+        }
+      });
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    modalBody.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
   window.addEventListener('keydown', (e) => {
-    if (e.key === '1') { beep(523, 'square', 0.1); window.location.href = 'arkanoid/index.html'; }
-    if (e.key === '2') { beep(659, 'square', 0.1); window.location.href = 'xenon2/index.html'; }
-    if (e.key === '3') { beep(784, 'square', 0.1); window.location.href = 'ghosts-n-goblins/index.html'; }
-    if (e.key === '4') { beep(1047, 'square', 0.1); window.location.href = 'lemmings/index.html'; }
-    if (e.key === 'p' || e.key === 'P') {
-      beep(440, 'triangle', 0.08);
-      document.querySelector('.manifesto-box').scrollIntoView({ behavior: 'smooth' });
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
     }
   });
 
-  // Animated starfield background
-  const canvas = document.getElementById('bg-canvas');
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  // Background subtle canvas grid particles
+  const canvas = document.getElementById('canvas-grid');
   const ctx = canvas.getContext('2d');
-  let stars = [];
-  function resize() {
+  let dots = [];
+
+  function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    stars = Array.from({ length: 80 }, () => ({
+    dots = Array.from({ length: 45 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() < 0.2 ? 2 : 1,
-      speed: 0.2 + Math.random() * 0.5,
-      color: ['#ff0055', '#00e5ff', '#ffcc00', '#ffffff', '#a855f7'][Math.floor(Math.random() * 5)]
+      radius: Math.random() * 1.5 + 0.5,
+      vy: Math.random() * 0.3 + 0.1,
+      opacity: Math.random() * 0.5 + 0.2
     }));
   }
-  window.addEventListener('resize', resize);
-  resize();
 
-  function loop() {
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function animateCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const s of stars) {
-      s.y += s.speed;
-      if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
-      ctx.fillStyle = s.color;
-      ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
+    for (const d of dots) {
+      d.y += d.vy;
+      if (d.y > canvas.height) {
+        d.y = 0;
+        d.x = Math.random() * canvas.width;
+      }
+      ctx.fillStyle = `rgba(148, 163, 184, ${d.opacity})`;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
+      ctx.fill();
     }
-    requestAnimationFrame(loop);
+    requestAnimationFrame(animateCanvas);
   }
-  requestAnimationFrame(loop);
+  requestAnimationFrame(animateCanvas);
 </script>
+
 </body>
 </html>
