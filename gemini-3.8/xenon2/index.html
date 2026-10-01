@@ -1,139 +1,5718 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xenon 2: Megablast · Gemini 3.8 Flash Run (Scaffolding)</title>
-<style>
-  :root {
-    --bg: #07090e;
-    --card: #111726;
-    --border: #1f2a3e;
-    --amber: #f59e0b;
-    --cyan: #38bdf8;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
+  <meta charset="utf-8">
+  <title>Xenon II: Megablast &middot; Evolution &amp; Tracker Odyssey</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+:root {
+  --bg-deep: #05070a;
+  --cab-metal: #12161f;
+  --cab-border: #2a374a;
+  --cab-rivet: #5a738e;
+  --chrome-light: #e8f4fc;
+  --chrome-mid: #8cb2d6;
+  --chrome-dark: #3b536e;
+  --gold-light: #fff4cc;
+  --gold-mid: #f5c542;
+  --gold-dark: #8c6014;
+  --neon-cyan: #38bdf8;
+  --neon-amber: #f59e0b;
+  --neon-magenta: #ec4899;
+  --neon-green: #22c55e;
+  --alert-red: #ef4444;
+  --font-pixel: ui-monospace, SFMono-Regular, "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  background-color: var(--bg-deep);
+  background-image: 
+    radial-gradient(circle at 50% 20%, #172336 0%, #05070a 100%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.3) 0px, rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px);
+  color: var(--chrome-light);
+  font-family: var(--font-pixel);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  overflow-x: hidden;
+}
+
+/* ARCADE CABINET HOUSING */
+#cabinet-container {
+  width: 100%;
+  max-width: 960px;
+  background: linear-gradient(180deg, #1e2633 0%, #0f141c 40%, #090c12 100%);
+  border: 4px solid var(--cab-border);
+  border-radius: 16px;
+  box-shadow: 
+    0 0 50px rgba(0, 0, 0, 0.9),
+    0 0 25px rgba(56, 189, 248, 0.15),
+    inset 0 0 15px rgba(255, 255, 255, 0.08);
+  position: relative;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* CORNER CHROME RIVETS */
+.rivet {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #7d96b0 50%, #2a374a 100%);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.8), inset 0 0 1px #fff;
+}
+.rivet-tl { top: 6px; left: 6px; }
+.rivet-tr { top: 6px; right: 6px; }
+.rivet-bl { bottom: 6px; left: 6px; }
+.rivet-br { bottom: 6px; right: 6px; }
+
+/* CABINET MARQUEE */
+#cabinet-marquee {
+  background: linear-gradient(90deg, #0f1929 0%, #1e3a5f 25%, #2a4365 50%, #1e3a5f 75%, #0f1929 100%);
+  border: 2px solid #3b536e;
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.25), 0 4px 10px rgba(0,0,0,0.5);
+}
+.marquee-title {
+  display: flex;
+  flex-direction: column;
+}
+.marquee-title h1 {
+  font-size: 19px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #ffffff 0%, #a5c7eb 45%, #ffffff 50%, #46678c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+  font-weight: 900;
+}
+.marquee-title .sub {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--neon-amber);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.marquee-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.badge-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--cab-border);
+  color: var(--chrome-mid);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* TOP HUD CABINET PANEL */
+#cabinet-hud {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.1fr;
+  gap: 12px;
+  background: rgba(10, 15, 23, 0.85);
+  border: 1px solid var(--cab-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  align-items: center;
+}
+
+.hud-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.meter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.meter-label {
+  font-size: 10px;
+  font-weight: 700;
+  width: 58px;
+  color: var(--chrome-mid);
+  letter-spacing: 0.5px;
+}
+.bar-track {
+  flex: 1;
+  height: 10px;
+  background: #080d14;
+  border: 1px solid #202d3d;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  width: 100%;
+  transition: width 0.1s ease, background 0.2s ease;
+}
+#shield-bar {
+  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 70%, #bae6fd 100%);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+#heat-bar {
+  background: linear-gradient(90deg, #38bdf8 0%, #f59e0b 60%, #ef4444 100%);
+}
+#chrono-bar {
+  background: linear-gradient(90deg, #9333ea 0%, #c084fc 70%, #f3e8ff 100%);
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
+}
+.meter-val {
+  font-size: 10px;
+  font-weight: 700;
+  width: 44px;
+  text-align: right;
+  color: #fff;
+}
+.overheat-lockout-text {
+  font-size: 9px;
+  color: var(--alert-red);
+  font-weight: 900;
+  letter-spacing: 1px;
+  animation: blink 0.3s infinite alternate;
+  display: none;
+}
+@keyframes blink {
+  0% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
+
+.hud-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.score-box {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+}
+.score-box span {
+  color: var(--chrome-mid);
+}
+.score-box b {
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.epoch-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--gold-mid);
+  text-transform: uppercase;
+  background: rgba(245, 197, 66, 0.12);
+  border: 1px solid rgba(245, 197, 66, 0.4);
+  padding: 3px 10px;
+  border-radius: 4px;
+  text-shadow: 0 0 6px rgba(245, 197, 66, 0.4);
+}
+.credits-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #facc15;
+}
+.coin-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff5a6 0%, #facc15 60%, #854d0e 100%);
+  box-shadow: 0 0 6px rgba(250, 204, 21, 0.8);
+}
+.nashwan-active-banner {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #fff;
+  background: linear-gradient(90deg, #ef4444, #f59e0b, #3b82f6, #ec4899);
+  padding: 2px 6px;
+  border-radius: 3px;
+  animation: rainbow 1s linear infinite;
+  display: none;
+}
+@keyframes rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.hud-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+#mini-scope-canvas {
+  width: 130px;
+  height: 28px;
+  background: #06090e;
+  border: 1px solid #1e2c3d;
+  border-radius: 3px;
+}
+.btn-row {
+  display: flex;
+  gap: 5px;
+}
+.hud-btn {
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 7px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2a384c 0%, #151e2b 100%);
+  color: var(--chrome-light);
+  border: 1px solid #3b506b;
+  cursor: pointer;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.8);
+  transition: all 0.15s ease;
+}
+.hud-btn:hover {
+  background: linear-gradient(180deg, #384c66 0%, #1e2c3e 100%);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+.hud-btn:active {
+  transform: translateY(1px);
+}
+.hud-btn.active {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #7dd3fc;
+  color: #fff;
+}
+
+/* CRT SCREEN HOUSING */
+#screen-bezel {
+  position: relative;
+  background: #020305;
+  border: 8px solid #0f1622;
+  border-radius: 12px;
+  box-shadow: 
+    inset 0 0 25px rgba(0, 0, 0, 0.95),
+    inset 0 0 8px rgba(56, 189, 248, 0.1),
+    0 4px 15px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* SCREEN CANVAS (320x200 scaled up) */
+#game-canvas {
+  width: 100%;
+  aspect-ratio: 320 / 200;
+  max-height: 580px;
+  display: block;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+  cursor: crosshair;
+}
+
+/* CRT SCANLINE & GLARE OVERLAY */
+#crt-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
+              radial-gradient(ellipse at center, rgba(0,0,0,0) 65%, rgba(0,0,0,0.6) 100%);
+  background-size: 100% 3px, 100% 100%;
+  z-index: 5;
+  transition: opacity 0.2s;
+}
+#crt-overlay.disabled {
+  opacity: 0;
+}
+.screen-glare {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 35%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* CONTROLS FOOTER */
+#cabinet-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: var(--chrome-mid);
+  padding: 4px 6px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.key-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.kbd-key {
+  background: #182230;
+  border: 1px solid #30445d;
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+  box-shadow: 0 1px 0 #000;
+}
+
+/* MODAL SYSTEM (CRISPIN SHOP & PROTRACKER) */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 7, 12, 0.94);
+  backdrop-filter: blur(3px);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  overflow-y: auto;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--cab-border);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+.modal-title {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+.modal-close-btn {
+  background: #2a1515;
+  border: 1px solid #7f1d1d;
+  color: #fca5a5;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal-close-btn:hover {
+  background: #451a1a;
+  color: #fff;
+}
+
+/* CRISPIN'S SHOP MODAL LAYOUT */
+#crispin-grid {
+  display: grid;
+  grid-template-columns: 230px 240px 1fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* LEFT: CRISPIN'S TALKING PORTRAIT */
+.crispin-col-face {
+  background: #0c121c;
+  border: 1px solid var(--cab-border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+#crispin-canvas {
+  width: 140px;
+  height: 140px;
+  image-rendering: pixelated;
+  background: #05080f;
+  border: 2px solid #223247;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
+}
+.crispin-name {
+  font-size: 12px;
+  font-weight: 900;
+  color: #4ade80;
+  letter-spacing: 1px;
+}
+.speech-bubble {
+  background: #141f2e;
+  border: 1px solid #2a3c54;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #cbd5e1;
+  position: relative;
+  min-height: 60px;
+  width: 100%;
+}
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #2a3c54;
+}
+.shop-balance-tag {
+  width: 100%;
+  background: #1a2517;
+  border: 1px solid #2e5926;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #86efac;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* CENTER: SHIP PAPER-DOLL BLUEPRINT */
+.crispin-col-paperdoll {
+  background: #090e17;
+  border: 1px solid var(--cab-border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.paperdoll-header {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+.paperdoll-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.paperdoll-slot-item {
+  background: #101826;
+  border: 1px solid #1f2c3d;
+  border-radius: 5px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.slot-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.slot-name {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--chrome-mid);
+}
+.slot-equipped-val {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+.slot-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.tradein-btn {
+  background: #231d10;
+  border: 1px solid #785210;
+  color: var(--gold-mid);
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.tradein-btn:hover {
+  background: #3d2d14;
+  color: #fff;
+}
+
+/* RIGHT: UPGRADES CATALOG */
+.crispin-col-catalog {
+  background: #090e17;
+  border: 1px solid var(--cab-border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+.catalog-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--cab-border);
+  padding-bottom: 6px;
+}
+.catalog-tab-btn {
+  background: #151f2e;
+  border: 1px solid #233247;
+  color: var(--chrome-mid);
+  padding: 4px 9px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.catalog-tab-btn.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #fff;
+}
+.catalog-scroll {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 380px;
+  padding-right: 4px;
+}
+.catalog-item-card {
+  background: #0e1522;
+  border: 1px solid #1c2738;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: border-color 0.15s ease;
+}
+.catalog-item-card:hover {
+  border-color: var(--neon-cyan);
+}
+.item-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.item-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fff;
+}
+.item-slot-badge {
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: #1e293b;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.item-synergy-badge {
+  font-size: 8px;
+  font-weight: 800;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  padding: 2px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+.item-desc {
+  font-size: 9px;
+  color: #94a3b8;
+  line-height: 1.3;
+  flex: 1;
+}
+.item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+.item-price {
+  font-size: 11px;
+  font-weight: 900;
+  color: #facc15;
+}
+.buy-btn {
+  background: linear-gradient(180deg, #15803d 0%, #166534 100%);
+  border: 1px solid #22c55e;
+  color: #fff;
+  font-family: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.buy-btn:hover:not(:disabled) {
+  background: #16a34a;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+.buy-btn:disabled {
+  background: #1e293b;
+  border-color: #334155;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* PROTRACKER JUKEBOX MODAL */
+#tracker-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0f1624;
+  border: 1px solid var(--cab-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tracker-pat-btns {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.pat-btn {
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: #182333;
+  border: 1px solid #2c3f59;
+  color: var(--chrome-light);
+  cursor: pointer;
+}
+.pat-btn.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #fff;
+}
+.tracker-bpm-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.tracker-bpm-ctrl input[type="range"] {
+  width: 90px;
+}
+#tracker-scope-canvas {
+  width: 100%;
+  height: 60px;
+  background: #04070c;
+  border: 1px solid var(--cab-border);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+/* PROTRACKER PATTERN VIEWER TABLE */
+#tracker-pattern-container {
+  flex: 1;
+  background: #06090e;
+  border: 1px solid var(--cab-border);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.tracker-ch-headers {
+  display: grid;
+  grid-template-columns: 44px repeat(8, 1fr);
+  background: #111a26;
+  border-bottom: 2px solid #25364b;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--chrome-mid);
+  text-align: center;
+  padding: 4px 0;
+}
+.tracker-ch-header-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 2px;
+}
+.mute-solo-row {
+  display: flex;
+  gap: 2px;
+}
+.ms-btn {
+  font-family: inherit;
+  font-size: 7.5px;
+  font-weight: 800;
+  padding: 1px 3px;
+  border-radius: 2px;
+  border: 1px solid #30435c;
+  background: #1b2636;
+  color: #94a3b8;
+  cursor: pointer;
+}
+.ms-btn.muted {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border-color: #ef4444;
+}
+.ms-btn.soloed {
+  background: #ca8a04;
+  color: #fef08a;
+  border-color: #eab308;
+}
+
+#tracker-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+.tracker-row {
+  display: grid;
+  grid-template-columns: 44px repeat(8, 1fr);
+  text-align: center;
+  border-bottom: 1px solid #0f1622;
+  color: #64748b;
+}
+.tracker-row.beat-row {
+  background: rgba(255, 255, 255, 0.02);
+  color: #94a3b8;
+}
+.tracker-row.active-row {
+  background: #1a3048;
+  color: #38bdf8;
+  font-weight: 800;
+  border-top: 1px solid #38bdf8;
+  border-bottom: 1px solid #38bdf8;
+  text-shadow: 0 0 6px rgba(56, 189, 248, 0.8);
+}
+.row-num {
+  color: var(--neon-amber);
+  font-weight: 700;
+  border-right: 1px solid #1a2535;
+}
+
+/* TITLE & OVERLAY SCREENS */
+.overlay-card {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 7, 12, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 15;
+  text-align: center;
+  gap: 14px;
+}
+.overlay-card.hidden {
+  display: none;
+}
+.game-title-logo {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #ffffff 0%, #7db4e6 50%, #1e3a5f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.7));
+}
+.game-sub-logo {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--neon-amber);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.story-brief {
+  max-width: 480px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+.start-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  color: #05070a;
+  border: 1px solid #fde68a;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+  transition: transform 0.1s ease;
+}
+.start-btn:hover {
+  transform: scale(1.04);
+}
+.start-btn:active {
+  transform: scale(0.98);
+}
+.stage-warp-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 10.5px;
+  color: var(--chrome-mid);
+}
+.warp-btn {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #182230;
+  border: 1px solid #2e435d;
+  color: #fff;
+  cursor: pointer;
+}
+.warp-btn:hover {
+  background: #25364c;
+  border-color: var(--neon-cyan);
+}
+
+@media (max-width: 768px) {
+  #crispin-grid {
+    grid-template-columns: 1fr;
+    max-height: 80vh;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
-  }
-  .scaffold-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    max-width: 680px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .scaffold-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan));
-  }
-  .badge-row {
-    display: flex;
+  #cabinet-hud {
+    grid-template-columns: 1fr;
     gap: 8px;
-    margin-bottom: 12px;
   }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  h1 {
-    font-size: 24px;
-    margin-bottom: 4px;
-    color: #fff;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--cyan);
-    margin-bottom: 20px;
-  }
-  .info-box {
-    background: #090d16;
-    border: 1px solid #1a2436;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    color: #cbd5e1;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .btn {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid transparent;
-  }
-  .btn-primary {
-    background: var(--amber);
-    color: #090d16;
-  }
-  .btn-secondary {
-    background: #1e293b;
-    color: #fff;
-    border-color: #334155;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
-</style>
+}
+
+  </style>
 </head>
 <body>
-<div class="scaffold-card">
-  <div class="badge-row">
-    <span class="badge">Gemini 3.8 Flash Run</span>
-    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
-  </div>
-  <h1>Xenon 2: Megablast</h1>
-  <div class="subtitle">Benchmark Challenge 2 · Bitmap Brothers &amp; Amiga MOD Tracker Tribute</div>
 
-  <div class="info-box">
-    <p><strong>Status:</strong> Ready for Gemini 3.8 Flash one-shot generation.</p>
-    <p style="margin-top: 8px;">
-      Feed <code>gemini-3.8/xenon2/PROMPT.md</code> in a clean zero-shot context window to Gemini 3.8 Flash. Once generated, save the output files here to play and evaluate.
-    </p>
+<div id="cabinet-container">
+  <!-- Corner Rivets -->
+  <div class="rivet rivet-tl"></div>
+  <div class="rivet rivet-tr"></div>
+  <div class="rivet rivet-bl"></div>
+  <div class="rivet rivet-br"></div>
+
+  <!-- Cabinet Marquee -->
+  <div id="cabinet-marquee">
+    <div class="marquee-title">
+      <h1>Xenon II &middot; Megablast</h1>
+      <span class="sub">Evolution &amp; 8-Channel Tracker Odyssey</span>
+    </div>
+    <div class="marquee-badges">
+      <span class="badge-tag">Amiga 500 / OCS</span>
+      <span class="badge-tag">320&times;200 Framebuffer</span>
+      <span class="badge-tag">Bomb The Bass Synth</span>
+    </div>
   </div>
 
-  <div class="actions">
-    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
-    <a href="../../opus-5.5/xenon2/index.html" class="btn btn-secondary">🕹️ Compare with Opus 5.5 Run</a>
-    <a href="../index.html" class="btn btn-outline">&larr; Gemini 3.8 Hub</a>
+  <!-- Cabinet Top HUD Panel -->
+  <div id="cabinet-hud">
+    <div class="hud-left">
+      <div class="meter-row">
+        <span class="meter-label">SHIELD</span>
+        <div class="bar-track">
+          <div id="shield-bar" class="bar-fill" style="width: 100%;"></div>
+        </div>
+        <span id="shield-val" class="meter-val">100%</span>
+      </div>
+      <div class="meter-row">
+        <span class="meter-label">HEAT</span>
+        <div class="bar-track">
+          <div id="heat-bar" class="bar-fill" style="width: 0%;"></div>
+        </div>
+        <span id="heat-val" class="meter-val">0%</span>
+      </div>
+      <div class="overheat-lockout-text" id="overheat-warning">OVERHEAT LOCKOUT!</div>
+      <div class="meter-row">
+        <span class="meter-label">CHRONO</span>
+        <div class="bar-track">
+          <div id="chrono-bar" class="bar-fill" style="width: 100%;"></div>
+        </div>
+        <span id="chrono-val" class="meter-val">3.0s</span>
+      </div>
+    </div>
+
+    <div class="hud-center">
+      <div class="score-box">
+        <span>SCORE: <b id="score-val">000000</b></span>
+        <span>HI: <b id="hiscore-val">050000</b></span>
+      </div>
+      <div id="epoch-badge" class="epoch-badge">EPOCH 1: CAMBRIAN REEF</div>
+      <div class="credits-box">
+        <span class="coin-icon"></span>
+        <span id="credits-val">000250</span> CREDITS
+      </div>
+      <div id="nashwan-banner" class="nashwan-active-banner">&star; SUPER NASHWAN OVERDRIVE ACTIVE &star;</div>
+    </div>
+
+    <div class="hud-right">
+      <canvas id="mini-scope-canvas" width="130" height="28"></canvas>
+      <div class="btn-row">
+        <button id="btn-dock-shop" class="hud-btn" title="Crispin's Shop [B]">&darr; SHOP [B]</button>
+        <button id="btn-open-tracker" class="hud-btn" title="ProTracker Jukebox [T]">&#9835; TRACKER [T]</button>
+        <button id="btn-toggle-crt" class="hud-btn active" title="Toggle Scanlines [C]">CRT [C]</button>
+        <button id="btn-toggle-audio" class="hud-btn" title="Toggle Sound [M]">&#128266; SFX</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRT Screen Housing -->
+  <div id="screen-bezel">
+    <canvas id="game-canvas" width="320" height="200"></canvas>
+    <div id="crt-overlay"></div>
+    <div class="screen-glare"></div>
+
+    <!-- Title Screen Overlay -->
+    <div id="title-overlay" class="overlay-card">
+      <div class="game-title-logo">XENON II: MEGABLAST</div>
+      <div class="game-sub-logo">The Bitmap Brothers Tribute</div>
+      <div class="story-brief">
+        The Xenites have planted temporal bombs across 5 evolutionary epochs. Pilot The Megablaster through prehistoric reefs, abyssal trenches, clockwork foundries, and demoscene silicon. Reverse scroll thrust to escape dead ends. Bolter modular weapons at Crispin's and unleash Bomb the Bass!
+      </div>
+      <button id="btn-start-game" class="start-btn">&#9658; ENGAGE MEGABLASTER</button>
+      <div class="stage-warp-row">
+        <span>WARP EPOCH:</span>
+        <button class="warp-btn" data-stage="1">1: CAMBRIAN</button>
+        <button class="warp-btn" data-stage="2">2: ABYSSAL</button>
+        <button class="warp-btn" data-stage="3">3: BABBAGE</button>
+        <button class="warp-btn" data-stage="4">4: SILICON</button>
+        <button class="warp-btn" data-stage="5">5: XENITE</button>
+      </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="game-over-overlay" class="overlay-card hidden">
+      <div class="game-title-logo" style="color: #ef4444; filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.7));">MEGABLASTER DESTROYED</div>
+      <div class="story-brief" id="game-over-stats">
+        The timeline collapsed under Xenite bombardment.
+      </div>
+      <button id="btn-restart-game" class="start-btn">&#8635; REWIND TIMELINE</button>
+    </div>
+
+    <!-- Victory Overlay -->
+    <div id="victory-overlay" class="overlay-card hidden">
+      <div class="game-title-logo" style="color: #facc15; filter: drop-shadow(0 0 16px rgba(250, 204, 21, 0.7));">&star; TIMELINE SECURED &star;</div>
+      <div class="story-brief" id="victory-stats">
+        The Sovereign Xenite Mother-Brain has been vaporized! Evolutionary history is saved!
+      </div>
+      <button id="btn-victory-restart" class="start-btn">&#9658; PLAY AGAIN</button>
+    </div>
+
+    <!-- Crispin's Shop Modal -->
+    <div id="crispin-modal" class="modal-overlay">
+      <div class="modal-header">
+        <div class="modal-title">&#128125; CRISPIN'S INTERGALACTIC UPGRADE EMPORIUM</div>
+        <button id="btn-close-shop" class="modal-close-btn">&times; CLOSE [B]</button>
+      </div>
+      <div id="crispin-grid">
+        <!-- Left: Crispin Portrait & Speech -->
+        <div class="crispin-col-face">
+          <canvas id="crispin-canvas" width="80" height="80"></canvas>
+          <div class="crispin-name">CRISPIN THE PAWNBROKER</div>
+          <div class="speech-bubble" id="crispin-dialogue">
+            "Welcome to Crispin's, ace! Got credits? I got firepower. Pick a hardpoint or trade your junk!"
+          </div>
+          <div class="shop-balance-tag">
+            <span>CREDITS AVAILABLE:</span>
+            <span id="shop-credits-display">$000250</span>
+          </div>
+        </div>
+
+        <!-- Center: Ship Paper-Doll Blueprint -->
+        <div class="crispin-col-paperdoll">
+          <div class="paperdoll-header">&bull; HARDOINT PAPER-DOLL (6 SLOTS) &bull;</div>
+          <div class="paperdoll-slots-list" id="paperdoll-slots-container">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Right: Shop Catalog -->
+        <div class="crispin-col-catalog">
+          <div class="catalog-tabs">
+            <button class="catalog-tab-btn active" data-cat="all">ALL ITEMS</button>
+            <button class="catalog-tab-btn" data-cat="weapons">WEAPONS</button>
+            <button class="catalog-tab-btn" data-cat="defense">DEFENSE / SHIP</button>
+            <button class="catalog-tab-btn" data-cat="consumables">CONSUMABLES</button>
+          </div>
+          <div class="catalog-scroll" id="catalog-items-container">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ProTracker Jukebox Modal -->
+    <div id="tracker-modal" class="modal-overlay">
+      <div class="modal-header">
+        <div class="modal-title">&#9835; COMMODORE AMIGA PROTRACKER 2.3A &middot; 8-CHANNEL SOUND ENGINE</div>
+        <button id="btn-close-tracker" class="modal-close-btn">&times; CLOSE [T]</button>
+      </div>
+      <div id="tracker-controls-bar">
+        <div class="tracker-pat-btns">
+          <span style="font-size: 10px; font-weight: 800; color: var(--chrome-mid); margin-right: 4px;">PATTERN:</span>
+          <button class="pat-btn active" data-pat="0">00 INTRO</button>
+          <button class="pat-btn" data-pat="1">01 GROOVE</button>
+          <button class="pat-btn" data-pat="2">02 303 ACID</button>
+          <button class="pat-btn" data-pat="3">03 DROP</button>
+          <button class="pat-btn" data-pat="4">04 BRIDGE</button>
+          <button class="pat-btn" data-pat="5">05 BOSS</button>
+          <button class="pat-btn" data-pat="6">06 SHOP</button>
+        </div>
+        <div class="tracker-bpm-ctrl">
+          <span>BPM: <b id="bpm-val">125</b></span>
+          <input type="range" id="bpm-slider" min="100" max="160" value="125">
+        </div>
+        <button id="btn-dub-filter" class="hud-btn" style="padding: 4px 10px;">DUB FILTER: OFF</button>
+      </div>
+      <canvas id="tracker-scope-canvas" width="600" height="70"></canvas>
+      <div id="tracker-pattern-container">
+        <div class="tracker-ch-headers" id="tracker-headers-row">
+          <div class="tracker-ch-header-cell">ROW</div>
+          <!-- Channels 1-8 injected via JS -->
+        </div>
+        <div id="tracker-scroll-body">
+          <!-- 64 Pattern rows injected via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cabinet Footer Controls Guide -->
+  <div id="cabinet-footer">
+    <div class="key-hint">
+      <span class="kbd-key">W A S D</span> / <span class="kbd-key">MOUSE</span> MOVE
+    </div>
+    <div class="key-hint">
+      <span class="kbd-key">SPACE</span> / <span class="kbd-key">L-CLICK</span> FIRE
+    </div>
+    <div class="key-hint">
+      <span class="kbd-key">S / &darr;</span> REVERSE SCROLL
+    </div>
+    <div class="key-hint">
+      <span class="kbd-key">R</span> / <span class="kbd-key">SHIFT</span> / <span class="kbd-key">R-CLICK</span> CHRONO-REWIND
+    </div>
+    <div class="key-hint">
+      <span class="kbd-key">Q / X</span> BOMB / NASHWAN
+    </div>
+    <div class="key-hint">
+      <span class="kbd-key">B</span> SHOP &bull; <span class="kbd-key">T</span> TRACKER &bull; <span class="kbd-key">1-5</span> WARP
+    </div>
   </div>
 </div>
+
+
+<script>
+// --- palettes.js ---
+// Amiga OCS / Bitmap Brothers Palette & Color Utilities
+
+function packABGR(r, g, b, a = 255) {
+  return (((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff)) >>> 0;
+}
+
+function unpackABGR(c) {
+  return {
+    r: c & 0xff,
+    g: (c >> 8) & 0xff,
+    b: (c >> 16) & 0xff,
+    a: (c >> 24) & 0xff
+  };
+}
+
+// 4x4 Bayer ordered dithering matrix (normalized 0..15)
+const BAYER4 = [
+   0,  8,  2, 10,
+  12,  4, 14,  6,
+   3, 11,  1,  9,
+  15,  7, 13,  5
+];
+
+// Bitmap Brothers High-Contrast Specular Chrome Palette (16 shades)
+const PALETTE_CHROME = [
+  packABGR(10, 13, 18),    // 0: Deep graphite
+  packABGR(18, 24, 34),    // 1
+  packABGR(26, 36, 50),    // 2
+  packABGR(35, 50, 70),    // 3: Slate shadow
+  packABGR(46, 66, 92),    // 4
+  packABGR(60, 84, 116),   // 5: Steel blue
+  packABGR(78, 106, 144),  // 6
+  packABGR(100, 130, 172), // 7: Mid silver
+  packABGR(125, 156, 198), // 8
+  packABGR(152, 182, 222), // 9: Pale silver
+  packABGR(180, 206, 238), // 10: Bright chrome
+  packABGR(208, 226, 248), // 11
+  packABGR(228, 240, 252), // 12: Near specular
+  packABGR(242, 248, 254), // 13
+  packABGR(250, 252, 255), // 14
+  packABGR(255, 255, 255)  // 15: Specular White
+];
+
+// Steampunk Brass & Polished Gold Palette (16 shades)
+const PALETTE_GOLD = [
+  packABGR(18, 10, 4),     // 0: Deep bronze shadow
+  packABGR(34, 18, 6),     // 1
+  packABGR(54, 30, 8),     // 2
+  packABGR(78, 44, 12),    // 3: Copper dark
+  packABGR(106, 62, 16),   // 4
+  packABGR(138, 84, 22),   // 5: Ochre
+  packABGR(172, 110, 28),  // 6: Deep brass
+  packABGR(204, 138, 34),  // 7
+  packABGR(228, 166, 44),  // 8: Polished brass
+  packABGR(245, 192, 58),  // 9: Bright gold
+  packABGR(252, 212, 84),  // 10
+  packABGR(254, 228, 120), // 11: Pale gold
+  packABGR(255, 240, 164), // 12
+  packABGR(255, 248, 204), // 13: Ivory gold
+  packABGR(255, 252, 232), // 14
+  packABGR(255, 255, 255)  // 15: White highlight
+];
+
+// Alien Chitin & Bioluminescence Palette (16 shades)
+const PALETTE_CHITIN = [
+  packABGR(14, 5, 20),     // 0: Deep void purple
+  packABGR(26, 8, 36),     // 1
+  packABGR(42, 12, 56),    // 2: Bruised alien violet
+  packABGR(65, 16, 82),    // 3
+  packABGR(92, 22, 110),   // 4: Deep magenta
+  packABGR(124, 30, 138),  // 5
+  packABGR(158, 42, 164),  // 6: Vibrant alien violet
+  packABGR(192, 60, 186),  // 7
+  packABGR(220, 85, 205),  // 8: Hot pink
+  packABGR(24, 140, 72),   // 9: Bioluminescent toxic green
+  packABGR(42, 185, 96),   // 10: Slime emerald
+  packABGR(68, 228, 128),  // 11: Glowing green
+  packABGR(48, 215, 215),  // 12: Bio-cyan
+  packABGR(96, 240, 235),  // 13: Electric cyan
+  packABGR(180, 252, 248), // 14: Core cyan
+  packABGR(255, 255, 255)  // 15: White peak
+];
+
+// Fire & Plasma Explosion Palette (16 shades)
+const PALETTE_FIRE = [
+  packABGR(32, 4, 0),      // 0: Dark rust ember
+  packABGR(58, 8, 0),      // 1
+  packABGR(90, 12, 0),     // 2: Deep blood ruby
+  packABGR(130, 18, 0),    // 3
+  packABGR(175, 28, 0),    // 4: Fiery crimson
+  packABGR(215, 48, 0),    // 5
+  packABGR(240, 75, 0),    // 6: Blazing orange
+  packABGR(252, 110, 0),   // 7
+  packABGR(255, 150, 10),  // 8: Plasma flame
+  packABGR(255, 185, 25),  // 9
+  packABGR(255, 215, 50),  // 10: Radiant yellow
+  packABGR(255, 235, 90),  // 11
+  packABGR(255, 248, 145), // 12: Intense lemon
+  packABGR(255, 252, 195), // 13
+  packABGR(255, 254, 235), // 14: White-hot
+  packABGR(255, 255, 255)  // 15: Pure white core
+];
+
+// Dithered interpolation helper: blends smoothly between 2 shades based on fractional intensity
+function getDitherColor(palette, valueFloat, x, y) {
+  const clamped = Math.max(0, Math.min(15, valueFloat));
+  const baseIdx = Math.floor(clamped);
+  const frac = clamped - baseIdx;
+  const ditherThresh = (BAYER4[((y & 3) << 2) | (x & 3)] + 0.5) / 16;
+  const finalIdx = (frac > ditherThresh && baseIdx < 15) ? baseIdx + 1 : baseIdx;
+  return palette[finalIdx];
+}
+
+
+// --- renderer.js ---
+// 320x200 Software Framebuffer & Bitmap Brothers Retro Renderer
+
+class RetroRenderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d', { willReadFrequently: true });
+    this.width = 320;
+    this.height = 200;
+    this.imgData = this.ctx.createImageData(this.width, this.height);
+    this.fb32 = new Uint32Array(this.imgData.data.buffer);
+    this.crtScanlines = true;
+    this.chromaticShift = 0; // > 0 during Chrono-Reverse Rewind!
+
+    // Build 5x7 Bitmap Font Table for software rasterized retro text
+    this.initFont();
+  }
+
+  clear(color = packABGR(8, 12, 18)) {
+    this.fb32.fill(color);
+  }
+
+  setPixel(x, y, color) {
+    x = x | 0;
+    y = y | 0;
+    if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+      this.fb32[y * this.width + x] = color;
+    }
+  }
+
+  blendPixel(x, y, r, g, b, a) {
+    x = x | 0;
+    y = y | 0;
+    if (x < 0 || x >= this.width || y < 0 || y >= this.height || a <= 0) return;
+    const idx = y * this.width + x;
+    const bg = this.fb32[idx];
+    const bgR = bg & 0xff;
+    const bgG = (bg >> 8) & 0xff;
+    const bgB = (bg >> 16) & 0xff;
+    const invA = 1 - a;
+    const outR = Math.min(255, (r * a + bgR * invA)) | 0;
+    const outG = Math.min(255, (g * a + bgG * invA)) | 0;
+    const outB = Math.min(255, (b * a + bgB * invA)) | 0;
+    this.fb32[idx] = packABGR(outR, outG, outB, 255);
+  }
+
+  drawRect(x, y, w, h, color) {
+    x = Math.max(0, x | 0);
+    y = Math.max(0, y | 0);
+    const x2 = Math.min(this.width, x + (w | 0));
+    const y2 = Math.min(this.height, y + (h | 0));
+    for (let cy = y; cy < y2; cy++) {
+      const rowOffset = cy * this.width;
+      for (let cx = x; cx < x2; cx++) {
+        this.fb32[rowOffset + cx] = color;
+      }
+    }
+  }
+
+  drawDitheredRect(x, y, w, h, palette, v0, v1, vertical = true) {
+    x = Math.max(0, x | 0);
+    y = Math.max(0, y | 0);
+    const x2 = Math.min(this.width, x + (w | 0));
+    const y2 = Math.min(this.height, y + (h | 0));
+    const span = vertical ? (y2 - y) : (x2 - x);
+    if (span <= 0) return;
+
+    for (let cy = y; cy < y2; cy++) {
+      const rowOffset = cy * this.width;
+      for (let cx = x; cx < x2; cx++) {
+        const t = vertical ? ((cy - y) / span) : ((cx - x) / span);
+        const val = v0 + (v1 - v0) * t;
+        this.fb32[rowOffset + cx] = getDitherColor(palette, val, cx, cy);
+      }
+    }
+  }
+
+  drawCircle(cx, cy, radius, color) {
+    cx = cx | 0;
+    cy = cy | 0;
+    let x = radius | 0;
+    let y = 0;
+    let err = 0;
+
+    while (x >= y) {
+      this.setPixel(cx + x, cy + y, color);
+      this.setPixel(cx + y, cy + x, color);
+      this.setPixel(cx - y, cy + x, color);
+      this.setPixel(cx - x, cy + y, color);
+      this.setPixel(cx - x, cy - y, color);
+      this.setPixel(cx - y, cy - x, color);
+      this.setPixel(cx + y, cy - x, color);
+      this.setPixel(cx + x, cy - y, color);
+
+      if (err <= 0) {
+        y += 1;
+        err += 2 * y + 1;
+      }
+      if (err > 0) {
+        x -= 1;
+        err -= 2 * x + 1;
+      }
+    }
+  }
+
+  drawFilledCircle(cx, cy, radius, color) {
+    cx = cx | 0;
+    cy = cy | 0;
+    const r = radius | 0;
+    const r2 = r * r;
+    const y0 = Math.max(0, cy - r);
+    const y1 = Math.min(this.height - 1, cy + r);
+    for (let y = y0; y <= y1; y++) {
+      const dy = y - cy;
+      const dxMax = Math.sqrt(Math.max(0, r2 - dy * dy)) | 0;
+      const x0 = Math.max(0, cx - dxMax);
+      const x1 = Math.min(this.width - 1, cx + dxMax);
+      const rowOffset = y * this.width;
+      for (let x = x0; x <= x1; x++) {
+        this.fb32[rowOffset + x] = color;
+      }
+    }
+  }
+
+  drawPlasmaOrb(cx, cy, radius, paletteType = 'chitin') {
+    cx = cx | 0;
+    cy = cy | 0;
+    const r = radius | 0;
+    const r2 = r * r;
+    const y0 = Math.max(0, cy - r);
+    const y1 = Math.min(this.height - 1, cy + r);
+    const pal = paletteType === 'fire' ? PALETTE_FIRE : 
+                paletteType === 'gold' ? PALETTE_GOLD : 
+                paletteType === 'chrome' ? PALETTE_CHROME : PALETTE_CHITIN;
+
+    for (let y = y0; y <= y1; y++) {
+      const dy = y - cy;
+      const dxMax = Math.sqrt(Math.max(0, r2 - dy * dy)) | 0;
+      const x0 = Math.max(0, cx - dxMax);
+      const x1 = Math.min(this.width - 1, cx + dxMax);
+      const rowOffset = y * this.width;
+      for (let x = x0; x <= x1; x++) {
+        const dx = x - cx;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const norm = 1 - (dist / r);
+        const val = norm * 15;
+        this.fb32[rowOffset + x] = getDitherColor(pal, val, x, y);
+      }
+    }
+  }
+
+  drawLine(x0, y0, x1, y1, color) {
+    x0 = x0 | 0; y0 = y0 | 0; x1 = x1 | 0; y1 = y1 | 0;
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = x0 < x1 ? 1 : -1;
+    const sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+      if (x0 >= 0 && x0 < this.width && y0 >= 0 && y0 < this.height) {
+        this.fb32[y0 * this.width + x0] = color;
+      }
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = err * 2;
+      if (e2 > -dy) { err -= dy; x0 += sx; }
+      if (e2 < dx) { err += dx; y0 += sy; }
+    }
+  }
+
+  drawLaserBeam(x0, y0, x1, y1, width, coreColor, glowColor) {
+    for (let w = -width; w <= width; w++) {
+      const c = (Math.abs(w) <= 1) ? coreColor : glowColor;
+      this.drawLine(x0 + w, y0, x1 + w, y1, c);
+    }
+  }
+
+  drawLightningArc(x0, y0, x1, y1, segments = 5, color = packABGR(180, 240, 255)) {
+    let curX = x0;
+    let curY = y0;
+    for (let i = 1; i <= segments; i++) {
+      const t = i / segments;
+      const targetX = x0 + (x1 - x0) * t + (Math.random() - 0.5) * 12;
+      const targetY = y0 + (y1 - y0) * t + (Math.random() - 0.5) * 8;
+      this.drawLine(curX, curY, targetX, targetY, color);
+      curX = targetX;
+      curY = targetY;
+    }
+    this.drawLine(curX, curY, x1, y1, packABGR(255, 255, 255));
+  }
+
+  // Draw 2D sprite from array of palette indices (-1 = transparent)
+  drawSprite(x, y, w, h, data, palette, scale = 1, flipX = false) {
+    x = x | 0;
+    y = y | 0;
+    for (let sy = 0; sy < h; sy++) {
+      for (let sx = 0; sx < w; sx++) {
+        const srcX = flipX ? (w - 1 - sx) : sx;
+        const colorIdx = data[sy * w + srcX];
+        if (colorIdx < 0) continue;
+        const col = palette[colorIdx];
+        if (scale === 1) {
+          const px = x + sx;
+          const py = y + sy;
+          if (px >= 0 && px < this.width && py >= 0 && py < this.height) {
+            this.fb32[py * this.width + px] = col;
+          }
+        } else {
+          for (let dy = 0; dy < scale; dy++) {
+            for (let dx = 0; dx < scale; dx++) {
+              const px = x + sx * scale + dx;
+              const py = y + sy * scale + dy;
+              if (px >= 0 && px < this.width && py >= 0 && py < this.height) {
+                this.fb32[py * this.width + px] = col;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 5x7 Bitmap Font Initialization
+  initFont() {
+    this.font = {};
+    const fontDefs = {
+      '0': [0x1f, 0x11, 0x11, 0x11, 0x1f],
+      '1': [0x00, 0x12, 0x1f, 0x10, 0x00],
+      '2': [0x1d, 0x15, 0x15, 0x15, 0x17],
+      '3': [0x15, 0x15, 0x15, 0x15, 0x1f],
+      '4': [0x07, 0x04, 0x04, 0x1f, 0x04],
+      '5': [0x17, 0x15, 0x15, 0x15, 0x1d],
+      '6': [0x1f, 0x15, 0x15, 0x15, 0x1d],
+      '7': [0x01, 0x01, 0x19, 0x05, 0x03],
+      '8': [0x1f, 0x15, 0x15, 0x15, 0x1f],
+      '9': [0x17, 0x15, 0x15, 0x15, 0x1f],
+      'A': [0x1e, 0x05, 0x05, 0x05, 0x1e],
+      'B': [0x1f, 0x15, 0x15, 0x15, 0x0a],
+      'C': [0x0e, 0x11, 0x11, 0x11, 0x11],
+      'D': [0x1f, 0x11, 0x11, 0x11, 0x0e],
+      'E': [0x1f, 0x15, 0x15, 0x15, 0x11],
+      'F': [0x1f, 0x05, 0x05, 0x05, 0x01],
+      'G': [0x0e, 0x11, 0x15, 0x15, 0x1d],
+      'H': [0x1f, 0x04, 0x04, 0x04, 0x1f],
+      'I': [0x11, 0x11, 0x1f, 0x11, 0x11],
+      'J': [0x08, 0x10, 0x10, 0x10, 0x0f],
+      'K': [0x1f, 0x04, 0x0a, 0x11, 0x00],
+      'L': [0x1f, 0x10, 0x10, 0x10, 0x10],
+      'M': [0x1f, 0x02, 0x04, 0x02, 0x1f],
+      'N': [0x1f, 0x02, 0x04, 0x08, 0x1f],
+      'O': [0x0e, 0x11, 0x11, 0x11, 0x0e],
+      'P': [0x1f, 0x05, 0x05, 0x05, 0x02],
+      'Q': [0x0e, 0x11, 0x13, 0x09, 0x16],
+      'R': [0x1f, 0x05, 0x0d, 0x17, 0x10],
+      'S': [0x12, 0x15, 0x15, 0x15, 0x09],
+      'T': [0x01, 0x01, 0x1f, 0x01, 0x01],
+      'U': [0x0f, 0x10, 0x10, 0x10, 0x0f],
+      'V': [0x07, 0x08, 0x10, 0x08, 0x07],
+      'W': [0x1f, 0x08, 0x04, 0x08, 0x1f],
+      'X': [0x11, 0x0a, 0x04, 0x0a, 0x11],
+      'Y': [0x03, 0x04, 0x18, 0x04, 0x03],
+      'Z': [0x11, 0x19, 0x15, 0x13, 0x11],
+      ' ': [0x00, 0x00, 0x00, 0x00, 0x00],
+      ':': [0x00, 0x0a, 0x0a, 0x00, 0x00],
+      '!': [0x00, 0x00, 0x1d, 0x00, 0x00],
+      '$': [0x12, 0x2a, 0x7f, 0x2a, 0x24],
+      '-': [0x04, 0x04, 0x04, 0x04, 0x04],
+      '+': [0x04, 0x04, 0x1f, 0x04, 0x04],
+      '.': [0x00, 0x10, 0x10, 0x00, 0x00],
+      '/': [0x10, 0x08, 0x04, 0x02, 0x01]
+    };
+    this.font = fontDefs;
+  }
+
+  drawText(text, x, y, color = packABGR(255, 255, 255), scale = 1) {
+    const str = String(text).toUpperCase();
+    let curX = x | 0;
+    const curY = y | 0;
+
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      const cols = this.font[ch] || this.font[' '];
+      for (let colIdx = 0; colIdx < 5; colIdx++) {
+        const colBits = cols[colIdx] || 0;
+        for (let rowIdx = 0; rowIdx < 7; rowIdx++) {
+          if ((colBits >> rowIdx) & 1) {
+            for (let sy = 0; sy < scale; sy++) {
+              for (let sx = 0; sx < scale; sx++) {
+                this.setPixel(curX + colIdx * scale + sx, curY + rowIdx * scale + sy, color);
+              }
+            }
+          }
+        }
+      }
+      curX += 6 * scale;
+    }
+  }
+
+  // Chromatic Aberration & Rewind Glitch Effect for Chrono-Reverse Thrust!
+  applyChromaticAberration(offsetPx = 2) {
+    if (offsetPx <= 0) return;
+    const w = this.width;
+    const h = this.height;
+    // Copy current buffer
+    const temp = new Uint32Array(this.fb32);
+    for (let y = 0; y < h; y++) {
+      // Occasional random VHS tracking scanline jitter
+      const jitter = (Math.random() < 0.15) ? ((Math.random() * 4 - 2) | 0) : 0;
+      const rowOffset = y * w;
+      for (let x = 0; x < w; x++) {
+        const xR = Math.max(0, Math.min(w - 1, x - offsetPx + jitter));
+        const xB = Math.max(0, Math.min(w - 1, x + offsetPx + jitter));
+        const colR = temp[rowOffset + xR];
+        const colG = temp[rowOffset + x];
+        const colB = temp[rowOffset + xB];
+        const r = colR & 0xff;
+        const g = (colG >> 8) & 0xff;
+        const b = (colB >> 16) & 0xff;
+        this.fb32[rowOffset + x] = packABGR(r, g, b, 255);
+      }
+    }
+  }
+
+  // Push software framebuffer to HTML5 canvas
+  present() {
+    if (this.chromaticShift > 0) {
+      this.applyChromaticAberration(this.chromaticShift);
+    }
+    this.ctx.putImageData(this.imgData, 0, 0);
+  }
+}
+
+
+// --- audio.js ---
+// 8-Channel Amiga MOD Tracker Sequencer & Web Audio Synthesizer
+// Inspired by Bomb the Bass "Megablast (Hip Hop on Precinct 13)" & David Whittaker
+
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+function noteToFreq(noteStr) {
+  if (!noteStr || noteStr === "---" || noteStr === "..." || noteStr === "") return 0;
+  const match = noteStr.match(/^([A-G]#?)-?(\d)$/);
+  if (!match) return 0;
+  const semitone = NOTE_NAMES.indexOf(match[1]);
+  if (semitone === -1) return 0;
+  const octave = parseInt(match[2], 10);
+  const midi = 12 * (octave + 1) + semitone;
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+class AmigaModTracker {
+  constructor() {
+    this.ctx = null;
+    this.bpm = 125;
+    this.isPlaying = false;
+    this.curPatternIdx = 0;
+    this.curRow = 0;
+    this.nextRowTime = 0;
+    this.timerId = null;
+    this.dubFilterActive = false;
+
+    // 8 Channels state
+    this.channels = [];
+    for (let i = 0; i < 8; i++) {
+      this.channels.push({
+        name: ['BASS', 'TB-303', 'LEAD', 'BRASS', 'SCRATCH', 'KICK', 'SNARE', 'HATS'][i],
+        volume: 0.8,
+        muted: false,
+        solo: false,
+        lastFreq: 110,
+        gainNode: null,
+        panNode: null
+      });
+    }
+
+    // Pattern definitions (7 full 64-step patterns)
+    this.patterns = [];
+    this.initPatterns();
+
+    // Callbacks for UI updates
+    this.onRowTick = null;
+    this.onPatternChange = null;
+  }
+
+  init() {
+    if (this.ctx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AudioContext();
+
+    // Master Dynamics Compressor (Fat late-80s demoscene master bus)
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.value = -12;
+    this.compressor.knee.value = 8;
+    this.compressor.ratio.value = 4;
+    this.compressor.attack.value = 0.003;
+    this.compressor.release.value = 0.15;
+
+    // Master Low-pass Dub Filter (Smoothly swept down at Crispin's shop!)
+    this.masterDubFilter = this.ctx.createBiquadFilter();
+    this.masterDubFilter.type = "lowpass";
+    this.masterDubFilter.frequency.value = 20000;
+    this.masterDubFilter.Q.value = 1.0;
+
+    // Master Ping-Pong Delay Network for Lead & Dub Echoes
+    this.delayL = this.ctx.createDelay();
+    this.delayR = this.ctx.createDelay();
+    this.delayL.delayTime.value = 0.24; // 16th note delay
+    this.delayR.delayTime.value = 0.36; // dotted 16th delay
+    this.delayFeedbackL = this.ctx.createGain();
+    this.delayFeedbackR = this.ctx.createGain();
+    this.delayFeedbackL.gain.value = 0.35;
+    this.delayFeedbackR.gain.value = 0.35;
+    this.delaySend = this.ctx.createGain();
+    this.delaySend.gain.value = 0.3;
+
+    // Connect Delay Network
+    this.delaySend.connect(this.delayL);
+    this.delayL.connect(this.delayFeedbackL);
+    this.delayFeedbackL.connect(this.delayR);
+    this.delayR.connect(this.delayFeedbackR);
+    this.delayFeedbackR.connect(this.delayL);
+
+    this.delayL.connect(this.masterDubFilter);
+    this.delayR.connect(this.masterDubFilter);
+
+    // Master Analyser Node (For live cabinet oscilloscope & tracker visualizers)
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 256;
+    this.analyser.smoothingTimeConstant = 0.8;
+
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.value = 0.75;
+
+    // Routing: Channels -> Compressor -> MasterDubFilter -> MasterGain -> Analyser -> Destination
+    this.compressor.connect(this.masterDubFilter);
+    this.masterDubFilter.connect(this.masterGain);
+    this.masterGain.connect(this.analyser);
+    this.analyser.connect(this.ctx.destination);
+
+    // Initialize individual channel strips with stereo panning
+    const panPositions = [-0.2, 0.2, -0.4, 0.4, 0.0, 0.0, -0.15, 0.25];
+    for (let i = 0; i < 8; i++) {
+      const ch = this.channels[i];
+      ch.gainNode = this.ctx.createGain();
+      ch.gainNode.gain.value = ch.volume;
+
+      if (this.ctx.createStereoPanner) {
+        ch.panNode = this.ctx.createStereoPanner();
+        ch.panNode.pan.value = panPositions[i];
+        ch.gainNode.connect(ch.panNode);
+        ch.panNode.connect(this.compressor);
+      } else {
+        ch.gainNode.connect(this.compressor);
+      }
+    }
+  }
+
+  // Smoothly sweep master dub filter when entering/exiting Crispin's shop
+  setDubFilter(enabled) {
+    this.dubFilterActive = enabled;
+    if (!this.ctx || !this.masterDubFilter) return;
+    const t = this.ctx.currentTime;
+    this.masterDubFilter.frequency.cancelScheduledValues(t);
+    this.masterDubFilter.Q.cancelScheduledValues(t);
+
+    if (enabled) {
+      // Sweep down to warm resonant dub cutoff (450Hz) without dropping the beat!
+      this.masterDubFilter.frequency.exponentialRampToValueAtTime(450, t + 0.6);
+      this.masterDubFilter.Q.linearRampToValueAtTime(3.2, t + 0.6);
+      this.delaySend.gain.linearRampToValueAtTime(0.55, t + 0.5);
+    } else {
+      // Sweep wide open back to crisp full-bandwidth high energy
+      this.masterDubFilter.frequency.exponentialRampToValueAtTime(20000, t + 0.4);
+      this.masterDubFilter.Q.linearRampToValueAtTime(0.7, t + 0.4);
+      this.delaySend.gain.linearRampToValueAtTime(0.3, t + 0.4);
+    }
+  }
+
+  start() {
+    this.init();
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+    if (this.isPlaying) return;
+    this.isPlaying = true;
+    this.curRow = 0;
+    this.nextRowTime = this.ctx.currentTime + 0.05;
+    this.scheduleLoop();
+  }
+
+  pause() {
+    this.isPlaying = false;
+    if (this.timerId) clearTimeout(this.timerId);
+  }
+
+  setBPM(newBpm) {
+    this.bpm = Math.max(80, Math.min(180, newBpm));
+  }
+
+  setPattern(patIdx, resetRow = true) {
+    if (patIdx >= 0 && patIdx < this.patterns.length) {
+      this.curPatternIdx = patIdx;
+      if (resetRow) this.curRow = 0;
+      if (this.onPatternChange) this.onPatternChange(this.curPatternIdx);
+    }
+  }
+
+  scheduleLoop() {
+    if (!this.isPlaying) return;
+    const rowDuration = (60 / this.bpm) / 4; // 16th note row duration
+
+    while (this.nextRowTime < this.ctx.currentTime + 0.15) {
+      this.playRow(this.curPatternIdx, this.curRow, this.nextRowTime, rowDuration);
+      if (this.onRowTick) {
+        const rowNum = this.curRow;
+        const patNum = this.curPatternIdx;
+        setTimeout(() => {
+          if (this.onRowTick && this.isPlaying) this.onRowTick(patNum, rowNum);
+        }, Math.max(0, (this.nextRowTime - this.ctx.currentTime) * 1000));
+      }
+
+      this.nextRowTime += rowDuration;
+      this.curRow++;
+      if (this.curRow >= 64) {
+        this.curRow = 0;
+        // Natural progression: 00 -> 01 -> 02 -> 03 -> 04 -> 01...
+        if (this.curPatternIdx === 0) this.setPattern(1);
+        else if (this.curPatternIdx === 1) this.setPattern(2);
+        else if (this.curPatternIdx === 2) this.setPattern(3);
+        else if (this.curPatternIdx === 3) this.setPattern(4);
+        else if (this.curPatternIdx === 4) this.setPattern(1);
+        // Pattern 5 (Boss) and 6 (Shop) loop themselves until state change
+      }
+    }
+
+    this.timerId = setTimeout(() => this.scheduleLoop(), 25);
+  }
+
+  // Play a single 8-channel row at scheduled audio time
+  playRow(patIdx, rowIdx, time, rowDur) {
+    const pat = this.patterns[patIdx];
+    if (!pat) return;
+    const row = pat[rowIdx];
+    if (!row) return;
+
+    // Check Solo states
+    const hasSolo = this.channels.some(c => c.solo);
+
+    for (let ch = 0; ch < 8; ch++) {
+      const channel = this.channels[ch];
+      if (channel.muted) continue;
+      if (hasSolo && !channel.solo) continue;
+
+      const cell = row[ch];
+      if (!cell || cell === "..." || cell === "---") continue;
+
+      switch (ch) {
+        case 0: // CH1: John Carpenter / Precinct 13 Ostinato Bass
+          this.playCh1_Bass(cell, time, rowDur * 0.9, channel.volume);
+          break;
+        case 1: // CH2: Resonant TB-303 Acid Line
+          this.playCh2_TB303(cell, time, rowDur * 0.95, channel.volume);
+          break;
+        case 2: // CH3: Soaring Lead Synth with stereo delay
+          this.playCh3_Lead(cell, time, rowDur * 1.8, channel.volume);
+          break;
+        case 3: // CH4: Detuned Orchestra Hit Brass Stabs
+          this.playCh4_Brass(cell, time, rowDur * 1.2, channel.volume);
+          break;
+        case 4: // CH5: Turntable Vinyl Scratch & Formant Vocal Stabs
+          this.playCh5_ScratchVocal(cell, time, rowDur, channel.volume);
+          break;
+        case 5: // CH6: 808/909 Kick & Sub-Drop
+          this.playCh6_Kick(cell, time, rowDur, channel.volume);
+          break;
+        case 6: // CH7: Breakbeat Snare, Ghost-Notes & Gated Clap
+          this.playCh7_Snare(cell, time, rowDur, channel.volume);
+          break;
+        case 7: // CH8: Syncopated Hi-Hats & 808 Cowbell
+          this.playCh8_HatsCowbell(cell, time, rowDur, channel.volume);
+          break;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 8 INSTRUMENT SYNTHESIZERS
+  // -------------------------------------------------------------
+
+  // CH1: John Carpenter / Precinct 13 Ostinato Bass (Dual Osc Saw+Sub)
+  playCh1_Bass(noteStr, time, dur, vol) {
+    const freq = noteToFreq(noteStr);
+    if (!freq) return;
+
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const vca = this.ctx.createGain();
+
+    osc1.type = "sawtooth";
+    osc1.frequency.setValueAtTime(freq, time);
+
+    osc2.type = "square";
+    osc2.frequency.setValueAtTime(freq * 0.5, time); // sub-octave
+
+    // Resonant lowpass with snappy envelope decay
+    filter.type = "lowpass";
+    filter.Q.setValueAtTime(5.0, time);
+    filter.frequency.setValueAtTime(1400, time);
+    filter.frequency.exponentialRampToValueAtTime(220, time + dur * 0.8);
+
+    vca.gain.setValueAtTime(0.001, time);
+    vca.gain.linearRampToValueAtTime(vol * 0.85, time + 0.005);
+    vca.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(vca);
+    vca.connect(this.channels[0].gainNode);
+
+    osc1.start(time);
+    osc2.start(time);
+    osc1.stop(time + dur);
+    osc2.stop(time + dur);
+  }
+
+  // CH2: Resonant TB-303 Acid Line (High Q, cutoff envelope, slide & accents)
+  playCh2_TB303(cellStr, time, dur, vol) {
+    // Cell syntax: e.g. "D-3", "D-3+", "F-3~" (+ = accent, ~ = slide)
+    const isAccent = cellStr.includes("+");
+    const isSlide = cellStr.includes("~");
+    const noteClean = cellStr.replace(/[+~]/g, "");
+    const freq = noteToFreq(noteClean);
+    if (!freq) return;
+
+    const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const vca = this.ctx.createGain();
+
+    osc.type = (Math.random() < 0.5) ? "sawtooth" : "square";
+
+    // Portamento / Slide from previous frequency if flagged
+    const prevFreq = this.channels[1].lastFreq || freq;
+    if (isSlide) {
+      osc.frequency.setValueAtTime(prevFreq, time);
+      osc.frequency.exponentialRampToValueAtTime(freq, time + 0.075);
+    } else {
+      osc.frequency.setValueAtTime(freq, time);
+    }
+    this.channels[1].lastFreq = freq;
+
+    // Roland TB-303 Diode Ladder Filter Emulation (High Q Resonance!)
+    filter.type = "lowpass";
+    filter.Q.setValueAtTime(isAccent ? 17.0 : 13.5, time);
+
+    const peakCutoff = isAccent ? 4800 : 2200;
+    const baseCutoff = isAccent ? 500 : 380;
+    filter.frequency.setValueAtTime(peakCutoff, time);
+    filter.frequency.exponentialRampToValueAtTime(baseCutoff, time + dur * 0.9);
+
+    const targetGain = vol * (isAccent ? 1.0 : 0.7);
+    vca.gain.setValueAtTime(0.001, time);
+    vca.gain.linearRampToValueAtTime(targetGain, time + 0.004);
+    vca.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+    osc.connect(filter);
+    filter.connect(vca);
+    vca.connect(this.channels[1].gainNode);
+
+    osc.start(time);
+    osc.stop(time + dur);
+  }
+
+  // CH3: Soaring Lead Synth with Stereo Ping-Pong Delay
+  playCh3_Lead(noteStr, time, dur, vol) {
+    const freq = noteToFreq(noteStr);
+    if (!freq) return;
+
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+
+    osc1.type = "sawtooth";
+    osc2.type = "sawtooth";
+    osc1.frequency.setValueAtTime(freq, time);
+    osc2.frequency.setValueAtTime(freq * 1.006, time); // +10 cents detune
+
+    vca.gain.setValueAtTime(0.001, time);
+    vca.gain.linearRampToValueAtTime(vol * 0.7, time + 0.02);
+    vca.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+    osc1.connect(vca);
+    osc2.connect(vca);
+    vca.connect(this.channels[2].gainNode);
+    vca.connect(this.delaySend); // Send to ping-pong delay!
+
+    osc1.start(time);
+    osc2.start(time);
+    osc1.stop(time + dur);
+    osc2.stop(time + dur);
+  }
+
+  // CH4: Detuned Orchestra Hit Brass Stabs (4-saw chord cluster)
+  playCh4_Brass(chordStr, time, dur, vol) {
+    // Chord abbreviations or root note: e.g. "Dm", "F", "Gm", "A#" or "D-4"
+    let baseFreq = noteToFreq(chordStr) || 293.66; // default D4
+    const intervals = [1.0, 1.2, 1.498, 2.0]; // Root, Minor 3rd, 5th, Octave
+
+    const vca = this.ctx.createGain();
+    vca.gain.setValueAtTime(0.001, time);
+    vca.gain.linearRampToValueAtTime(vol * 0.85, time + 0.004);
+    vca.gain.exponentialRampToValueAtTime(0.001, time + dur * 0.8);
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(3200, time);
+    filter.frequency.exponentialRampToValueAtTime(800, time + dur * 0.7);
+
+    intervals.forEach(ratio => {
+      const osc = this.ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(baseFreq * ratio, time);
+      osc.connect(filter);
+      osc.start(time);
+      osc.stop(time + dur);
+    });
+
+    filter.connect(vca);
+    vca.connect(this.channels[3].gainNode);
+  }
+
+  // CH5: Turntable Vinyl Scratch & Formant Vocal Stabs ("MEGA-BLAST!" / "YEAH!")
+  playCh5_ScratchVocal(cmdStr, time, dur, vol) {
+    if (cmdStr === "SCR" || cmdStr.startsWith("SC")) {
+      // Vinyl Turntable Scratch Simulation: Modulated noise & pitch sweep
+      const bufSize = this.ctx.sampleRate * 0.12;
+      const buffer = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.7;
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.Q.setValueAtTime(4.0, time);
+      bp.frequency.setValueAtTime(500, time);
+      bp.frequency.exponentialRampToValueAtTime(2600, time + 0.05);
+      bp.frequency.exponentialRampToValueAtTime(700, time + 0.11);
+
+      const vca = this.ctx.createGain();
+      vca.gain.setValueAtTime(vol * 0.9, time);
+      vca.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+      noise.connect(bp);
+      bp.connect(vca);
+      vca.connect(this.channels[4].gainNode);
+      noise.start(time);
+      noise.stop(time + 0.12);
+
+    } else if (cmdStr === "MEGA" || cmdStr === "BLAST" || cmdStr === "YEAH" || cmdStr === "UH") {
+      // Synthesized Formant Vocal Filters (F1/F2 resonant poles)
+      const formants = {
+        "MEGA":  { f1: 530, f2: 1840, dur: 0.18 },
+        "BLAST": { f1: 660, f2: 1720, dur: 0.22 },
+        "YEAH":  { f1: 450, f2: 2150, dur: 0.25 },
+        "UH":    { f1: 400, f2: 1200, dur: 0.14 }
+      }[cmdStr] || { f1: 500, f2: 1800, dur: 0.2 };
+
+      const osc = this.ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(140, time);
+      osc.frequency.linearRampToValueAtTime(115, time + formants.dur);
+
+      const f1 = this.ctx.createBiquadFilter();
+      const f2 = this.ctx.createBiquadFilter();
+      f1.type = "bandpass"; f1.frequency.value = formants.f1; f1.Q.value = 6;
+      f2.type = "bandpass"; f2.frequency.value = formants.f2; f2.Q.value = 8;
+
+      const vca = this.ctx.createGain();
+      vca.gain.setValueAtTime(0.001, time);
+      vca.gain.linearRampToValueAtTime(vol * 1.2, time + 0.015);
+      vca.gain.exponentialRampToValueAtTime(0.001, time + formants.dur);
+
+      osc.connect(f1);
+      osc.connect(f2);
+      f1.connect(vca);
+      f2.connect(vca);
+      vca.connect(this.channels[4].gainNode);
+
+      osc.start(time);
+      osc.stop(time + formants.dur);
+    }
+  }
+
+  // CH6: Punchy 808/909 Kick & Sub-Drop
+  playCh6_Kick(typeStr, time, dur, vol) {
+    const isSub = typeStr === "SUB";
+    const osc = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+
+    osc.type = "sine";
+    const startFreq = isSub ? 120 : 180;
+    const endFreq = isSub ? 32 : 46;
+    const kickDur = isSub ? 0.45 : 0.18;
+
+    osc.frequency.setValueAtTime(startFreq, time);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, time + (isSub ? 0.12 : 0.045));
+
+    // Sharp Click transient for bite
+    const click = this.ctx.createOscillator();
+    const clickGain = this.ctx.createGain();
+    click.type = "triangle";
+    click.frequency.setValueAtTime(800, time);
+    clickGain.gain.setValueAtTime(vol * 0.7, time);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.008);
+    click.connect(clickGain);
+    clickGain.connect(this.channels[5].gainNode);
+    click.start(time);
+    click.stop(time + 0.01);
+
+    vca.gain.setValueAtTime(vol * 1.0, time);
+    vca.gain.exponentialRampToValueAtTime(0.001, time + kickDur);
+
+    osc.connect(vca);
+    vca.connect(this.channels[5].gainNode);
+    osc.start(time);
+    osc.stop(time + kickDur);
+  }
+
+  // CH7: Breakbeat Snare, Ghost-Notes & Gated Clap
+  playCh7_Snare(typeStr, time, dur, vol) {
+    if (typeStr === "CLP") {
+      // Gated Multi-Burst Clap
+      [0, 0.015, 0.03].forEach((delayOffset, idx) => {
+        const noise = this.ctx.createBufferSource();
+        const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.8;
+        noise.buffer = buf;
+
+        const bp = this.ctx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.value = 1100;
+        bp.Q.value = 2.5;
+
+        const vca = this.ctx.createGain();
+        const burstTime = time + delayOffset;
+        const burstDur = idx === 2 ? 0.15 : 0.02;
+        vca.gain.setValueAtTime(vol * (idx === 2 ? 0.9 : 0.5), burstTime);
+        vca.gain.exponentialRampToValueAtTime(0.001, burstTime + burstDur);
+
+        noise.connect(bp);
+        bp.connect(vca);
+        vca.connect(this.channels[6].gainNode);
+        noise.start(burstTime);
+        noise.stop(burstTime + burstDur);
+      });
+      return;
+    }
+
+    const isGhost = typeStr === "GST";
+    const snareVol = isGhost ? vol * 0.28 : vol * 0.85;
+    const snareDur = isGhost ? 0.06 : 0.14;
+
+    // Noise component
+    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * snareDur, this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buf;
+
+    const hp = this.ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 1200;
+
+    const vcaNoise = this.ctx.createGain();
+    vcaNoise.gain.setValueAtTime(snareVol, time);
+    vcaNoise.gain.exponentialRampToValueAtTime(0.001, time + snareDur);
+
+    noise.connect(hp);
+    hp.connect(vcaNoise);
+    vcaNoise.connect(this.channels[6].gainNode);
+    noise.start(time);
+    noise.stop(time + snareDur);
+
+    // Tuned body tone
+    if (!isGhost) {
+      const osc = this.ctx.createOscillator();
+      const vcaOsc = this.ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(210, time);
+      osc.frequency.exponentialRampToValueAtTime(140, time + 0.08);
+      vcaOsc.gain.setValueAtTime(snareVol * 0.6, time);
+      vcaOsc.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
+      osc.connect(vcaOsc);
+      vcaOsc.connect(this.channels[6].gainNode);
+      osc.start(time);
+      osc.stop(time + 0.09);
+    }
+  }
+
+  // CH8: Syncopated Hi-Hats & 808 Cowbell
+  playCh8_HatsCowbell(typeStr, time, dur, vol) {
+    if (typeStr === "CB") {
+      // Dual-tone Roland TR-808 Cowbell (587Hz & 845Hz detuned square waves)
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const bp = this.ctx.createBiquadFilter();
+      const vca = this.ctx.createGain();
+
+      osc1.type = "square"; osc1.frequency.value = 587;
+      osc2.type = "square"; osc2.frequency.value = 845;
+      bp.type = "bandpass"; bp.frequency.value = 800; bp.Q.value = 7.0;
+
+      vca.gain.setValueAtTime(vol * 0.65, time);
+      vca.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+      osc1.connect(bp);
+      osc2.connect(bp);
+      bp.connect(vca);
+      vca.connect(this.channels[7].gainNode);
+
+      osc1.start(time); osc2.start(time);
+      osc1.stop(time + 0.12); osc2.stop(time + 0.12);
+      return;
+    }
+
+    const isOpen = typeStr === "OH";
+    const hatDur = isOpen ? 0.28 : 0.045;
+    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * hatDur, this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buf;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = isOpen ? "bandpass" : "highpass";
+    filter.frequency.value = isOpen ? 6000 : 8500;
+
+    const vca = this.ctx.createGain();
+    vca.gain.setValueAtTime(vol * 0.5, time);
+    vca.gain.exponentialRampToValueAtTime(0.001, time + hatDur);
+
+    noise.connect(filter);
+    filter.connect(vca);
+    vca.connect(this.channels[7].gainNode);
+    noise.start(time);
+    noise.stop(time + hatDur);
+  }
+
+  // Visualizer Hooks
+  getSpectrumData(arr) {
+    if (!this.analyser) return;
+    this.analyser.getByteFrequencyData(arr);
+  }
+
+  getWaveformData(arr) {
+    if (!this.analyser) return;
+    this.analyser.getByteTimeDomainData(arr);
+  }
+
+  // -------------------------------------------------------------
+  // 7 COMPLETE 64-STEP PATTERNS
+  // -------------------------------------------------------------
+  initPatterns() {
+    // Helper to generate empty 64-step pattern
+    const makePat = () => Array.from({ length: 64 }, () => ["...", "...", "...", "...", "...", "...", "...", "..."]);
+
+    // =========================================================
+    // PATTERN 00: INTRO (Suspense, scratch teasers, riser, "MEGA-BLAST!")
+    // =========================================================
+    const p0 = makePat();
+    p0[0]  = ["D-2", "...", "...", "...", "SCR", "KICK", "...", "CH"];
+    p0[4]  = ["...", "...", "...", "...", "...", "...", "...", "CH"];
+    p0[8]  = ["...", "...", "...", "...", "...", "...", "...", "OH"];
+    p0[12] = ["...", "...", "...", "...", "SCR", "...", "...", "CH"];
+    p0[16] = ["D-2", "D-3", "...", "...", "...", "KICK", "...", "CH"];
+    p0[20] = ["...", "...", "...", "...", "...", "...", "...", "CH"];
+    p0[24] = ["...", "...", "...", "...", "...", "...", "CLP", "OH"];
+    p0[28] = ["...", "...", "...", "...", "SCR", "...", "...", "CH"];
+    p0[32] = ["D-2", "...", "...", "Dm",  "...", "KICK", "...", "CH"];
+    p0[36] = ["...", "...", "...", "...", "...", "...", "...", "CH"];
+    p0[40] = ["F-2", "F-3", "...", "...", "...", "...", "SNR", "OH"];
+    p0[44] = ["...", "...", "...", "...", "SCR", "KICK", "...", "CH"];
+    p0[48] = ["D-2", "D-3+", "...", "Dm", "MEGA", "KICK", "...", "CH"];
+    p0[52] = ["D-2", "...", "...", "...", "...", "...", "...", "CH"];
+    p0[56] = ["F-2", "G-3~", "...", "...", "BLAST", "KICK", "SNR", "CB"];
+    p0[60] = ["G-2", "A-3+", "D-4", "Dm", "SCR", "KICK", "SNR", "OH"];
+    p0[62] = ["G#2", "...", "E-4", "...", "SCR", "...", "SNR", "CH"];
+    this.patterns.push(p0);
+
+    // =========================================================
+    // PATTERN 01: PRECINCT 13 MAIN GROOVE (Bomb The Bass Anthem!)
+    // Relentless Carpenter 16th-note bass, driving 909 beat, brass stabs!
+    // =========================================================
+    const p1 = makePat();
+    const bass16_bar1 = ["D-2", "D-2", "D-2", "D-2", "F-2", "F-2", "D-2", "D-2", "G-2", "G-2", "D-2", "D-2", "G#2", "G-2", "F-2", "D-2"];
+    const bass16_bar2 = ["D-2", "D-2", "D-2", "D-2", "F-2", "F-2", "D-2", "D-2", "A-2", "A-2", "G-2", "G-2", "F-2", "F-2", "E-2", "C-2"];
+    const bassSeq = [...bass16_bar1, ...bass16_bar2, ...bass16_bar1, ...bass16_bar2];
+
+    for (let r = 0; r < 64; r++) {
+      const b = bassSeq[r];
+      // CH1 Bass
+      p1[r][0] = b;
+
+      // CH6 Kick & CH7 Snare & CH8 Hats
+      if (r % 16 === 0 || r % 16 === 6 || r % 16 === 10) p1[r][5] = "KICK";
+      if (r % 16 === 4 || r % 16 === 12) p1[r][6] = "SNR";
+      if (r % 16 === 14) p1[r][6] = "GST"; // syncopated ghost snare
+
+      p1[r][7] = (r % 4 === 2) ? "OH" : "CH";
+      if (r % 16 === 8 || r % 16 === 13) p1[r][7] = "CB"; // Latin cowbell pop!
+
+      // CH4 Brass Stabs
+      if (r === 4 || r === 12 || r === 20 || r === 28 || r === 36 || r === 44 || r === 52 || r === 60) {
+        p1[r][3] = (r >= 32) ? "F" : "Dm";
+      }
+
+      // CH5 Scratch fills
+      if (r === 15 || r === 31 || r === 47) p1[r][4] = "SCR";
+      if (r === 62) p1[r][4] = "YEAH";
+
+      // CH3 Soaring Lead Hook
+      if (r === 0) p1[r][2] = "D-4";
+      if (r === 6) p1[r][2] = "F-4";
+      if (r === 10) p1[r][2] = "G-4";
+      if (r === 14) p1[r][2] = "A-4";
+      if (r === 20) p1[r][2] = "G-4";
+      if (r === 24) p1[r][2] = "F-4";
+      if (r === 28) p1[r][2] = "D-4";
+    }
+    this.patterns.push(p1);
+
+    // =========================================================
+    // PATTERN 02: TB-303 ACID BREAKDOWN (Squelchy Resonant Sweeps!)
+    // 303 takes center stage with accents (+), slides (~), octaves!
+    // =========================================================
+    const p2 = makePat();
+    const acid303 = [
+      "D-3+", "D-3", "D-4~", "...", "F-3+", "...", "D-3", "F-3~",
+      "G-3+", "...", "G-3", "F-3", "D-3+", "C-3~", "D-3", "...",
+      "D-3+", "D-4~", "C-4+", "...", "A-3~", "...", "G-3+", "...",
+      "F-3", "G-3~", "G#3+", "G-3", "F-3+", "D-3~", "C-3", "D-3+"
+    ];
+    for (let r = 0; r < 64; r++) {
+      // CH2 TB-303
+      p2[r][1] = acid303[r % 32];
+
+      // Bass is sub-drone
+      if (r % 16 === 0) p2[r][0] = "D-1";
+
+      // Four-on-the-floor kick
+      if (r % 4 === 0) p2[r][5] = "KICK";
+      if (r % 8 === 4) p2[r][6] = "CLP";
+      p2[r][7] = (r % 2 === 1) ? "OH" : "CH";
+
+      // Scratches
+      if (r % 16 === 14) p2[r][4] = "SCR";
+      if (r === 60) p2[r][4] = "MEGA";
+      if (r === 62) p2[r][4] = "BLAST";
+    }
+    this.patterns.push(p2);
+
+    // =========================================================
+    // PATTERN 03: BRASS & SCRATCH DROP
+    // Heavy orchestra stabs, "YEAH!" vocal, delay lead drop!
+    // =========================================================
+    const p3 = makePat();
+    for (let r = 0; r < 64; r++) {
+      p3[r][0] = bassSeq[r];
+      if (r % 16 === 0 || r % 16 === 6 || r % 16 === 10) p3[r][5] = "KICK";
+      if (r % 16 === 4 || r % 16 === 12) p3[r][6] = "SNR";
+      p3[r][7] = (r % 4 === 2) ? "OH" : "CH";
+
+      // Heavy Brass Hits
+      if (r % 8 === 0 || r % 8 === 3 || r % 8 === 6) p3[r][3] = (r < 32) ? "Dm" : "Gm";
+
+      // Formants & Scratches
+      if (r === 0 || r === 32) p3[r][4] = "YEAH";
+      if (r === 14 || r === 46) p3[r][4] = "SCR";
+      if (r === 28 || r === 60) p3[r][4] = "UH";
+
+      // Lead Melody Line
+      if (r === 2) p3[r][2] = "A-4";
+      if (r === 8) p3[r][2] = "C-5";
+      if (r === 14) p3[r][2] = "D-5";
+      if (r === 22) p3[r][2] = "C-5";
+      if (r === 26) p3[r][2] = "A-4";
+      if (r === 30) p3[r][2] = "G-4";
+    }
+    this.patterns.push(p3);
+
+    // =========================================================
+    // PATTERN 04: BRIDGE (Demoscene Arps & Snare Build)
+    // =========================================================
+    const p4 = makePat();
+    const bridgeBass = ["A#1", "A#1", "C-2", "C-2", "D-2", "D-2", "D-2", "D-2"];
+    for (let r = 0; r < 64; r++) {
+      p4[r][0] = bridgeBass[Math.floor(r / 8) % 8];
+
+      // Accelerating snare roll build up towards end
+      if (r < 32) {
+        if (r % 8 === 4) p4[r][6] = "SNR";
+        if (r % 8 === 0) p4[r][5] = "KICK";
+      } else if (r < 48) {
+        if (r % 4 === 2) p4[r][6] = "SNR";
+        if (r % 4 === 0) p4[r][5] = "KICK";
+      } else {
+        p4[r][6] = (r % 2 === 0) ? "SNR" : "GST"; // 16th snare frenzy!
+      }
+      p4[r][7] = "CH";
+
+      // Arpeggiated lead chords
+      const arpNotes = ["D-4", "F-4", "A-4", "C-5", "D-5", "C-5", "A-4", "F-4"];
+      p4[r][2] = arpNotes[r % 8];
+
+      if (r === 62) p4[r][4] = "BLAST";
+    }
+    this.patterns.push(p4);
+
+    // =========================================================
+    // PATTERN 05: BOSS RAVE (High BPM, screaming acid, rave sirens)
+    // =========================================================
+    const p5 = makePat();
+    for (let r = 0; r < 64; r++) {
+      // Rapid 16th double bass
+      p5[r][0] = (r % 4 === 0) ? "D-2" : (r % 4 === 2 ? "D-3" : "F-2");
+      // Double kick barrage
+      if (r % 4 === 0 || r % 4 === 1 || r % 4 === 3) p5[r][5] = "KICK";
+      if (r % 4 === 2) p5[r][6] = "SNR";
+      p5[r][7] = (r % 2 === 1) ? "OH" : "CH";
+
+      // Screaming Acid Line
+      p5[r][1] = (r % 2 === 0) ? "D-4+" : "F-4~";
+
+      // Rave alarm brass
+      if (r % 8 === 0 || r % 8 === 4) p5[r][3] = "Dm";
+
+      if (r % 16 === 15) p5[r][4] = "SCR";
+    }
+    this.patterns.push(p5);
+
+    // =========================================================
+    // PATTERN 06: CRISPIN'S ELECTRO-DUB SHOP GROOVE
+    // Laid-back, half-time dub reggae groove with space echoes!
+    // =========================================================
+    const p6 = makePat();
+    for (let r = 0; r < 64; r++) {
+      // Spaced dub bass
+      if (r === 0)  p6[r][0] = "D-2";
+      if (r === 6)  p6[r][0] = "F-2";
+      if (r === 12) p6[r][0] = "G-2";
+      if (r === 18) p6[r][0] = "D-2";
+      if (r === 32) p6[r][0] = "C-2";
+      if (r === 38) p6[r][0] = "E-2";
+      if (r === 44) p6[r][0] = "F-2";
+      if (r === 50) p6[r][0] = "C-2";
+
+      // Relaxed half-time kick & echo rimshots
+      if (r % 16 === 0) p6[r][5] = "KICK";
+      if (r % 16 === 8) p6[r][6] = "CLP";
+      if (r % 4 === 2)  p6[r][7] = "CH";
+      if (r % 16 === 12) p6[r][7] = "CB";
+
+      // Mellow Rhodes / Organ dub chords with space delay
+      if (r === 4 || r === 20 || r === 36 || r === 52) p6[r][3] = "Dm";
+
+      if (r === 31 || r === 63) p6[r][4] = "SCR";
+    }
+    this.patterns.push(p6);
+  }
+}
+
+// -------------------------------------------------------------
+// STANDALONE SOUND EFFECTS SYNTHESIZER
+// -------------------------------------------------------------
+class SoundFX {
+  constructor(tracker) {
+    this.tracker = tracker;
+    this.enabled = true;
+  }
+
+  get ctx() {
+    return this.tracker ? this.tracker.ctx : null;
+  }
+
+  playLaser() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(880, t);
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.1);
+
+    vca.gain.setValueAtTime(0.3, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+    osc.connect(vca);
+    vca.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  }
+
+  playVulcan() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+
+    osc.type = "square";
+    osc.frequency.setValueAtTime(320, t);
+    osc.frequency.exponentialRampToValueAtTime(60, t + 0.05);
+
+    vca.gain.setValueAtTime(0.25, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+    osc.connect(vca);
+    vca.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 0.05);
+  }
+
+  playPlasma() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const vca = this.ctx.createGain();
+
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(450, t);
+    osc.frequency.linearRampToValueAtTime(180, t + 0.15);
+
+    filter.type = "lowpass";
+    filter.Q.value = 8.0;
+    filter.frequency.setValueAtTime(2400, t);
+    filter.frequency.exponentialRampToValueAtTime(300, t + 0.15);
+
+    vca.gain.setValueAtTime(0.35, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+    osc.connect(filter);
+    filter.connect(vca);
+    vca.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 0.15);
+  }
+
+  playMissile() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(250, t);
+    osc.frequency.exponentialRampToValueAtTime(650, t + 0.18);
+
+    vca.gain.setValueAtTime(0.3, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+
+    osc.connect(vca);
+    vca.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 0.18);
+  }
+
+  playExplosion(type = 'small') {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const dur = type === 'boss' ? 0.8 : (type === 'large' ? 0.35 : 0.18);
+    const bufSize = this.ctx.sampleRate * dur;
+    const buffer = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(type === 'boss' ? 800 : 1600, t);
+    filter.frequency.exponentialRampToValueAtTime(100, t + dur);
+
+    const vca = this.ctx.createGain();
+    vca.gain.setValueAtTime(type === 'boss' ? 0.7 : 0.45, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+    noise.connect(filter);
+    filter.connect(vca);
+    vca.connect(this.tracker.compressor);
+    noise.start(t);
+    noise.stop(t + dur);
+  }
+
+  playCoin() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    // Classic Amiga fast 4-note ascending chime
+    const freqs = [1174.66, 1479.98, 1760.00, 2349.32]; // D6, F#6, A6, D7
+    freqs.forEach((f, idx) => {
+      const osc = this.ctx.createOscillator();
+      const vca = this.ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(f, t + idx * 0.035);
+      vca.gain.setValueAtTime(0.25, t + idx * 0.035);
+      vca.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.035 + 0.1);
+      osc.connect(vca);
+      vca.connect(this.tracker.compressor);
+      osc.start(t + idx * 0.035);
+      osc.stop(t + idx * 0.035 + 0.1);
+    });
+  }
+
+  playShieldHit() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.linearRampToValueAtTime(80, t + 0.1);
+    vca.gain.setValueAtTime(0.4, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    osc.connect(vca);
+    vca.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  }
+
+  playOverheatAlarm() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(950, t);
+    osc.frequency.setValueAtTime(700, t + 0.08);
+    vca.gain.setValueAtTime(0.35, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    osc.connect(vca);
+    vca.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 0.16);
+  }
+
+  playRewindWarp() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const vca = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(200, t);
+    osc.frequency.exponentialRampToValueAtTime(1800, t + 0.08);
+    vca.gain.setValueAtTime(0.2, t);
+    vca.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    osc.connect(vca);
+    vca.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 0.08);
+  }
+
+  playSmartBomb() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    // Sub rumble + white noise crash
+    const osc = this.ctx.createOscillator();
+    const vcaOsc = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(180, t);
+    osc.frequency.exponentialRampToValueAtTime(28, t + 1.2);
+    vcaOsc.gain.setValueAtTime(0.8, t);
+    vcaOsc.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+    osc.connect(vcaOsc);
+    vcaOsc.connect(this.tracker.compressor);
+    osc.start(t);
+    osc.stop(t + 1.2);
+  }
+
+  playCrispinVoice() {
+    if (!this.enabled || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    // Randomized retro chatter blip
+    const count = 3 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < count; i++) {
+      const osc = this.ctx.createOscillator();
+      const vca = this.ctx.createGain();
+      osc.type = (i % 2 === 0) ? "triangle" : "sawtooth";
+      osc.frequency.setValueAtTime(180 + Math.random() * 320, t + i * 0.04);
+      vca.gain.setValueAtTime(0.18, t + i * 0.04);
+      vca.gain.exponentialRampToValueAtTime(0.001, t + i * 0.04 + 0.035);
+      osc.connect(vca);
+      vca.connect(this.tracker.compressor);
+      osc.start(t + i * 0.04);
+      osc.stop(t + i * 0.04 + 0.035);
+    }
+  }
+}
+
+
+// --- player.js ---
+// The Megablaster - Player Ship & Modular Hardpoint Composition
+
+class PlayerShip {
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.x = 160;
+    this.y = 150;
+    this.vx = 0;
+    this.vy = 0;
+    this.w = 26;
+    this.h = 30;
+    this.bank = 0; // -2, -1, 0, 1, 2
+
+    // Health & Shields
+    this.maxShield = 100;
+    this.shield = 100;
+    this.lives = 3;
+    this.invulnTimer = 0; // frames of invulnerability (e.g. on respawn)
+    this.isDead = false;
+
+    // Heat System
+    this.heat = 0;
+    this.maxHeat = 100;
+    this.overheated = false;
+    this.overheatTimer = 0;
+
+    // Chrono Energy (180 frames = 3s base; 300 frames = 5s with Chrono Capacitor)
+    this.maxChronoEnergy = 180;
+    this.chronoEnergy = 180;
+    this.isRewinding = false;
+
+    // Super Nashwan Power Overdrive (20 seconds)
+    this.nashwanTimer = 0;
+
+    // Smart Bombs count
+    this.smartBombs = 2;
+
+    // 6 Modular Hardpoint Slots
+    this.slots = {
+      nose: 'twin_vulcan',        // 'twin_vulcan' | 'plasma_spread' | 'electro_arc' | null
+      left_wing: null,           // 'side_lasers' | 'homing_missiles' | 'bounce_orbs' | null
+      right_wing: null,          // 'side_lasers' | 'homing_missiles' | 'bounce_orbs' | null
+      tail: null,                // 'rear_cannon' | 'temporal_mines' | null
+      drones: null,              // 'orbital_drones' | null
+      hull: null                 // 'hull_plating' | 'speed_booster' | 'chrono_capacitor' | 'heat_sink' | null
+    };
+
+    // Orbiting Drones State
+    this.droneAngle = 0;
+
+    // Animation tickers
+    this.animTick = 0;
+    this.flameFrame = 0;
+  }
+
+  // Active Synergies Check
+  hasSynergyPrism() {
+    // RICOCHET PRISM MATRIX: Side-Lasers + Bounce-Orbs
+    const hasSide = this.slots.left_wing === 'side_lasers' || this.slots.right_wing === 'side_lasers';
+    const hasBounce = this.slots.left_wing === 'bounce_orbs' || this.slots.right_wing === 'bounce_orbs';
+    return (hasSide && hasBounce) || this.isNashwanActive();
+  }
+
+  hasSynergyNova() {
+    // CHRONO BACKFIRE NOVA: Temporal Mines + Reverse/Chrono Thrust
+    return (this.slots.tail === 'temporal_mines') || this.isNashwanActive();
+  }
+
+  hasSynergyTesla() {
+    // TESLA CHAIN SWARM: Electro-Arc Beam + Dual Orbiting Drones
+    const hasArc = this.slots.nose === 'electro_arc';
+    const hasDrones = this.slots.drones === 'orbital_drones';
+    return (hasArc && hasDrones) || this.isNashwanActive();
+  }
+
+  isNashwanActive() {
+    return this.nashwanTimer > 0;
+  }
+
+  update(input, sfx, game) {
+    if (this.isDead) return;
+
+    this.animTick++;
+    this.flameFrame = (this.animTick >> 2) & 3;
+    this.droneAngle += 0.05;
+
+    // Invulnerability ticker
+    if (this.invulnTimer > 0) this.invulnTimer--;
+    if (this.nashwanTimer > 0) this.nashwanTimer--;
+
+    // Speed calculation
+    const hasSpeedBooster = this.slots.hull === 'speed_booster';
+    const maxSpd = hasSpeedBooster ? 3.6 : 2.6;
+    const accel = hasSpeedBooster ? 0.6 : 0.45;
+    const friction = 0.82;
+
+    // Keyboard / Mouse movement
+    let moveX = 0;
+    let moveY = 0;
+
+    if (input.left) moveX -= 1;
+    if (input.right) moveX += 1;
+    if (input.up) moveY -= 1;
+    if (input.down) moveY += 1;
+
+    // Mouse tracking if active
+    if (input.mouseActive) {
+      const dx = input.mouseX - this.x;
+      const dy = input.mouseY - this.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 3) {
+        moveX = Math.max(-1, Math.min(1, dx / 8));
+        moveY = Math.max(-1, Math.min(1, dy / 8));
+      }
+    }
+
+    // Accelerate
+    this.vx += moveX * accel;
+    this.vy += moveY * accel;
+
+    // Apply friction
+    this.vx *= friction;
+    this.vy *= friction;
+
+    // Clamp speed
+    this.vx = Math.max(-maxSpd, Math.min(maxSpd, this.vx));
+    this.vy = Math.max(-maxSpd, Math.min(maxSpd, this.vy));
+
+    // Update position
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Boundary constraints (320x200)
+    const margin = 14;
+    this.x = Math.max(margin, Math.min(320 - margin, this.x));
+    this.y = Math.max(margin, Math.min(188, this.y));
+
+    // Banking frame calculation (-2, -1, 0, 1, 2)
+    if (this.vx < -1.8) this.bank = -2;
+    else if (this.vx < -0.5) this.bank = -1;
+    else if (this.vx > 1.8) this.bank = 2;
+    else if (this.vx > 0.5) this.bank = 1;
+    else this.bank = 0;
+
+    // Hull Plating max shield update
+    const targetMaxShield = (this.slots.hull === 'hull_plating') ? 150 : 100;
+    if (this.maxShield !== targetMaxShield) {
+      const ratio = this.shield / this.maxShield;
+      this.maxShield = targetMaxShield;
+      this.shield = Math.round(ratio * this.maxShield);
+    }
+
+    // Chrono Capacitor capacity update
+    this.maxChronoEnergy = (this.slots.hull === 'chrono_capacitor') ? 300 : 180;
+
+    // Heat Dissipation
+    const hasHeatSink = this.slots.hull === 'heat_sink';
+    const coolRate = hasHeatSink ? 0.75 : 0.45;
+
+    if (this.overheated) {
+      this.overheatTimer--;
+      if (this.animTick % 6 === 0) {
+        // Venting steam particles
+        game.spawnSteam(this.x + (Math.random() - 0.5) * 16, this.y + (Math.random() - 0.5) * 12);
+      }
+      if (this.overheatTimer <= 0) {
+        this.overheated = false;
+        this.heat = 0;
+      }
+    } else {
+      if (this.heat > 0) {
+        this.heat = Math.max(0, this.heat - coolRate);
+      }
+    }
+
+    // Chrono Recharge when not in use
+    if (!this.isRewinding && this.chronoEnergy < this.maxChronoEnergy) {
+      const regenRate = (this.slots.hull === 'chrono_capacitor') ? 0.8 : 0.4;
+      this.chronoEnergy = Math.min(this.maxChronoEnergy, this.chronoEnergy + regenRate);
+    }
+  }
+
+  takeDamage(amount, sfx, game) {
+    if (this.isDead || this.invulnTimer > 0 || this.isNashwanActive()) return;
+
+    // Hull Plating absorbs 25% damage
+    const mult = (this.slots.hull === 'hull_plating') ? 0.75 : 1.0;
+    const finalDmg = Math.round(amount * mult);
+
+    this.shield -= finalDmg;
+    sfx.playShieldHit();
+    game.addScreenShake(6);
+
+    // Chrome spark debris
+    for (let i = 0; i < 8; i++) {
+      game.spawnSpark(this.x, this.y, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
+    }
+
+    if (this.shield <= 0) {
+      this.die(sfx, game);
+    }
+  }
+
+  die(sfx, game) {
+    this.isDead = true;
+    this.lives--;
+    sfx.playExplosion('large');
+    game.addScreenShake(14);
+
+    // Multi-stage explosion
+    for (let i = 0; i < 30; i++) {
+      game.spawnDebris(this.x, this.y);
+    }
+
+    setTimeout(() => {
+      if (this.lives > 0) {
+        this.respawn();
+      } else {
+        game.triggerGameOver();
+      }
+    }, 1200);
+  }
+
+  respawn() {
+    this.isDead = false;
+    this.x = 160;
+    this.y = 165;
+    this.vx = 0;
+    this.vy = 0;
+    this.shield = this.maxShield;
+    this.heat = 0;
+    this.overheated = false;
+    this.invulnTimer = 150; // 2.5 seconds invulnerability
+  }
+
+  // Draw the Megablaster with all real-time mounted hardpoints
+  render(renderer, isReverseThrust) {
+    if (this.isDead) return;
+
+    // Invulnerability blink
+    if (this.invulnTimer > 0 && ((this.animTick >> 2) & 1)) {
+      return;
+    }
+
+    const cx = Math.round(this.x);
+    const cy = Math.round(this.y);
+
+    // ---------------------------------------------------------
+    // 1. ENGINE EXHAUST JETS (Pulsing plasma flames)
+    // ---------------------------------------------------------
+    if (isReverseThrust) {
+      // Forward-firing reverse thrusters on wing shoulders!
+      const revLen = 6 + (this.flameFrame % 3) * 3;
+      renderer.drawLaserBeam(cx - 10, cy - 2, cx - 10, cy - 2 - revLen, 1, packABGR(255, 240, 100), packABGR(240, 100, 20));
+      renderer.drawLaserBeam(cx + 10, cy - 2, cx + 10, cy - 2 - revLen, 1, packABGR(255, 240, 100), packABGR(240, 100, 20));
+    } else {
+      // Normal aft-firing thrusters
+      const flameLen = 8 + (this.flameFrame % 4) * 3;
+      const isOverdrive = this.isNashwanActive() || this.slots.hull === 'speed_booster';
+      const fLen = isOverdrive ? flameLen + 6 : flameLen;
+
+      // Left & Right Nozzles
+      renderer.drawLaserBeam(cx - 5, cy + 12, cx - 5, cy + 12 + fLen, 1, packABGR(240, 250, 255), packABGR(56, 189, 248));
+      renderer.drawLaserBeam(cx + 5, cy + 12, cx + 5, cy + 12 + fLen, 1, packABGR(240, 250, 255), packABGR(56, 189, 248));
+
+      if (isOverdrive) {
+        // Quad Thrusters
+        renderer.drawLaserBeam(cx - 9, cy + 10, cx - 9, cy + 10 + fLen * 0.7, 1, packABGR(255, 240, 180), packABGR(245, 158, 11));
+        renderer.drawLaserBeam(cx + 9, cy + 10, cx + 9, cy + 10 + fLen * 0.7, 1, packABGR(255, 240, 180), packABGR(245, 158, 11));
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 2. HARDPOINT: REAR TAILGUN / MINES
+    // ---------------------------------------------------------
+    if (this.slots.tail === 'rear_cannon') {
+      // Dual downward kinetic barrels
+      renderer.drawLine(cx - 3, cy + 12, cx - 3, cy + 18, packABGR(140, 160, 180));
+      renderer.drawLine(cx + 3, cy + 12, cx + 3, cy + 18, packABGR(140, 160, 180));
+      renderer.setPixel(cx - 3, cy + 19, packABGR(255, 220, 100));
+      renderer.setPixel(cx + 3, cy + 19, packABGR(255, 220, 100));
+    } else if (this.slots.tail === 'temporal_mines') {
+      // Pulsing spherical mine cradle
+      renderer.drawFilledCircle(cx, cy + 14, 3, packABGR(147, 51, 234));
+      renderer.setPixel(cx, cy + 14, packABGR(243, 232, 255));
+    }
+
+    // ---------------------------------------------------------
+    // 3. BASE FUSELAGE & WINGS (Bitmap Brothers High-Contrast Chrome)
+    // ---------------------------------------------------------
+    const bankOffset = this.bank; // -2 to +2
+
+    // Main Swept Wing Delta Shape
+    for (let dy = -12; dy <= 12; dy++) {
+      const widthFactor = (dy + 12) / 24; // 0 at nose, 1 at rear
+      let wingSpan = Math.round(4 + widthFactor * 18);
+      // Banking tilt shifts wing span
+      let leftSpan = wingSpan - bankOffset * 2;
+      let rightSpan = wingSpan + bankOffset * 2;
+
+      for (let dx = -leftSpan; dx <= rightSpan; dx++) {
+        const px = cx + dx;
+        const py = cy + dy;
+        // Calculate metallic specular gradient
+        const spineDist = Math.abs(dx);
+        let shadeVal = 14 - Math.round((spineDist / 16) * 10);
+        // Specular chrome ridge down the center spine
+        if (spineDist <= 1) shadeVal = 15;
+        // Edge shadow
+        if (dx === -leftSpan || dx === rightSpan) shadeVal = 3;
+
+        // Golden Nashwan Overdrive Hull Tint
+        const pal = this.isNashwanActive() ? PALETTE_GOLD : PALETTE_CHROME;
+        renderer.setPixel(px, py, pal[Math.max(0, Math.min(15, shadeVal))]);
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 4. HARDPOINT: HULL / ENGINE UPGRADES
+    // ---------------------------------------------------------
+    if (this.slots.hull === 'hull_plating') {
+      // Bolted Golden Chobham Armor Plates
+      renderer.drawRect(cx - 8, cy - 2, 4, 10, PALETTE_GOLD[10]);
+      renderer.drawRect(cx + 5, cy - 2, 4, 10, PALETTE_GOLD[10]);
+      // Chrome hex rivets
+      renderer.setPixel(cx - 7, cy, packABGR(255, 255, 255));
+      renderer.setPixel(cx + 7, cy, packABGR(255, 255, 255));
+    } else if (this.slots.hull === 'chrono_capacitor') {
+      // Glowing violet temporal core in center fuselage
+      renderer.drawFilledCircle(cx, cy + 2, 3, packABGR(192, 132, 252));
+      renderer.setPixel(cx, cy + 2, packABGR(255, 255, 255));
+    } else if (this.slots.hull === 'heat_sink') {
+      // Exposed radiator cooling fins
+      const heatCol = this.heat > 50 ? packABGR(239, 68, 68) : packABGR(245, 158, 11);
+      renderer.drawLine(cx - 10, cy + 2, cx - 6, cy + 2, heatCol);
+      renderer.drawLine(cx - 10, cy + 5, cx - 6, cy + 5, heatCol);
+      renderer.drawLine(cx + 6, cy + 2, cx + 10, cy + 2, heatCol);
+      renderer.drawLine(cx + 6, cy + 5, cx + 10, cy + 5, heatCol);
+    }
+
+    // ---------------------------------------------------------
+    // 5. COCKPIT CANOPY (Cyan bubble with specular reflection)
+    // ---------------------------------------------------------
+    const canY = cy - 4;
+    renderer.drawFilledCircle(cx, canY, 4, packABGR(14, 165, 233));
+    renderer.drawFilledCircle(cx, canY, 2, packABGR(186, 230, 253));
+    renderer.setPixel(cx - 1, canY - 1, packABGR(255, 255, 255)); // Specular highlight
+
+    // ---------------------------------------------------------
+    // 6. HARDPOINT: NOSE CANNONS
+    // ---------------------------------------------------------
+    if (this.slots.nose === 'twin_vulcan') {
+      // Twin Long Machinegun Barrels extending forward
+      renderer.drawLine(cx - 2, cy - 14, cx - 2, cy - 22, PALETTE_CHROME[12]);
+      renderer.drawLine(cx + 2, cy - 14, cx + 2, cy - 22, PALETTE_CHROME[12]);
+      renderer.setPixel(cx - 2, cy - 23, packABGR(255, 240, 180));
+      renderer.setPixel(cx + 2, cy - 23, packABGR(255, 240, 180));
+    } else if (this.slots.nose === 'plasma_spread') {
+      // Heavy glowing plasma bulb chamber
+      renderer.drawFilledCircle(cx, cy - 16, 4, packABGR(16, 185, 129));
+      renderer.setPixel(cx, cy - 16, packABGR(209, 250, 229));
+    } else if (this.slots.nose === 'electro_arc') {
+      // Dual metallic conductive prongs with electric spark
+      renderer.drawLine(cx - 3, cy - 14, cx - 3, cy - 21, PALETTE_CHROME[14]);
+      renderer.drawLine(cx + 3, cy - 14, cx + 3, cy - 21, PALETTE_CHROME[14]);
+      if (this.animTick % 3 === 0) {
+        renderer.drawLine(cx - 3, cy - 19, cx + 3, cy - 19, packABGR(125, 211, 252));
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 7. HARDPOINTS: LEFT & RIGHT WINGS
+    // ---------------------------------------------------------
+    const renderWingPod = (slotType, isLeft) => {
+      const wx = isLeft ? (cx - 15) : (cx + 15);
+      const wy = cy + 4;
+      if (!slotType) return;
+
+      if (slotType === 'side_lasers') {
+        // Angled laser emitter barrel
+        renderer.drawRect(wx - 2, wy - 4, 4, 8, PALETTE_CHROME[11]);
+        renderer.setPixel(wx, wy - 5, packABGR(239, 68, 68)); // Red targeting diode
+      } else if (slotType === 'homing_missiles') {
+        // Dual rocket pod with red-tipped warheads
+        renderer.drawRect(wx - 3, wy - 3, 6, 9, PALETTE_CHROME[8]);
+        renderer.setPixel(wx - 1, wy - 4, packABGR(239, 68, 68));
+        renderer.setPixel(wx + 1, wy - 4, packABGR(239, 68, 68));
+      } else if (slotType === 'bounce_orbs') {
+        // Heavy magnetic coil ring housing glowing orb
+        renderer.drawFilledCircle(wx, wy, 4, PALETTE_CHROME[13]);
+        renderer.drawFilledCircle(wx, wy, 2, packABGR(56, 189, 248));
+      }
+    };
+    renderWingPod(this.slots.left_wing, true);
+    renderWingPod(this.slots.right_wing, false);
+
+    // ---------------------------------------------------------
+    // 8. HARDPOINT: ORBITAL DRONES (3D perspective elliptical orbit)
+    // ---------------------------------------------------------
+    if (this.slots.drones === 'orbital_drones' || this.isNashwanActive()) {
+      const rx = 34;
+      const ry = 16;
+      [0, Math.PI].forEach(offset => {
+        const angle = this.droneAngle + offset;
+        const dx = Math.round(cx + Math.cos(angle) * rx);
+        const dy = Math.round(cy + Math.sin(angle) * ry);
+
+        // Satellite drone body
+        renderer.drawFilledCircle(dx, dy, 3, PALETTE_CHROME[12]);
+        renderer.setPixel(dx, dy, packABGR(56, 189, 248)); // Blue glowing sensor
+
+        // Tesla Chain Swarm Synergy: Draw continuous arcs to ship!
+        if (this.hasSynergyTesla()) {
+          renderer.drawLightningArc(cx, cy, dx, dy, 3, packABGR(125, 211, 252));
+        }
+      });
+    }
+
+    // ---------------------------------------------------------
+    // 9. SUPER NASHWAN POWER GOLDEN AURA
+    // ---------------------------------------------------------
+    if (this.isNashwanActive()) {
+      renderer.drawCircle(cx, cy, 22 + (this.animTick % 4), PALETTE_GOLD[10]);
+    }
+  }
+}
+
+
+// --- weapons.js ---
+// Weapons, Projectiles, Golden Synergies, Particles & Cash Bubbles
+
+class Projectile {
+  constructor(x, y, vx, vy, type, damage, isEnemy = false) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.type = type;
+    this.damage = damage;
+    this.isEnemy = isEnemy;
+    this.dead = false;
+    this.life = 180; // frames
+    this.bounces = 0;
+    this.maxBounces = (type === 'BOUNCE_ORB') ? 4 : 0;
+    this.homingTarget = null;
+  }
+
+  update(game) {
+    this.life--;
+    if (this.life <= 0) {
+      this.dead = true;
+      return;
+    }
+
+    // Specific Projectile Behaviors
+    if (this.type === 'MISSILE') {
+      // Find closest enemy if no target
+      if (!this.homingTarget || this.homingTarget.dead) {
+        this.homingTarget = game.findClosestEnemy(this.x, this.y);
+      }
+      if (this.homingTarget && !this.homingTarget.dead) {
+        const dx = this.homingTarget.x - this.x;
+        const dy = this.homingTarget.y - this.y;
+        const targetAngle = Math.atan2(dy, dx);
+        const curAngle = Math.atan2(this.vy, this.vx);
+        let diff = targetAngle - curAngle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        const turnSpeed = 0.14;
+        const newAngle = curAngle + Math.max(-turnSpeed, Math.min(turnSpeed, diff));
+        const spd = Math.hypot(this.vx, this.vy) + 0.1;
+        this.vx = Math.cos(newAngle) * Math.min(7, spd);
+        this.vy = Math.sin(newAngle) * Math.min(7, spd);
+      }
+      // Smoke puff trail
+      if (Math.random() < 0.4) {
+        game.spawnSmoke(this.x, this.y);
+      }
+    } else if (this.type === 'BOUNCE_ORB') {
+      // Wall / Screen boundary bounce
+      if (this.x <= 8 || this.x >= 312) {
+        this.vx = -this.vx;
+        this.bounces++;
+        game.sfx.playLaser();
+      }
+      if (this.y <= 6 || this.y >= 194) {
+        this.vy = -this.vy;
+        this.bounces++;
+        game.sfx.playLaser();
+      }
+      if (this.bounces >= this.maxBounces) {
+        this.dead = true;
+      }
+    } else if (this.type === 'MINE' || this.type === 'NOVA_MINE') {
+      this.vx *= 0.94;
+      this.vy *= 0.94;
+      // Proximity check against enemies
+      if (!this.isEnemy) {
+        const target = game.findClosestEnemy(this.x, this.y, 24);
+        if (target) {
+          this.detonate(game);
+        }
+      }
+    }
+
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Screen Boundary cull (except bounce orbs & mines)
+    if (this.type !== 'BOUNCE_ORB' && this.type !== 'MINE' && this.type !== 'NOVA_MINE') {
+      if (this.x < -10 || this.x > 330 || this.y < -10 || this.y > 210) {
+        this.dead = true;
+      }
+    }
+  }
+
+  detonate(game) {
+    this.dead = true;
+    game.sfx.playExplosion('large');
+    game.spawnPlasmaExplosion(this.x, this.y, 22);
+
+    // Area of effect damage to nearby enemies
+    game.enemies.forEach(e => {
+      const dist = Math.hypot(e.x - this.x, e.y - this.y);
+      if (dist < 32) {
+        e.takeDamage(this.damage * 1.5, game);
+      }
+    });
+  }
+
+  render(renderer) {
+    const rx = Math.round(this.x);
+    const ry = Math.round(this.y);
+
+    switch (this.type) {
+      case 'VULCAN':
+        renderer.drawRect(rx - 1, ry - 3, 2, 6, packABGR(255, 240, 80));
+        renderer.setPixel(rx, ry - 4, packABGR(255, 255, 255));
+        break;
+
+      case 'PLASMA':
+        renderer.drawFilledCircle(rx, ry, 3, packABGR(34, 197, 94));
+        renderer.drawFilledCircle(rx, ry, 1, packABGR(255, 255, 255));
+        break;
+
+      case 'SIDE_LASER':
+        renderer.drawLine(rx, ry, rx + Math.round(this.vx * 2), ry + Math.round(this.vy * 2), packABGR(239, 68, 68));
+        renderer.setPixel(rx, ry, packABGR(255, 255, 255));
+        break;
+
+      case 'PRISM_BEAM':
+        // Golden Synergy 1: Rainbow Refracted Prism Beam!
+        renderer.drawLine(rx, ry, rx + Math.round(this.vx * 2), ry + Math.round(this.vy * 2), packABGR(56, 189, 248));
+        renderer.setPixel(rx, ry, packABGR(255, 240, 180));
+        break;
+
+      case 'MISSILE':
+        renderer.drawRect(rx - 1, ry - 2, 2, 4, PALETTE_CHROME[12]);
+        renderer.setPixel(rx, ry - 3, packABGR(239, 68, 68)); // Red tip
+        break;
+
+      case 'BOUNCE_ORB':
+        renderer.drawFilledCircle(rx, ry, 4, PALETTE_CHROME[14]);
+        renderer.drawFilledCircle(rx, ry, 2, packABGR(56, 189, 248));
+        break;
+
+      case 'REAR_CANNON':
+        renderer.drawRect(rx - 1, ry - 2, 2, 5, packABGR(245, 158, 11));
+        break;
+
+      case 'MINE':
+      case 'NOVA_MINE':
+        renderer.drawFilledCircle(rx, ry, 4, packABGR(147, 51, 234));
+        renderer.drawFilledCircle(rx, ry, 2, packABGR(244, 114, 182));
+        renderer.setPixel(rx, ry, packABGR(255, 255, 255));
+        break;
+
+      case 'DRONE_PULSE':
+        renderer.drawRect(rx - 1, ry - 3, 2, 5, packABGR(56, 189, 248));
+        break;
+
+      case 'ENEMY_BULLET':
+        renderer.drawFilledCircle(rx, ry, 2, packABGR(239, 68, 68));
+        renderer.setPixel(rx, ry, packABGR(255, 240, 180));
+        break;
+
+      case 'BOSS_BEAM':
+        renderer.drawLaserBeam(rx, ry - 4, rx, ry + 4, 3, packABGR(255, 255, 255), packABGR(236, 72, 153));
+        break;
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// CASH BUBBLES / CREDITS DROPPED BY DESTROYED WAVES
+// -------------------------------------------------------------
+class CashBubble {
+  constructor(x, y, value) {
+    this.x = x;
+    this.y = y;
+    this.value = value;
+    this.vy = 0.6; // floats downward slowly
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.rot = Math.random() * Math.PI * 2;
+    this.dead = false;
+    this.anim = 0;
+  }
+
+  update(player, game) {
+    this.anim++;
+    this.rot += 0.08;
+
+    // Vacuum pull toward player if within magnetic range
+    const dx = player.x - this.x;
+    const dy = player.y - this.y;
+    const dist = Math.hypot(dx, dy);
+
+    // 45px normal vacuum, 90px if Hull Speed Booster or Nashwan active
+    const pullDist = player.isNashwanActive() ? 100 : 50;
+    if (dist < pullDist && !player.isDead) {
+      this.vx += (dx / dist) * 0.45;
+      this.vy += (dy / dist) * 0.45;
+    } else {
+      this.vy = 0.6;
+    }
+
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Pickup collision with player
+    if (dist < 16 && !player.isDead) {
+      this.dead = true;
+      game.addCredits(this.value);
+      game.sfx.playCoin();
+      game.spawnSpark(this.x, this.y, 0, -1);
+    }
+
+    if (this.y > 210) this.dead = true;
+  }
+
+  render(renderer) {
+    const rx = Math.round(this.x);
+    const ry = Math.round(this.y);
+    const cosVal = Math.abs(Math.cos(this.rot));
+    const coinWidth = Math.max(1, Math.round(4 * cosVal));
+
+    // Outer Bubble
+    renderer.drawCircle(rx, ry, 6, packABGR(56, 189, 248));
+    // Spinning Metallic Gold Coin in center
+    for (let dy = -3; dy <= 3; dy++) {
+      for (let dx = -coinWidth; dx <= coinWidth; dx++) {
+        renderer.setPixel(rx + dx, ry + dy, PALETTE_GOLD[10]);
+      }
+    }
+    renderer.setPixel(rx, ry, packABGR(255, 255, 255));
+  }
+}
+
+// -------------------------------------------------------------
+// PARTICLE SYSTEM (Sparks, Smoke, Steam, Debris)
+// -------------------------------------------------------------
+class Particle {
+  constructor(x, y, vx, vy, color, life, type = 'spark') {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.color = color;
+    this.maxLife = life;
+    this.life = life;
+    this.type = type;
+    this.dead = false;
+  }
+
+  update() {
+    this.life--;
+    if (this.life <= 0) {
+      this.dead = true;
+      return;
+    }
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.type === 'smoke' || this.type === 'steam') {
+      this.vx *= 0.96;
+      this.vy -= 0.05; // rise upwards
+    } else if (this.type === 'debris') {
+      this.vy += 0.08; // gravity
+    }
+  }
+
+  render(renderer) {
+    const rx = Math.round(this.x);
+    const ry = Math.round(this.y);
+    if (rx < 0 || rx >= 320 || ry < 0 || ry >= 200) return;
+
+    if (this.type === 'spark') {
+      renderer.setPixel(rx, ry, this.color);
+    } else if (this.type === 'smoke' || this.type === 'steam') {
+      const radius = Math.round(1 + (1 - this.life / this.maxLife) * 2);
+      renderer.drawCircle(rx, ry, radius, this.color);
+    } else if (this.type === 'debris') {
+      renderer.drawRect(rx - 1, ry - 1, 2, 2, this.color);
+    }
+  }
+}
+
+
+// --- caverns.js ---
+// Destructible Caverns, Bottlenecks & Multi-Layer Parallax Scrolling
+
+class CavernManager {
+  constructor() {
+    this.stage = 1;
+    this.scrollY = 0;
+    this.scrollSpeed = 0.8;
+    this.stageLength = 3200; // total vertical pixels per stage
+    this.destructibleBlocks = [];
+    this.stars = [];
+    this.initStars();
+    this.initStage(1);
+  }
+
+  initStars() {
+    this.stars = [];
+    for (let i = 0; i < 70; i++) {
+      this.stars.push({
+        x: Math.floor(Math.random() * 320),
+        y: Math.floor(Math.random() * 200),
+        spd: 0.2 + Math.random() * 0.4,
+        size: Math.random() < 0.2 ? 2 : 1,
+        color: (Math.random() < 0.3) ? packABGR(56, 189, 248) : packABGR(220, 230, 245)
+      });
+    }
+  }
+
+  initStage(stageNum) {
+    this.stage = stageNum;
+    this.scrollY = 0;
+    this.destructibleBlocks = [];
+
+    // Generate procedural destructible bottleneck blocks along stage height
+    const blockCount = 40;
+    const pal = (stageNum === 1) ? PALETTE_CHROME :
+                (stageNum === 2) ? PALETTE_CHITIN :
+                (stageNum === 3) ? PALETTE_GOLD :
+                (stageNum === 4) ? PALETTE_CHROME : PALETTE_CHITIN;
+
+    for (let i = 0; i < blockCount; i++) {
+      const by = 200 + i * 70 + (Math.random() * 20);
+      // Bottleneck walls: left block, right block, or center obstacle
+      const type = i % 3;
+      if (type === 0) {
+        // Left protruding cavern rock
+        this.destructibleBlocks.push({
+          x: 0,
+          worldY: by,
+          w: 48 + Math.floor(Math.random() * 24),
+          h: 24,
+          hp: 35,
+          maxHp: 35,
+          color: pal[6],
+          dead: false
+        });
+      } else if (type === 1) {
+        // Right protruding cavern rock
+        const w = 48 + Math.floor(Math.random() * 24);
+        this.destructibleBlocks.push({
+          x: 320 - w,
+          worldY: by,
+          w: w,
+          h: 24,
+          hp: 35,
+          maxHp: 35,
+          color: pal[6],
+          dead: false
+        });
+      } else {
+        // Center destructible monolith / coral spire
+        this.destructibleBlocks.push({
+          x: 120 + Math.floor(Math.random() * 40),
+          worldY: by,
+          w: 40,
+          h: 28,
+          hp: 50,
+          maxHp: 50,
+          color: pal[8],
+          dead: false
+        });
+      }
+    }
+  }
+
+  update(isReverseThrust) {
+    // Scroll progress
+    if (isReverseThrust) {
+      // Reverse camera scroll when backing up!
+      this.scrollY = Math.max(0, this.scrollY - 1.2);
+    } else {
+      this.scrollY += this.scrollSpeed;
+    }
+
+    // Parallax stars
+    const starDir = isReverseThrust ? -1 : 1;
+    this.stars.forEach(st => {
+      st.y += st.spd * starDir;
+      if (st.y >= 200) st.y -= 200;
+      if (st.y < 0) st.y += 200;
+    });
+  }
+
+  // Check bullet collisions against destructible cavern blocks
+  checkBulletCollisions(bullets, game) {
+    bullets.forEach(b => {
+      if (b.dead) return;
+      this.destructibleBlocks.forEach(blk => {
+        if (blk.dead) return;
+        const screenY = blk.worldY - this.scrollY;
+        if (screenY < -30 || screenY > 210) return;
+
+        if (b.x >= blk.x && b.x <= blk.x + blk.w && b.y >= screenY && b.y <= screenY + blk.h) {
+          b.dead = true;
+          blk.hp -= b.damage;
+          game.sfx.playLaser();
+          game.spawnSpark(b.x, b.y, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3);
+
+          // Golden Synergy 1 Check: RICOCHET PRISM MATRIX!
+          // If a side laser strikes a cavern wall, split into 3 refractive prism beams!
+          if (b.type === 'SIDE_LASER' && game.player.hasSynergyPrism()) {
+            game.sfx.playLaser();
+            game.spawnPrismBeams(b.x, b.y);
+          }
+
+          if (blk.hp <= 0) {
+            blk.dead = true;
+            game.sfx.playExplosion('small');
+            game.addScore(150);
+            // Drop cash bubble
+            game.spawnCash(blk.x + blk.w / 2, screenY + blk.h / 2, 25);
+            // Spawn debris
+            for (let i = 0; i < 8; i++) {
+              game.spawnDebris(blk.x + Math.random() * blk.w, screenY + Math.random() * blk.h);
+            }
+          }
+        }
+      });
+    });
+  }
+
+  // Check ship collision with cavern walls
+  checkPlayerCollision(player, sfx, game) {
+    if (player.isDead || player.invulnTimer > 0) return;
+
+    this.destructibleBlocks.forEach(blk => {
+      if (blk.dead) return;
+      const screenY = blk.worldY - this.scrollY;
+      if (screenY < -30 || screenY > 210) return;
+
+      // Simple AABB overlap
+      if (player.x + 10 >= blk.x && player.x - 10 <= blk.x + blk.w &&
+          player.y + 12 >= screenY && player.y - 12 <= screenY + blk.h) {
+        // Grind damage
+        player.takeDamage(12, sfx, game);
+        // Push ship out
+        if (player.x < blk.x + blk.w / 2) player.x -= 4;
+        else player.x += 4;
+      }
+    });
+  }
+
+  render(renderer) {
+    // ---------------------------------------------------------
+    // LAYER 1: DEEP PARALLAX STARS & DISTANT NEBULA / GRID (0.25x)
+    // ---------------------------------------------------------
+    this.stars.forEach(st => {
+      renderer.setPixel(st.x, Math.floor(st.y), st.color);
+    });
+
+    // Stage 4 Demoscene Silicon Wafer Vector Copper Bars
+    if (this.stage === 4) {
+      const copperOffset = (this.scrollY * 0.3) % 200;
+      for (let y = 0; y < 200; y += 40) {
+        const py = Math.floor((y + copperOffset) % 200);
+        renderer.drawLine(0, py, 320, py, packABGR(34, 197, 94));
+      }
+    }
+
+    // ---------------------------------------------------------
+    // LAYER 2: MIDGROUND BIOMECHANICAL RIBS & PIPES (0.6x)
+    // ---------------------------------------------------------
+    const midScroll = this.scrollY * 0.6;
+    const midPal = (this.stage === 3) ? PALETTE_GOLD : (this.stage === 5 ? PALETTE_CHITIN : PALETTE_CHROME);
+
+    for (let rib = -1; rib < 5; rib++) {
+      const ry = Math.floor(((rib * 60) - (midScroll % 60)));
+      if (ry >= -20 && ry <= 210) {
+        // Left rib arch
+        renderer.drawCircle(20, ry, 18, midPal[3]);
+        // Right rib arch
+        renderer.drawCircle(300, ry, 18, midPal[3]);
+      }
+    }
+
+    // ---------------------------------------------------------
+    // LAYER 3: FOREGROUND DESTRUCTIBLE BLOCKS & WALLS (1.0x)
+    // ---------------------------------------------------------
+    this.destructibleBlocks.forEach(blk => {
+      if (blk.dead) return;
+      const screenY = Math.floor(blk.worldY - this.scrollY);
+      if (screenY < -30 || screenY > 210) return;
+
+      // Draw metallic/organic cavern block with dithered relief
+      const pal = (this.stage === 1) ? PALETTE_CHROME :
+                  (this.stage === 2) ? PALETTE_CHITIN :
+                  (this.stage === 3) ? PALETTE_GOLD :
+                  (this.stage === 4) ? PALETTE_CHROME : PALETTE_CHITIN;
+
+      renderer.drawDitheredRect(blk.x, screenY, blk.w, blk.h, pal, 8, 3, false);
+      renderer.drawRect(blk.x, screenY, blk.w, 1, pal[14]); // specular rim
+      renderer.drawRect(blk.x, screenY + blk.h - 1, blk.w, 1, pal[1]); // shadow base
+
+      // Cracks if damaged
+      if (blk.hp < blk.maxHp) {
+        const crackX = blk.x + Math.floor(blk.w * 0.4);
+        renderer.drawLine(crackX, screenY + 2, crackX + 6, screenY + blk.h - 2, packABGR(10, 10, 10));
+      }
+    });
+  }
+}
+
+
+// --- enemies.js ---
+// 5 Evolutionary Epoch Enemies & Multi-Phase Bosses
+
+class Enemy {
+  constructor(x, y, type, stage = 1) {
+    this.x = x;
+    this.y = y;
+    this.type = type;
+    this.stage = stage;
+    this.dead = false;
+    this.t = Math.random() * 100;
+    this.shootTimer = 30 + Math.floor(Math.random() * 60);
+
+    // Stats by enemy type
+    switch (type) {
+      case 'trilobite': // Cambrian
+        this.hp = 30; this.maxHp = 30; this.score = 200; this.cash = 15;
+        this.w = 20; this.h = 24; this.spd = 1.0;
+        break;
+      case 'ammonite': // Cambrian
+        this.hp = 25; this.maxHp = 25; this.score = 150; this.cash = 10;
+        this.w = 18; this.h = 18; this.spd = 0.8;
+        break;
+      case 'angler': // Abyssal
+        this.hp = 45; this.maxHp = 45; this.score = 300; this.cash = 25;
+        this.w = 24; this.h = 22; this.spd = 1.2;
+        break;
+      case 'cephalopod': // Abyssal
+        this.hp = 20; this.maxHp = 20; this.score = 180; this.cash = 15;
+        this.w = 16; this.h = 22; this.spd = 1.8;
+        break;
+      case 'gyrobomber': // Babbage
+        this.hp = 35; this.maxHp = 35; this.score = 250; this.cash = 20;
+        this.w = 22; this.h = 20; this.spd = 1.1;
+        break;
+      case 'pistonbeetle': // Babbage
+        this.hp = 50; this.maxHp = 50; this.score = 350; this.cash = 30;
+        this.w = 26; this.h = 24; this.spd = 1.4;
+        break;
+      case 'blitterbob': // 1989 Silicon
+        this.hp = 25; this.maxHp = 25; this.score = 220; this.cash = 15;
+        this.w = 18; this.h = 18; this.spd = 1.5;
+        break;
+      case 'vectorglider': // 1989 Silicon
+        this.hp = 30; this.maxHp = 30; this.score = 280; this.cash = 20;
+        this.w = 20; this.h = 20; this.spd = 1.3;
+        break;
+      case 'biodrone': // Xenite Hive
+        this.hp = 40; this.maxHp = 40; this.score = 320; this.cash = 25;
+        this.w = 22; this.h = 22; this.spd = 1.6;
+        break;
+      case 'facehugger': // Xenite Hive
+        this.hp = 15; this.maxHp = 15; this.score = 120; this.cash = 10;
+        this.w = 14; this.h = 14; this.spd = 2.4;
+        break;
+      default:
+        this.hp = 20; this.maxHp = 20; this.score = 100; this.cash = 10;
+        this.w = 16; this.h = 16; this.spd = 1.0;
+    }
+  }
+
+  update(game) {
+    this.t += 0.05;
+
+    // Movement patterns
+    switch (this.type) {
+      case 'trilobite':
+        this.y += this.spd;
+        this.x += Math.sin(this.t * 1.5) * 1.8;
+        break;
+      case 'ammonite':
+        this.y += this.spd * 0.7;
+        this.x += Math.cos(this.t) * 1.2;
+        break;
+      case 'angler':
+        this.y += this.spd * 0.9;
+        // Snap forward when close to player
+        if (Math.abs(game.player.x - this.x) < 40 && game.player.y > this.y) {
+          this.y += 1.8;
+        }
+        break;
+      case 'cephalopod':
+        this.y += this.spd;
+        this.x += Math.sin(this.t * 2) * 2.2;
+        break;
+      case 'gyrobomber':
+        this.y += this.spd;
+        this.x += Math.sin(this.t) * 1.5;
+        break;
+      case 'pistonbeetle':
+        this.y += this.spd * 1.2;
+        break;
+      case 'blitterbob': // Classic Lissajous curve
+        this.y += this.spd * 0.8;
+        this.x += Math.sin(this.t * 2.5) * 2.5;
+        break;
+      case 'vectorglider':
+        this.y += this.spd;
+        this.x += Math.cos(this.t * 1.8) * 1.6;
+        break;
+      case 'biodrone':
+        this.y += this.spd;
+        this.x += Math.sin(this.t * 2.8) * 2.0;
+        break;
+      case 'facehugger':
+        // High-speed leap toward player
+        const dx = game.player.x - this.x;
+        const dy = game.player.y - this.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        this.x += (dx / dist) * this.spd;
+        this.y += (dy / dist) * this.spd;
+        break;
+    }
+
+    // Firing behavior
+    this.shootTimer--;
+    if (this.shootTimer <= 0 && this.y > 10 && this.y < 160) {
+      this.shoot(game);
+      this.shootTimer = 60 + Math.floor(Math.random() * 80);
+    }
+
+    // Despawn offscreen
+    if (this.y > 215 || this.x < -30 || this.x > 350) {
+      this.dead = true;
+    }
+  }
+
+  shoot(game) {
+    if (this.type === 'ammonite') {
+      // Circular pearl bullet
+      game.bullets.push(new Projectile(this.x, this.y, 0, 2.2, 'ENEMY_BULLET', 12, true));
+    } else if (this.type === 'gyrobomber') {
+      // Aimed bullet
+      const dx = game.player.x - this.x;
+      const dy = game.player.y - this.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      game.bullets.push(new Projectile(this.x, this.y, (dx / dist) * 2.0, (dy / dist) * 2.0, 'ENEMY_BULLET', 14, true));
+    } else if (this.type === 'biodrone' || this.type === 'blitterbob') {
+      // Twin pulse
+      game.bullets.push(new Projectile(this.x - 4, this.y + 4, -0.4, 2.2, 'ENEMY_BULLET', 10, true));
+      game.bullets.push(new Projectile(this.x + 4, this.y + 4, 0.4, 2.2, 'ENEMY_BULLET', 10, true));
+    }
+  }
+
+  takeDamage(amount, game) {
+    this.hp -= amount;
+    game.sfx.playLaser();
+    game.spawnSpark(this.x, this.y, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3);
+
+    if (this.hp <= 0 && !this.dead) {
+      this.dead = true;
+      game.sfx.playExplosion('small');
+      game.addScore(this.score);
+      game.spawnCash(this.x, this.y, this.cash);
+      for (let i = 0; i < 8; i++) {
+        game.spawnDebris(this.x, this.y);
+      }
+    }
+  }
+
+  render(renderer) {
+    const rx = Math.round(this.x);
+    const ry = Math.round(this.y);
+
+    switch (this.type) {
+      case 'trilobite':
+        // Segmented Prehistoric Carapace
+        renderer.drawFilledCircle(rx, ry - 4, 6, PALETTE_CHROME[8]);
+        renderer.drawRect(rx - 8, ry, 16, 4, PALETTE_CHROME[6]);
+        renderer.drawRect(rx - 6, ry + 4, 12, 4, PALETTE_CHROME[4]);
+        renderer.drawRect(rx - 4, ry + 8, 8, 3, PALETTE_CHROME[2]);
+        // Red compound eye points
+        renderer.setPixel(rx - 3, ry - 6, packABGR(239, 68, 68));
+        renderer.setPixel(rx + 3, ry - 6, packABGR(239, 68, 68));
+        break;
+
+      case 'ammonite':
+        // Golden spiral shell
+        renderer.drawFilledCircle(rx, ry, 7, PALETTE_GOLD[8]);
+        renderer.drawCircle(rx, ry, 5, PALETTE_GOLD[12]);
+        renderer.drawCircle(rx, ry, 3, PALETTE_GOLD[5]);
+        renderer.setPixel(rx, ry, packABGR(255, 255, 255));
+        break;
+
+      case 'angler':
+        // Abyssal Predatory Fish with Glowing Lure
+        renderer.drawFilledCircle(rx, ry, 8, PALETTE_CHITIN[4]);
+        renderer.drawLine(rx, ry - 8, rx + 4, ry - 14, PALETTE_CHITIN[10]);
+        renderer.drawFilledCircle(rx + 5, ry - 15, 3, packABGR(68, 228, 128)); // Bioluminescent lure
+        // Jagged teeth
+        renderer.drawLine(rx - 6, ry + 4, rx + 6, ry + 4, packABGR(255, 255, 255));
+        break;
+
+      case 'cephalopod':
+        // Deep sea ink squid
+        renderer.drawFilledCircle(rx, ry - 4, 5, PALETTE_CHITIN[7]);
+        // Undulating tentacles
+        const tentWave = Math.sin(this.t * 3) * 3;
+        renderer.drawLine(rx - 4, ry, rx - 6 + tentWave, ry + 10, PALETTE_CHITIN[5]);
+        renderer.drawLine(rx, ry, rx, ry + 12, PALETTE_CHITIN[5]);
+        renderer.drawLine(rx + 4, ry, rx + 6 - tentWave, ry + 10, PALETTE_CHITIN[5]);
+        break;
+
+      case 'gyrobomber':
+        // Brass clockwork flyer with spinning cog blades
+        renderer.drawFilledCircle(rx, ry, 7, PALETTE_GOLD[9]);
+        const cogAngle = this.t * 4;
+        const cx1 = Math.round(Math.cos(cogAngle) * 9);
+        const cy1 = Math.round(Math.sin(cogAngle) * 9);
+        renderer.drawLine(rx - cx1, ry - cy1, rx + cx1, ry + cy1, PALETTE_GOLD[14]);
+        break;
+
+      case 'pistonbeetle':
+        // Heavy brass beetle with steam exhausts
+        renderer.drawRect(rx - 9, ry - 7, 18, 14, PALETTE_GOLD[7]);
+        renderer.drawRect(rx - 7, ry - 5, 14, 10, PALETTE_GOLD[11]);
+        renderer.setPixel(rx - 8, ry - 8, packABGR(255, 255, 255));
+        renderer.setPixel(rx + 8, ry - 8, packABGR(255, 255, 255));
+        break;
+
+      case 'blitterbob':
+        // Iconic Amiga Chrome Sphere with specular highlight
+        renderer.drawFilledCircle(rx, ry, 7, PALETTE_CHROME[10]);
+        renderer.drawFilledCircle(rx - 2, ry - 2, 3, PALETTE_CHROME[14]);
+        renderer.setPixel(rx - 3, ry - 3, packABGR(255, 255, 255));
+        break;
+
+      case 'vectorglider':
+        // 3D wireframe rotating tetrahedron
+        renderer.drawLine(rx, ry - 8, rx - 7, ry + 6, packABGR(34, 197, 94));
+        renderer.drawLine(rx - 7, ry + 6, rx + 7, ry + 6, packABGR(34, 197, 94));
+        renderer.drawLine(rx + 7, ry + 6, rx, ry - 8, packABGR(34, 197, 94));
+        renderer.drawLine(rx, ry - 8, rx, ry + 2, packABGR(255, 255, 255));
+        break;
+
+      case 'biodrone':
+        // Biomechanical Giger flier
+        renderer.drawFilledCircle(rx, ry, 6, PALETTE_CHITIN[5]);
+        renderer.drawLine(rx - 10, ry - 4, rx - 3, ry + 2, PALETTE_CHROME[12]);
+        renderer.drawLine(rx + 10, ry - 4, rx + 3, ry + 2, PALETTE_CHROME[12]);
+        renderer.setPixel(rx, ry, packABGR(239, 68, 68));
+        break;
+
+      case 'facehugger':
+        // Fast skittering parasite
+        renderer.drawFilledCircle(rx, ry, 4, packABGR(244, 114, 182));
+        renderer.drawLine(rx - 5, ry - 3, rx + 5, ry + 3, packABGR(192, 132, 252));
+        renderer.drawLine(rx + 5, ry - 3, rx - 5, ry + 3, packABGR(192, 132, 252));
+        break;
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// 5 MULTI-PHASE EPOCH BOSSES
+// -------------------------------------------------------------
+class Boss {
+  constructor(stage) {
+    this.stage = stage;
+    this.x = 160;
+    this.y = -60; // enters from top
+    this.targetY = 55;
+    this.dead = false;
+    this.phase = 1;
+    this.t = 0;
+    this.attackTimer = 60;
+    this.shieldActive = false;
+    this.shieldTimer = 0;
+
+    switch (stage) {
+      case 1:
+        this.name = "LEVIATHAN ANOMALOCARIS";
+        this.maxHp = 600; this.hp = 600; this.w = 90; this.h = 45;
+        break;
+      case 2:
+        this.name = "KRAKEN-NAUTILUS";
+        this.maxHp = 900; this.hp = 900; this.w = 80; this.h = 50;
+        break;
+      case 3:
+        this.name = "DIFFERENCE ENGINE AUTOMATON";
+        this.maxHp = 1200; this.hp = 1200; this.w = 95; this.h = 55;
+        break;
+      case 4:
+        this.name = "68000 CYBER-BLITTER";
+        this.maxHp = 1500; this.hp = 1500; this.w = 85; this.h = 50;
+        break;
+      case 5:
+        this.name = "SOVEREIGN XENITE MOTHER-BRAIN";
+        this.maxHp = 2200; this.hp = 2200; this.w = 110; this.h = 65;
+        break;
+    }
+  }
+
+  update(game) {
+    this.t += 0.04;
+
+    // Entrance descent
+    if (this.y < this.targetY) {
+      this.y += 0.8;
+      return;
+    }
+
+    // Hover movement
+    this.x = 160 + Math.sin(this.t * 0.8) * 60;
+    this.y = this.targetY + Math.cos(this.t * 1.2) * 12;
+
+    // Phase checks based on HP
+    const hpRatio = this.hp / this.maxHp;
+    if (hpRatio < 0.35) this.phase = 3;
+    else if (hpRatio < 0.7) this.phase = 2;
+
+    // Shielding behavior (Stage 2 Nautilus & Stage 5 Mother-Brain)
+    if (this.shieldTimer > 0) {
+      this.shieldTimer--;
+      if (this.shieldTimer <= 0) this.shieldActive = false;
+    }
+
+    // Attacks
+    this.attackTimer--;
+    if (this.attackTimer <= 0) {
+      this.executeAttack(game);
+      const attackInterval = this.phase === 3 ? 35 : (this.phase === 2 ? 50 : 70);
+      this.attackTimer = attackInterval;
+    }
+  }
+
+  executeAttack(game) {
+    switch (this.stage) {
+      case 1: // Leviathan Anomalocaris: Grasping pincher sweep & needle spray
+        for (let a = -2; a <= 2; a++) {
+          const vx = a * 1.1;
+          const vy = 2.4;
+          game.bullets.push(new Projectile(this.x, this.y + 20, vx, vy, 'ENEMY_BULLET', 12, true));
+        }
+        game.sfx.playLaser();
+        break;
+
+      case 2: // Kraken-Nautilus: Writhing tentacle ink volleys & shell shield
+        if (Math.random() < 0.25 && !this.shieldActive) {
+          this.shieldActive = true;
+          this.shieldTimer = 120; // 2 seconds shell retreat!
+          game.sfx.playShieldHit();
+        } else {
+          // Circular spread of ink pearls
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 + this.t;
+            game.bullets.push(new Projectile(this.x, this.y + 10, Math.cos(angle) * 2.2, Math.sin(angle) * 2.2, 'ENEMY_BULLET', 14, true));
+          }
+        }
+        break;
+
+      case 3: // Difference Engine Automaton: Binary laser streams & steam sawblades
+        for (let i = -1; i <= 1; i += 2) {
+          game.bullets.push(new Projectile(this.x + i * 25, this.y + 20, i * 1.5, 3.0, 'ENEMY_BULLET', 16, true));
+        }
+        if (this.phase >= 2) {
+          game.bullets.push(new Projectile(this.x, this.y + 15, 0, 4.0, 'ENEMY_BULLET', 22, true));
+        }
+        break;
+
+      case 4: // 68000 Cyber-Blitter: Copper raster sweeps & DMA blit storm
+        const count = this.phase === 3 ? 12 : 8;
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI + (this.t % Math.PI);
+          game.bullets.push(new Projectile(this.x, this.y + 10, Math.cos(angle) * 2.5, Math.sin(angle) * 2.5, 'ENEMY_BULLET', 14, true));
+        }
+        break;
+
+      case 5: // Sovereign Xenite Mother-Brain: Triple-phase apocalypse!
+        if (this.phase === 1) {
+          // Dual plasma beams
+          game.bullets.push(new Projectile(this.x - 30, this.y + 25, -0.6, 2.8, 'ENEMY_BULLET', 18, true));
+          game.bullets.push(new Projectile(this.x + 30, this.y + 25, 0.6, 2.8, 'ENEMY_BULLET', 18, true));
+        } else if (this.phase === 2) {
+          // Synaptic lightning storm
+          for (let i = -3; i <= 3; i++) {
+            game.bullets.push(new Projectile(this.x + i * 12, this.y + 20, i * 0.7, 3.2, 'ENEMY_BULLET', 18, true));
+          }
+        } else {
+          // Phase 3 Hyper-Frenzy: Screen-wide mega barrage
+          for (let i = 0; i < 14; i++) {
+            const angle = (i / 14) * Math.PI * 2 + (this.t * 2);
+            game.bullets.push(new Projectile(this.x, this.y, Math.cos(angle) * 3.0, Math.sin(angle) * 3.0, 'ENEMY_BULLET', 20, true));
+          }
+        }
+        break;
+    }
+  }
+
+  takeDamage(amount, game) {
+    if (this.shieldActive) {
+      game.sfx.playShieldHit();
+      game.spawnSpark(this.x, this.y, 0, -2);
+      return;
+    }
+
+    this.hp -= amount;
+    game.sfx.playLaser();
+    game.addScreenShake(3);
+
+    if (this.hp <= 0 && !this.dead) {
+      this.dead = true;
+      game.sfx.playExplosion('boss');
+      game.addScreenShake(20);
+      game.addScore(10000);
+
+      // Huge Cash & Debris shower
+      for (let i = 0; i < 15; i++) {
+        game.spawnCash(this.x + (Math.random() - 0.5) * 60, this.y + (Math.random() - 0.5) * 40, 50);
+      }
+      for (let i = 0; i < 40; i++) {
+        game.spawnDebris(this.x + (Math.random() - 0.5) * 60, this.y + (Math.random() - 0.5) * 40);
+      }
+
+      setTimeout(() => {
+        game.onBossDefeated();
+      }, 2000);
+    }
+  }
+
+  render(renderer) {
+    const rx = Math.round(this.x);
+    const ry = Math.round(this.y);
+
+    // Boss Health Bar on top of screen
+    const barWidth = 180;
+    const fillWidth = Math.max(0, Math.round((this.hp / this.maxHp) * barWidth));
+    renderer.drawRect(70, 8, barWidth, 6, packABGR(20, 25, 35));
+    renderer.drawRect(70, 8, fillWidth, 6, packABGR(239, 68, 68));
+    renderer.drawRect(70, 8, barWidth, 1, packABGR(255, 255, 255));
+
+    // Shield Dome if active
+    if (this.shieldActive) {
+      renderer.drawCircle(rx, ry, 45, packABGR(56, 189, 248));
+    }
+
+    switch (this.stage) {
+      case 1: // Leviathan Anomalocaris
+        renderer.drawFilledCircle(rx, ry, 22, PALETTE_CHROME[8]);
+        // Compound eyes
+        renderer.drawFilledCircle(rx - 12, ry - 8, 5, packABGR(239, 68, 68));
+        renderer.drawFilledCircle(rx + 12, ry - 8, 5, packABGR(239, 68, 68));
+        // Grasping barbed appendages
+        const clawWave = Math.sin(this.t * 2) * 8;
+        renderer.drawLine(rx - 15, ry + 10, rx - 28 + clawWave, ry + 28, PALETTE_CHROME[13]);
+        renderer.drawLine(rx + 15, ry + 10, rx + 28 - clawWave, ry + 28, PALETTE_CHROME[13]);
+        break;
+
+      case 2: // Kraken-Nautilus
+        // Massive coiled chambered shell
+        renderer.drawFilledCircle(rx, ry - 5, 25, PALETTE_CHITIN[7]);
+        renderer.drawCircle(rx, ry - 5, 18, PALETTE_CHITIN[10]);
+        renderer.drawCircle(rx, ry - 5, 10, PALETTE_CHITIN[12]);
+        // 8 Writhing tentacles
+        for (let i = 0; i < 8; i++) {
+          const tx = rx - 35 + i * 10;
+          const wave = Math.sin(this.t * 3 + i) * 6;
+          renderer.drawLine(tx, ry + 10, tx + wave, ry + 32, PALETTE_CHITIN[5]);
+        }
+        break;
+
+      case 3: // Difference Engine Automaton
+        // Massive brass computing titan with punched tape & cogs
+        renderer.drawRect(rx - 38, ry - 20, 76, 40, PALETTE_GOLD[8]);
+        renderer.drawRect(rx - 30, ry - 14, 60, 28, PALETTE_GOLD[12]);
+        // Swinging balance pendulum
+        const pendX = Math.round(Math.sin(this.t * 2) * 20);
+        renderer.drawLine(rx, ry, rx + pendX, ry + 32, PALETTE_GOLD[14]);
+        renderer.drawFilledCircle(rx + pendX, ry + 32, 6, PALETTE_GOLD[15]);
+        break;
+
+      case 4: // 68000 Cyber-Blitter
+        // Giant ceramic CPU chip with gold pins
+        renderer.drawRect(rx - 32, ry - 18, 64, 36, packABGR(30, 30, 30));
+        renderer.drawRect(rx - 26, ry - 14, 52, 28, PALETTE_CHROME[6]);
+        // Gold contact pins
+        for (let x = -30; x <= 30; x += 6) {
+          renderer.drawLine(rx + x, ry - 19, rx + x, ry - 23, PALETTE_GOLD[10]);
+          renderer.drawLine(rx + x, ry + 19, rx + x, ry + 23, PALETTE_GOLD[10]);
+        }
+        // Swirling rainbow copper raster bars
+        const rAngle = this.t * 2;
+        renderer.drawLine(rx - 45, ry + Math.sin(rAngle) * 25, rx + 45, ry - Math.sin(rAngle) * 25, packABGR(34, 197, 94));
+        break;
+
+      case 5: // Sovereign Xenite Mother-Brain
+        // Articulated chrome ribcage chamber
+        for (let r = -3; r <= 3; r++) {
+          renderer.drawCircle(rx + r * 14, ry, 28, PALETTE_CHROME[7]);
+        }
+        // Giant pulsating brain core
+        const pulse = Math.sin(this.t * 4) * 3;
+        renderer.drawFilledCircle(rx, ry, 18 + pulse, PALETTE_CHITIN[7]);
+        renderer.drawFilledCircle(rx, ry, 10 + pulse, packABGR(236, 72, 153));
+        // Synaptic nerve spark
+        if (Math.random() < 0.4) {
+          renderer.drawLightningArc(rx, ry, rx + (Math.random() - 0.5) * 50, ry + (Math.random() - 0.5) * 40, 3, packABGR(255, 255, 255));
+        }
+        break;
+    }
+  }
+}
+
+
+// --- crispin.js ---
+// Crispin's Intergalactic Upgrade Store & Alien Pawnbroker
+
+const UPGRADE_CATALOG = [
+  {
+    id: 'twin_vulcan',
+    name: 'TWIN VULCAN',
+    category: 'weapons',
+    slot: 'nose',
+    price: 300,
+    desc: 'High velocity alternating kinetic machineguns. Rapid fire, low heat generation.',
+    synergy: null
+  },
+  {
+    id: 'plasma_spread',
+    name: 'PLASMA SPREAD',
+    category: 'weapons',
+    slot: 'nose',
+    price: 550,
+    desc: 'Fires a 3-way to 5-way spread of superheated emerald plasma orbs.',
+    synergy: null
+  },
+  {
+    id: 'electro_arc',
+    name: 'ELECTRO-ARC BEAM',
+    category: 'weapons',
+    slot: 'nose',
+    price: 750,
+    desc: 'Continuous piercing lightning beam. Chains through lines of hostiles.',
+    synergy: 'TESLA CHAIN SWARM'
+  },
+  {
+    id: 'side_lasers',
+    name: 'SIDE-LASER PODS',
+    category: 'weapons',
+    slot: 'left_wing', // can also mount on right_wing
+    price: 450,
+    desc: 'Angled flanking laser cannons covering horizontal and 45-degree vectors.',
+    synergy: 'RICOCHET PRISM'
+  },
+  {
+    id: 'homing_missiles',
+    name: 'HOMING MISSILES',
+    category: 'weapons',
+    slot: 'left_wing',
+    price: 600,
+    desc: 'Micro-missile racks launching self-steering warheads that track targets.',
+    synergy: null
+  },
+  {
+    id: 'bounce_orbs',
+    name: 'BOUNCE-ORB LAUNCHER',
+    category: 'weapons',
+    slot: 'right_wing',
+    price: 500,
+    desc: 'Heavy magnetic spheres that ricochet off walls and enemies up to 4 times.',
+    synergy: 'RICOCHET PRISM'
+  },
+  {
+    id: 'rear_cannon',
+    name: 'REAR TAIL CANNON',
+    category: 'weapons',
+    slot: 'tail',
+    price: 350,
+    desc: 'Twin kinetic auto-cannons firing directly backwards to protect the rear.',
+    synergy: null
+  },
+  {
+    id: 'temporal_mines',
+    name: 'TEMPORAL MINES',
+    category: 'weapons',
+    slot: 'tail',
+    price: 400,
+    desc: 'Proximity mines dropped aft. Detonate in massive temporal plasma blasts.',
+    synergy: 'CHRONO BACKFIRE NOVA'
+  },
+  {
+    id: 'orbital_drones',
+    name: 'DUAL ORBITING DRONES',
+    category: 'defense',
+    slot: 'drones',
+    price: 800,
+    desc: 'Two chrome satellite pods orbiting ship. Block bullets and fire tandem lasers.',
+    synergy: 'TESLA CHAIN SWARM'
+  },
+  {
+    id: 'hull_plating',
+    name: 'HEAVY HULL PLATING',
+    category: 'defense',
+    slot: 'hull',
+    price: 400,
+    desc: 'Reinforced titanium-gold armor plating. Increases max shield to 150 and cuts damage.',
+    synergy: null
+  },
+  {
+    id: 'speed_booster',
+    name: 'SPEED BOOSTER',
+    category: 'defense',
+    slot: 'hull',
+    price: 300,
+    desc: 'Quad hyper-thrusters increasing ship agility and reverse scroll speed by 40%.',
+    synergy: null
+  },
+  {
+    id: 'chrono_capacitor',
+    name: 'CHRONO-CAPACITOR',
+    category: 'defense',
+    slot: 'hull',
+    price: 500,
+    desc: 'Expands Chrono-Rewind capacity to 5 seconds and speeds temporal recovery.',
+    synergy: null
+  },
+  {
+    id: 'heat_sink',
+    name: 'HEAT SINK RADIATOR',
+    category: 'defense',
+    slot: 'hull',
+    price: 350,
+    desc: 'Cuts weapon heat buildup by 50% and doubles cooling dissipation speed.',
+    synergy: null
+  },
+  {
+    id: 'super_nashwan',
+    name: 'SUPER NASHWAN POWER',
+    category: 'consumables',
+    slot: 'consumable',
+    price: 1200,
+    desc: 'The legendary 20-second all-weapon overdrive: infinite heat, invulnerability, max arsenal!',
+    synergy: 'ALL SYNERGIES'
+  },
+  {
+    id: 'smart_bomb',
+    name: 'SMART BOMB [Q/X]',
+    category: 'consumables',
+    slot: 'consumable',
+    price: 250,
+    desc: 'Tactical temporal charge clearing all enemy projectiles and dealing 500 area damage.',
+    synergy: null
+  },
+  {
+    id: 'shield_repair',
+    name: 'FULL SHIELD REPAIR',
+    category: 'consumables',
+    slot: 'consumable',
+    price: 150,
+    desc: 'Instantly restores Megablaster hull integrity and shield energy to 100%.',
+    synergy: null
+  },
+  {
+    id: 'boss_intel',
+    name: "CRISPIN'S BOSS INTEL",
+    category: 'consumables',
+    slot: 'consumable',
+    price: 100,
+    desc: 'Tactical telemetry highlighting weak-point telemetry and attack patterns for this epoch.',
+    synergy: null
+  }
+];
+
+class CrispinShopUI {
+  constructor(game) {
+    this.game = game;
+    this.canvas = document.getElementById('crispin-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.dialogueEl = document.getElementById('crispin-dialogue');
+    this.creditsEl = document.getElementById('shop-credits-display');
+    this.slotsContainer = document.getElementById('paperdoll-slots-container');
+    this.catalogContainer = document.getElementById('catalog-items-container');
+    this.currentCategory = 'all';
+
+    // Animation state for Crispin portrait
+    this.animTick = 0;
+    this.isTalking = false;
+    this.talkTimer = 0;
+
+    this.initEventListeners();
+  }
+
+  initEventListeners() {
+    // Tab switching
+    document.querySelectorAll('.catalog-tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.catalog-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentCategory = btn.dataset.cat;
+        this.renderCatalog();
+      });
+    });
+
+    // Close button
+    document.getElementById('btn-close-shop').addEventListener('click', () => {
+      this.game.closeShop();
+    });
+  }
+
+  open() {
+    document.getElementById('crispin-modal').classList.add('open');
+    this.say("Welcome to Crispin's, ace! Got credits? I got firepower. Pick a hardpoint or trade your junk!");
+    this.updateCreditsDisplay();
+    this.renderPaperDoll();
+    this.renderCatalog();
+  }
+
+  close() {
+    document.getElementById('crispin-modal').classList.remove('open');
+  }
+
+  say(text) {
+    if (this.dialogueEl) {
+      this.dialogueEl.textContent = `"${text}"`;
+    }
+    this.isTalking = true;
+    this.talkTimer = 60;
+    this.game.sfx.playCrispinVoice();
+  }
+
+  updateCreditsDisplay() {
+    if (this.creditsEl) {
+      this.creditsEl.textContent = `$${String(this.game.credits).padStart(6, '0')}`;
+    }
+  }
+
+  // -------------------------------------------------------------
+  // ANIMATED CRISPIN THE ALIEN PAWNBROKER PORTRAIT (80x80)
+  // -------------------------------------------------------------
+  renderPortrait() {
+    this.animTick++;
+    if (this.talkTimer > 0) {
+      this.talkTimer--;
+      if (this.talkTimer <= 0) this.isTalking = false;
+    }
+
+    const ctx = this.ctx;
+    ctx.fillStyle = '#060a12';
+    ctx.fillRect(0, 0, 80, 80);
+
+    // 1. Retro DJ Headphones Band (Bobbing in rhythm)
+    const beatBob = Math.sin(this.animTick * 0.12) * 2;
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(40, 36 + beatBob, 28, Math.PI, 0);
+    ctx.stroke();
+
+    // 2. Alien Head (Greenish-bronze skin with cranial ridges)
+    ctx.fillStyle = '#2d5a36';
+    ctx.beginPath();
+    ctx.ellipse(40, 42 + beatBob, 22, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Cranial Ridge Lines
+    ctx.strokeStyle = '#1b3b22';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(32, 24 + beatBob); ctx.lineTo(48, 24 + beatBob);
+    ctx.moveTo(30, 28 + beatBob); ctx.lineTo(50, 28 + beatBob);
+    ctx.stroke();
+
+    // 3. Headphone Earcups
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(14, 34 + beatBob, 6, 16);
+    ctx.fillRect(60, 34 + beatBob, 6, 16);
+
+    // 4. Mirrored Sunglasses (Reflecting scrolling neon grid)
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(24, 38 + beatBob, 14, 10);
+    ctx.fillRect(42, 38 + beatBob, 14, 10);
+    // Sunglasses chrome frame
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(24, 38 + beatBob, 14, 10);
+    ctx.strokeRect(42, 38 + beatBob, 14, 10);
+    ctx.beginPath(); ctx.moveTo(38, 42 + beatBob); ctx.lineTo(42, 42 + beatBob); ctx.stroke();
+
+    // Animated Neon Grid reflection on lenses
+    const gridShift = (this.animTick * 0.8) % 10;
+    ctx.strokeStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.moveTo(25, 46 + beatBob - gridShift); ctx.lineTo(37, 40 + beatBob);
+    ctx.moveTo(43, 46 + beatBob - gridShift); ctx.lineTo(55, 40 + beatBob);
+    ctx.stroke();
+
+    // 5. Talking Alien Jaw / Smirk
+    const jawOpen = (this.isTalking && ((this.animTick >> 2) & 1)) ? 5 : 1;
+    ctx.fillStyle = '#142918';
+    ctx.fillRect(34, 56 + beatBob, 12, jawOpen);
+    if (jawOpen > 2) {
+      // Alien sharp teeth
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(36, 56 + beatBob, 2, 2);
+      ctx.fillRect(42, 56 + beatBob, 2, 2);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // VISUAL HARDPOINT PAPER-DOLL (6 SLOTS)
+  // -------------------------------------------------------------
+  renderPaperDoll() {
+    if (!this.slotsContainer) return;
+    this.slotsContainer.innerHTML = '';
+
+    const slotNames = [
+      { key: 'nose', label: 'NOSE HARDPOINT' },
+      { key: 'left_wing', label: 'LEFT WING POD' },
+      { key: 'right_wing', label: 'RIGHT WING POD' },
+      { key: 'tail', label: 'REAR TAILGUN' },
+      { key: 'drones', label: 'ORBITAL DRONES' },
+      { key: 'hull', label: 'HULL / ENGINE' }
+    ];
+
+    slotNames.forEach(slot => {
+      const equippedId = this.game.player.slots[slot.key];
+      const itemDef = equippedId ? UPGRADE_CATALOG.find(i => i.id === equippedId) : null;
+
+      const card = document.createElement('div');
+      card.className = 'paperdoll-slot-item';
+
+      const tradeInVal = itemDef ? Math.floor(itemDef.price * 0.5) : 0;
+
+      card.innerHTML = `
+        <div class="slot-top-row">
+          <span class="slot-name">${slot.label}</span>
+          <span class="slot-equipped-val">${itemDef ? itemDef.name : '<span style="color:#64748b;">[EMPTY]</span>'}</span>
+        </div>
+        ${itemDef ? `
+          <div class="slot-actions-row">
+            <span style="font-size:9px; color:#facc15; font-weight:700;">VAL: $${itemDef.price}</span>
+            <button class="tradein-btn" data-slot="${slot.key}">TRADE-IN (+$${tradeInVal})</button>
+          </div>
+        ` : ''}
+      `;
+
+      if (itemDef) {
+        card.querySelector('.tradein-btn').addEventListener('click', () => {
+          this.tradeInItem(slot.key, itemDef, tradeInVal);
+        });
+      }
+
+      this.slotsContainer.appendChild(card);
+    });
+  }
+
+  tradeInItem(slotKey, itemDef, refundAmount) {
+    this.game.player.slots[slotKey] = null;
+    this.game.credits += refundAmount;
+    this.game.sfx.playCoin();
+    this.say(`Sold your ${itemDef.name} for $${refundAmount}! No refunds, meatbag!`);
+    this.updateCreditsDisplay();
+    this.renderPaperDoll();
+    this.renderCatalog();
+  }
+
+  // -------------------------------------------------------------
+  // UPGRADES CATALOG WITH LIVE PURCHASING & SYNERGIES
+  // -------------------------------------------------------------
+  renderCatalog() {
+    if (!this.catalogContainer) return;
+    this.catalogContainer.innerHTML = '';
+
+    const filtered = UPGRADE_CATALOG.filter(item => {
+      if (this.currentCategory === 'all') return true;
+      return item.category === this.currentCategory;
+    });
+
+    filtered.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'catalog-item-card';
+
+      // Check if already equipped
+      const isEquipped = Object.values(this.game.player.slots).includes(item.id);
+      const canAfford = this.game.credits >= item.price;
+      const isConsumable = item.category === 'consumables';
+
+      let buyDisabled = false;
+      let buyText = 'BUY';
+      if (!canAfford) {
+        buyDisabled = true;
+        buyText = 'NO CASH';
+      } else if (isEquipped && !isConsumable) {
+        buyDisabled = true;
+        buyText = 'EQUIPPED';
+      }
+
+      card.innerHTML = `
+        <div class="item-card-header">
+          <span class="item-title">${item.name}</span>
+          <span class="item-slot-badge">${item.slot}</span>
+        </div>
+        ${item.synergy ? `<div class="item-synergy-badge">&star; SYNERGY: ${item.synergy}</div>` : ''}
+        <div class="item-desc">${item.desc}</div>
+        <div class="item-footer">
+          <span class="item-price">$${item.price}</span>
+          <button class="buy-btn" ${buyDisabled ? 'disabled' : ''}>${buyText}</button>
+        </div>
+      `;
+
+      if (!buyDisabled) {
+        card.querySelector('.buy-btn').addEventListener('click', () => {
+          this.purchaseItem(item);
+        });
+      }
+
+      this.catalogContainer.appendChild(card);
+    });
+  }
+
+  purchaseItem(item) {
+    if (this.game.credits < item.price) {
+      this.say("Not enough credits! Go blast some more trilobites!");
+      return;
+    }
+
+    this.game.credits -= item.price;
+    this.game.sfx.playCoin();
+    this.updateCreditsDisplay();
+
+    // Apply Purchase
+    if (item.category === 'consumables') {
+      if (item.id === 'super_nashwan') {
+        this.game.player.nashwanTimer = 1200; // 20 seconds at 60fps!
+        this.say("SUPER NASHWAN POWER ACTIVATED! You're crazy, kid! Go tear them apart!");
+      } else if (item.id === 'smart_bomb') {
+        this.game.player.smartBombs++;
+        this.say("Smart bomb loaded into temporal dispenser. Press [Q] or [X] to detonate!");
+      } else if (item.id === 'shield_repair') {
+        this.game.player.shield = this.game.player.maxShield;
+        this.say("Megablaster hull patched and shields restored to 100%!");
+      } else if (item.id === 'boss_intel') {
+        const intel = [
+          "CAMBRIAN: Anomalocaris has soft compound eyes! Hit its eye stalks during pincher lunges!",
+          "ABYSSAL: Kraken-Nautilus retreats into its shell. Cease fire while shielded to save heat!",
+          "BABBAGE: Difference Engine vents steam before firing sawblades. Back up with Reverse Scroll!",
+          "SILICON: 68000 Cyber-Blitter is vulnerable when copper raster bars spread wide!",
+          "XENITE: Mother-Brain has 3 distinct phases. Destroy bone shields first, then synaptic core!"
+        ][this.game.stage - 1];
+        this.say(`INTEL: ${intel}`);
+      }
+    } else {
+      // Equip to appropriate slot
+      if (item.slot === 'nose') {
+        this.game.player.slots.nose = item.id;
+      } else if (item.slot === 'left_wing') {
+        if (!this.game.player.slots.left_wing) this.game.player.slots.left_wing = item.id;
+        else this.game.player.slots.right_wing = item.id;
+      } else if (item.slot === 'right_wing') {
+        if (!this.game.player.slots.right_wing) this.game.player.slots.right_wing = item.id;
+        else this.game.player.slots.left_wing = item.id;
+      } else if (item.slot === 'tail') {
+        this.game.player.slots.tail = item.id;
+      } else if (item.slot === 'drones') {
+        this.game.player.slots.drones = item.id;
+      } else if (item.slot === 'hull') {
+        this.game.player.slots.hull = item.id;
+      }
+
+      this.say(`Bolted ${item.name} onto your ship! Don't scratch my merchandise!`);
+    }
+
+    this.renderPaperDoll();
+    this.renderCatalog();
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.UPGRADE_CATALOG = UPGRADE_CATALOG;
+}
+
+
+// --- tracker_ui.js ---
+// ProTracker Pattern Viewer & Interactive Jukebox Modal UI
+
+class TrackerUI {
+  constructor(tracker) {
+    this.tracker = tracker;
+    this.modalEl = document.getElementById('tracker-modal');
+    this.scrollBody = document.getElementById('tracker-scroll-body');
+    this.headersRow = document.getElementById('tracker-headers-row');
+    this.scopeCanvas = document.getElementById('tracker-scope-canvas');
+    this.scopeCtx = this.scopeCanvas.getContext('2d');
+    this.miniScopeCanvas = document.getElementById('mini-scope-canvas');
+    this.miniScopeCtx = this.miniScopeCanvas.getContext('2d');
+
+    this.bpmSlider = document.getElementById('bpm-slider');
+    this.bpmVal = document.getElementById('bpm-val');
+    this.btnDubFilter = document.getElementById('btn-dub-filter');
+
+    this.rowElements = [];
+    this.activePat = 0;
+    this.activeRow = 0;
+
+    // Analyzer buffers
+    this.freqData = new Uint8Array(128);
+    this.timeData = new Uint8Array(256);
+
+    this.initDOM();
+    this.initEvents();
+
+    // Hook into tracker callbacks
+    this.tracker.onRowTick = (pat, row) => {
+      this.onRowTick(pat, row);
+    };
+    this.tracker.onPatternChange = (pat) => {
+      this.onPatternChange(pat);
+    };
+  }
+
+  initDOM() {
+    // 1. Channel Headers with Mute & Solo
+    if (this.headersRow) {
+      this.headersRow.innerHTML = '<div class="tracker-ch-header-cell">ROW</div>';
+      for (let ch = 0; ch < 8; ch++) {
+        const channel = this.tracker.channels[ch];
+        const cell = document.createElement('div');
+        cell.className = 'tracker-ch-header-cell';
+        cell.innerHTML = `
+          <span>${channel.name}</span>
+          <div class="mute-solo-row">
+            <button class="ms-btn btn-mute" data-ch="${ch}">M</button>
+            <button class="ms-btn btn-solo" data-ch="${ch}">S</button>
+          </div>
+        `;
+        this.headersRow.appendChild(cell);
+      }
+    }
+
+    // 2. Populate 64 Pattern Rows
+    this.renderPatternRows(0);
+  }
+
+  initEvents() {
+    // Mute / Solo buttons click delegation
+    if (this.headersRow) {
+      this.headersRow.addEventListener('click', (e) => {
+        const btnMute = e.target.closest('.btn-mute');
+        const btnSolo = e.target.closest('.btn-solo');
+        if (btnMute) {
+          const ch = parseInt(btnMute.dataset.ch, 10);
+          this.tracker.channels[ch].muted = !this.tracker.channels[ch].muted;
+          btnMute.classList.toggle('muted', this.tracker.channels[ch].muted);
+        } else if (btnSolo) {
+          const ch = parseInt(btnSolo.dataset.ch, 10);
+          this.tracker.channels[ch].solo = !this.tracker.channels[ch].solo;
+          btnSolo.classList.toggle('soloed', this.tracker.channels[ch].solo);
+        }
+      });
+    }
+
+    // Pattern Jump Buttons
+    document.querySelectorAll('.pat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const patIdx = parseInt(btn.dataset.pat, 10);
+        this.tracker.setPattern(patIdx);
+        this.updateActivePatBtn(patIdx);
+      });
+    });
+
+    // BPM Slider
+    if (this.bpmSlider) {
+      this.bpmSlider.addEventListener('input', (e) => {
+        const newBpm = parseInt(e.target.value, 10);
+        this.tracker.setBPM(newBpm);
+        if (this.bpmVal) this.bpmVal.textContent = newBpm;
+      });
+    }
+
+    // Dub Lowpass Filter Toggle
+    if (this.btnDubFilter) {
+      this.btnDubFilter.addEventListener('click', () => {
+        const newState = !this.tracker.dubFilterActive;
+        this.tracker.setDubFilter(newState);
+        this.btnDubFilter.classList.toggle('active', newState);
+        this.btnDubFilter.textContent = newState ? 'DUB FILTER: ON' : 'DUB FILTER: OFF';
+      });
+    }
+
+    // Close button
+    document.getElementById('btn-close-tracker').addEventListener('click', () => {
+      this.close();
+    });
+  }
+
+  open() {
+    this.modalEl.classList.add('open');
+    this.renderPatternRows(this.tracker.curPatternIdx);
+  }
+
+  close() {
+    this.modalEl.classList.remove('open');
+  }
+
+  updateActivePatBtn(patIdx) {
+    document.querySelectorAll('.pat-btn').forEach(btn => {
+      const idx = parseInt(btn.dataset.pat, 10);
+      btn.classList.toggle('active', idx === patIdx);
+    });
+  }
+
+  renderPatternRows(patIdx) {
+    this.activePat = patIdx;
+    if (!this.scrollBody) return;
+    this.scrollBody.innerHTML = '';
+    this.rowElements = [];
+
+    const pat = this.tracker.patterns[patIdx];
+    if (!pat) return;
+
+    for (let r = 0; r < 64; r++) {
+      const rowDiv = document.createElement('div');
+      const hexRow = r.toString(16).toUpperCase().padStart(2, '0');
+      const isBeat = (r % 4 === 0);
+      rowDiv.className = `tracker-row ${isBeat ? 'beat-row' : ''}`;
+
+      let colsHtml = `<div class="row-num">${hexRow}</div>`;
+      for (let ch = 0; ch < 8; ch++) {
+        const cell = pat[r][ch] || '...';
+        colsHtml += `<div>${cell}</div>`;
+      }
+      rowDiv.innerHTML = colsHtml;
+      this.scrollBody.appendChild(rowDiv);
+      this.rowElements.push(rowDiv);
+    }
+  }
+
+  onPatternChange(newPat) {
+    this.activePat = newPat;
+    this.updateActivePatBtn(newPat);
+    if (this.modalEl.classList.contains('open')) {
+      this.renderPatternRows(newPat);
+    }
+  }
+
+  onRowTick(pat, row) {
+    if (pat !== this.activePat && this.modalEl.classList.contains('open')) {
+      this.renderPatternRows(pat);
+    }
+
+    // Highlight row
+    if (this.rowElements && this.rowElements[row]) {
+      if (this.rowElements[this.activeRow]) {
+        this.rowElements[this.activeRow].classList.remove('active-row');
+      }
+      this.rowElements[row].classList.add('active-row');
+      this.activeRow = row;
+
+      // Auto-scroll to keep active row visible in viewport
+      if (this.modalEl.classList.contains('open')) {
+        const targetScroll = Math.max(0, row * 22 - 120);
+        this.scrollBody.scrollTop = targetScroll;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------
+  // REAL-TIME AUDIO VISUALIZERS (Oscilloscope & 32-Band Spectrum)
+  // -------------------------------------------------------------
+  renderVisualizers() {
+    this.tracker.getSpectrumData(this.freqData);
+    this.tracker.getWaveformData(this.timeData);
+
+    // 1. Large Jukebox Visualizer Canvas (600x70)
+    if (this.modalEl.classList.contains('open') && this.scopeCtx) {
+      const ctx = this.scopeCtx;
+      const w = 600;
+      const h = 70;
+      ctx.fillStyle = '#04070c';
+      ctx.fillRect(0, 0, w, h);
+
+      // Left Half: Vector Oscilloscope (Green/Cyan phosphor)
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      const scopeW = 280;
+      for (let i = 0; i < 256; i++) {
+        const v = this.timeData[i] / 128.0;
+        const y = (v * h) / 2;
+        const x = (i / 256) * scopeW;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Divider line
+      ctx.strokeStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(290, 0); ctx.lineTo(290, h);
+      ctx.stroke();
+
+      // Right Half: 32-Band Amiga Copper Spectrum Analyzer
+      const barCount = 32;
+      const startX = 300;
+      const barWidth = 8;
+      const gap = 1;
+
+      for (let i = 0; i < barCount; i++) {
+        const freqVal = this.freqData[i * 2] || 0;
+        const barH = (freqVal / 255) * (h - 8);
+        const bx = startX + i * (barWidth + gap);
+        const by = h - barH;
+
+        // Copper gradient: Cyan -> Gold -> Ruby Red peak
+        const grad = ctx.createLinearGradient(0, h, 0, by);
+        grad.addColorStop(0, '#0284c7');
+        grad.addColorStop(0.6, '#f59e0b');
+        grad.addColorStop(1, '#ef4444');
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(bx, by, barWidth, barH);
+      }
+    }
+
+    // 2. Mini Cabinet HUD Visualizer Canvas (130x28)
+    if (this.miniScopeCtx) {
+      const ctx = this.miniScopeCtx;
+      const w = 130;
+      const h = 28;
+      ctx.fillStyle = '#06090e';
+      ctx.fillRect(0, 0, w, h);
+
+      // Mini Waveform
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      for (let i = 0; i < 64; i++) {
+        const v = this.timeData[i * 4] / 128.0;
+        const y = (v * h) / 2;
+        const x = (i / 64) * w;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+}
+
+
+// --- game.js ---
+// Xenon 2: Megablast - Main Engine, Game Loop & Chrono-Reverse Ring Buffer
+
+class Xenon2Game {
+  constructor() {
+    this.canvas = document.getElementById('game-canvas');
+    this.renderer = new RetroRenderer(this.canvas);
+    this.tracker = new AmigaModTracker();
+    this.sfx = new SoundFX(this.tracker);
+    this.caverns = new CavernManager();
+    this.player = new PlayerShip();
+
+    this.crispinShop = new CrispinShopUI(this);
+    this.trackerUI = new TrackerUI(this.tracker);
+
+    // Game state
+    this.stage = 1;
+    this.score = 0;
+    this.hiscore = parseInt(localStorage.getItem('xenon2_hiscore') || '50000', 10);
+    this.credits = 250;
+    this.boss = null;
+    this.bossSpawned = false;
+    this.shopDockAvailable = false;
+    this.isPaused = false;
+    this.gameStarted = false;
+
+    // Entity lists
+    this.bullets = [];
+    this.enemies = [];
+    this.cashList = [];
+    this.particles = [];
+
+    // Screen Shake
+    this.screenShake = 0;
+
+    // Firing cooldowns
+    this.cooldownNose = 0;
+    this.cooldownWing = 0;
+    this.cooldownTail = 0;
+    this.cooldownDrones = 0;
+
+    // 180-Frame Circular Ring Buffer for Chrono-Reverse Time Rewind (3 seconds)
+    this.historyBuffer = [];
+    this.maxHistoryFrames = 180;
+
+    // Input state
+    this.input = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+      fire: false,
+      reverseThrust: false,
+      chronoRewind: false,
+      mouseActive: false,
+      mouseX: 160,
+      mouseY: 150
+    };
+
+    this.initInput();
+    this.initUI();
+  }
+
+  initInput() {
+    // Keyboard Event Listeners
+    window.addEventListener('keydown', (e) => {
+      const code = e.code;
+      if (code === 'KeyW' || code === 'ArrowUp') this.input.up = true;
+      if (code === 'KeyS' || code === 'ArrowDown') this.input.down = true;
+      if (code === 'KeyA' || code === 'ArrowLeft') this.input.left = true;
+      if (code === 'KeyD' || code === 'ArrowRight') this.input.right = true;
+      if (code === 'Space' || code === 'KeyZ') this.input.fire = true;
+      if (code === 'KeyR' || code === 'ShiftLeft' || code === 'ShiftRight') this.input.chronoRewind = true;
+
+      // Smart Bomb / Nashwan Trigger
+      if (code === 'KeyQ' || code === 'KeyX') {
+        this.triggerSmartBomb();
+      }
+
+      // Crispin Shop [B]
+      if (code === 'KeyB') {
+        this.toggleShop();
+      }
+
+      // Tracker Jukebox [T]
+      if (code === 'KeyT') {
+        this.toggleTracker();
+      }
+
+      // CRT Scanlines [C]
+      if (code === 'KeyC') {
+        this.toggleCRT();
+      }
+
+      // Audio Mute [M]
+      if (code === 'KeyM') {
+        this.toggleAudio();
+      }
+
+      // Warp Stage 1-5
+      if (code >= 'Digit1' && code <= 'Digit5') {
+        this.warpStage(parseInt(e.key, 10));
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const code = e.code;
+      if (code === 'KeyW' || code === 'ArrowUp') this.input.up = false;
+      if (code === 'KeyS' || code === 'ArrowDown') this.input.down = false;
+      if (code === 'KeyA' || code === 'ArrowLeft') this.input.left = false;
+      if (code === 'KeyD' || code === 'ArrowRight') this.input.right = false;
+      if (code === 'Space' || code === 'KeyZ') this.input.fire = false;
+      if (code === 'KeyR' || code === 'ShiftLeft' || code === 'ShiftRight') this.input.chronoRewind = false;
+    });
+
+    // Mouse Controls on Canvas
+    this.canvas.addEventListener('mousemove', (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = 320 / rect.width;
+      const scaleY = 200 / rect.height;
+      this.input.mouseX = (e.clientX - rect.left) * scaleX;
+      this.input.mouseY = (e.clientY - rect.top) * scaleY;
+      this.input.mouseActive = true;
+    });
+
+    this.canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 0) this.input.fire = true;
+      if (e.button === 2) {
+        e.preventDefault();
+        this.input.chronoRewind = true;
+      }
+    });
+
+    this.canvas.addEventListener('mouseup', (e) => {
+      if (e.button === 0) this.input.fire = false;
+      if (e.button === 2) this.input.chronoRewind = false;
+    });
+
+    this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  initUI() {
+    // Start Game Button
+    document.getElementById('btn-start-game').addEventListener('click', () => {
+      this.startGame();
+    });
+
+    // Restart Game Buttons
+    document.getElementById('btn-restart-game').addEventListener('click', () => {
+      this.restartGame();
+    });
+    document.getElementById('btn-victory-restart').addEventListener('click', () => {
+      this.restartGame();
+    });
+
+    // HUD Quick Buttons
+    document.getElementById('btn-dock-shop').addEventListener('click', () => this.toggleShop());
+    document.getElementById('btn-open-tracker').addEventListener('click', () => this.toggleTracker());
+    document.getElementById('btn-toggle-crt').addEventListener('click', () => this.toggleCRT());
+    document.getElementById('btn-toggle-audio').addEventListener('click', () => this.toggleAudio());
+
+    // Warp buttons
+    document.querySelectorAll('.warp-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const stageNum = parseInt(btn.dataset.stage, 10);
+        this.warpStage(stageNum);
+        this.startGame();
+      });
+    });
+  }
+
+  startGame() {
+    document.getElementById('title-overlay').classList.add('hidden');
+    document.getElementById('game-over-overlay').classList.add('hidden');
+    document.getElementById('victory-overlay').classList.add('hidden');
+    this.gameStarted = true;
+    this.tracker.start();
+  }
+
+  restartGame() {
+    this.score = 0;
+    this.credits = 250;
+    this.player.reset();
+    this.player.lives = 3;
+    this.warpStage(1);
+    this.startGame();
+  }
+
+  warpStage(stageNum) {
+    this.stage = Math.max(1, Math.min(5, stageNum));
+    this.caverns.initStage(this.stage);
+    this.boss = null;
+    this.bossSpawned = false;
+    this.enemies = [];
+    this.bullets = [];
+    this.historyBuffer = [];
+
+    // Switch tracker pattern to match epoch intensity
+    if (this.stage === 5) this.tracker.setPattern(5); // Boss rave for final stage
+    else if (this.stage === 4) this.tracker.setPattern(2); // Acid breakdown for demoscene stage
+    else this.tracker.setPattern(1); // Main groove
+
+    this.updateHUD();
+  }
+
+  toggleShop() {
+    const modal = document.getElementById('crispin-modal');
+    if (modal.classList.contains('open')) {
+      this.closeShop();
+    } else {
+      this.openShop();
+    }
+  }
+
+  openShop() {
+    this.isPaused = true;
+    this.crispinShop.open();
+    // Smoothly sweep master dub filter and crossfade to Electro-Dub Shop Groove!
+    this.tracker.setDubFilter(true);
+    this.tracker.setPattern(6, false); // Pattern 06: Shop Groove
+  }
+
+  closeShop() {
+    this.isPaused = false;
+    this.crispinShop.close();
+    // Sweep master dub filter wide open and resume battle pattern!
+    this.tracker.setDubFilter(false);
+    this.tracker.setPattern(this.boss ? 5 : 1, false);
+    this.sfx.playLaser();
+  }
+
+  toggleTracker() {
+    const modal = document.getElementById('tracker-modal');
+    if (modal.classList.contains('open')) {
+      this.trackerUI.close();
+    } else {
+      this.trackerUI.open();
+    }
+  }
+
+  toggleCRT() {
+    const crt = document.getElementById('crt-overlay');
+    const btn = document.getElementById('btn-toggle-crt');
+    crt.classList.toggle('disabled');
+    btn.classList.toggle('active', !crt.classList.contains('disabled'));
+  }
+
+  toggleAudio() {
+    this.sfx.enabled = !this.sfx.enabled;
+    const btn = document.getElementById('btn-toggle-audio');
+    btn.classList.toggle('active', this.sfx.enabled);
+    btn.innerHTML = this.sfx.enabled ? '&#128266; SFX' : '&#128263; SFX';
+  }
+
+  triggerSmartBomb() {
+    if (this.player.smartBombs <= 0) return;
+    this.player.smartBombs--;
+    this.sfx.playSmartBomb();
+    this.addScreenShake(18);
+
+    // Vaporize all enemy projectiles
+    this.bullets = this.bullets.filter(b => !b.isEnemy);
+
+    // Deal 500 damage to all active enemies & boss
+    this.enemies.forEach(e => e.takeDamage(500, this));
+    if (this.boss) this.boss.takeDamage(500, this);
+
+    // Fullscreen white flash
+    this.renderer.clear(packABGR(255, 255, 255));
+  }
+
+  triggerGameOver() {
+    document.getElementById('game-over-overlay').classList.remove('hidden');
+    document.getElementById('game-over-stats').textContent = 
+      `FINAL SCORE: ${this.score} | SALVAGED CREDITS: $${this.credits} | REACHED: EPOCH ${this.stage}`;
+    if (this.score > this.hiscore) {
+      this.hiscore = this.score;
+      localStorage.setItem('xenon2_hiscore', this.hiscore);
+    }
+  }
+
+  onBossDefeated() {
+    if (this.stage < 5) {
+      // Advance to next epoch!
+      this.stage++;
+      this.warpStage(this.stage);
+      this.sfx.playCoin();
+    } else {
+      // Final Victory!
+      document.getElementById('victory-overlay').classList.remove('hidden');
+      document.getElementById('victory-stats').textContent = 
+        `ALL 5 EPOCHS CLEARED! FINAL SCORE: ${this.score} | MEGA CREDITS: $${this.credits}`;
+      if (this.score > this.hiscore) {
+        this.hiscore = this.score;
+        localStorage.setItem('xenon2_hiscore', this.hiscore);
+      }
+    }
+  }
+
+  // -------------------------------------------------------------
+  // CHRONO-REVERSE TIME REWIND (180-Frame Circular Ring Buffer)
+  // -------------------------------------------------------------
+  captureState() {
+    const snapshot = {
+      player: {
+        x: this.player.x,
+        y: this.player.y,
+        vx: this.player.vx,
+        vy: this.player.vy,
+        shield: this.player.shield,
+        heat: this.player.heat,
+        overheated: this.player.overheated,
+        overheatTimer: this.player.overheatTimer,
+        chronoEnergy: this.player.chronoEnergy,
+        slots: { ...this.player.slots }
+      },
+      scrollY: this.caverns.scrollY,
+      score: this.score,
+      credits: this.credits,
+      enemies: this.enemies.map(e => ({
+        type: e.type, x: e.x, y: e.y, hp: e.hp, t: e.t, shootTimer: e.shootTimer
+      })),
+      bullets: this.bullets.map(b => ({
+        x: b.x, y: b.y, vx: b.vx, vy: b.vy, type: b.type, damage: b.damage, isEnemy: b.isEnemy
+      })),
+      cash: this.cashList.map(c => ({
+        x: c.x, y: c.y, vx: c.vx, vy: c.vy, value: c.value
+      }))
+    };
+
+    this.historyBuffer.push(snapshot);
+    if (this.historyBuffer.length > this.maxHistoryFrames) {
+      this.historyBuffer.shift();
+    }
+  }
+
+  restoreState() {
+    if (this.historyBuffer.length === 0) return;
+    const snapshot = this.historyBuffer.pop();
+
+    this.player.x = snapshot.player.x;
+    this.player.y = snapshot.player.y;
+    this.player.vx = snapshot.player.vx;
+    this.player.vy = snapshot.player.vy;
+    this.player.shield = snapshot.player.shield;
+    this.player.heat = snapshot.player.heat;
+    this.player.overheated = snapshot.player.overheated;
+    this.player.overheatTimer = snapshot.player.overheatTimer;
+    this.player.slots = { ...snapshot.player.slots };
+
+    this.caverns.scrollY = snapshot.scrollY;
+    this.score = snapshot.score;
+    this.credits = snapshot.credits;
+
+    // Restore enemies
+    this.enemies = snapshot.enemies.map(s => {
+      const e = new Enemy(s.x, s.y, s.type, this.stage);
+      e.hp = s.hp;
+      e.t = s.t;
+      e.shootTimer = s.shootTimer;
+      return e;
+    });
+
+    // Restore bullets
+    this.bullets = snapshot.bullets.map(b => {
+      return new Projectile(b.x, b.y, b.vx, b.vy, b.type, b.damage, b.isEnemy);
+    });
+
+    // Restore cash
+    this.cashList = snapshot.cash.map(c => {
+      const cb = new CashBubble(c.x, c.y, c.value);
+      cb.vx = c.vx;
+      cb.vy = c.vy;
+      return cb;
+    });
+  }
+
+  // -------------------------------------------------------------
+  // WEAPON FIRING & GOLDEN SYNERGIES
+  // -------------------------------------------------------------
+  fireWeapons() {
+    if (this.player.isDead || this.player.overheated) return;
+
+    const isNashwan = this.player.isNashwanActive();
+    const hasHeatSink = this.player.slots.hull === 'heat_sink';
+    const heatCost = (isNashwan) ? 0 : (hasHeatSink ? 1.2 : 2.4);
+
+    let fired = false;
+
+    // 1. NOSE HARDPOINT
+    if (this.cooldownNose <= 0) {
+      const noseSlot = this.player.slots.nose;
+      if (noseSlot === 'twin_vulcan' || isNashwan) {
+        this.bullets.push(new Projectile(this.player.x - 4, this.player.y - 18, 0, -8, 'VULCAN', 14));
+        this.bullets.push(new Projectile(this.player.x + 4, this.player.y - 18, 0, -8, 'VULCAN', 14));
+        this.sfx.playVulcan();
+        this.cooldownNose = isNashwan ? 4 : 7;
+        fired = true;
+      } else if (noseSlot === 'plasma_spread') {
+        [-1.8, 0, 1.8].forEach(vx => {
+          this.bullets.push(new Projectile(this.player.x, this.player.y - 16, vx, -6.5, 'PLASMA', 22));
+        });
+        this.sfx.playPlasma();
+        this.cooldownNose = 14;
+        fired = true;
+      } else if (noseSlot === 'electro_arc') {
+        // Continuous piercing lightning bolt
+        this.renderer.drawLightningArc(this.player.x, this.player.y - 16, this.player.x, 0, 6, packABGR(180, 240, 255));
+        // Hit all enemies in vertical column
+        this.enemies.forEach(e => {
+          if (Math.abs(e.x - this.player.x) < 20 && e.y < this.player.y) {
+            e.takeDamage(18, this);
+          }
+        });
+        if (this.boss && Math.abs(this.boss.x - this.player.x) < 40) {
+          this.boss.takeDamage(18, this);
+        }
+        this.sfx.playLaser();
+
+        // Golden Synergy 3: TESLA CHAIN SWARM!
+        if (this.player.hasSynergyTesla()) {
+          this.triggerTeslaChainSwarm();
+        }
+
+        this.cooldownNose = 6;
+        fired = true;
+      }
+    }
+
+    // 2. WING HARDPOINTS
+    if (this.cooldownWing <= 0) {
+      ['left_wing', 'right_wing'].forEach((slotKey, idx) => {
+        const pod = this.player.slots[slotKey];
+        const isLeft = (idx === 0);
+        const wx = isLeft ? (this.player.x - 14) : (this.player.x + 14);
+
+        if (pod === 'side_lasers' || isNashwan) {
+          const vx = isLeft ? -4.5 : 4.5;
+          this.bullets.push(new Projectile(wx, this.player.y, vx, -5, 'SIDE_LASER', 16));
+          this.sfx.playLaser();
+          this.cooldownWing = isNashwan ? 8 : 14;
+          fired = true;
+        } else if (pod === 'homing_missiles') {
+          const vx = isLeft ? -1.5 : 1.5;
+          this.bullets.push(new Projectile(wx, this.player.y, vx, -4, 'MISSILE', 28));
+          this.sfx.playMissile();
+          this.cooldownWing = 24;
+          fired = true;
+        } else if (pod === 'bounce_orbs') {
+          const vx = isLeft ? -2.8 : 2.8;
+          this.bullets.push(new Projectile(wx, this.player.y, vx, -4.5, 'BOUNCE_ORB', 32));
+          this.sfx.playLaser();
+          this.cooldownWing = 26;
+          fired = true;
+        }
+      });
+    }
+
+    // 3. REAR TAILGUN
+    if (this.cooldownTail <= 0) {
+      const tailSlot = this.player.slots.tail;
+      if (tailSlot === 'rear_cannon' || isNashwan) {
+        this.bullets.push(new Projectile(this.player.x - 4, this.player.y + 14, 0, 7, 'REAR_CANNON', 14));
+        this.bullets.push(new Projectile(this.player.x + 4, this.player.y + 14, 0, 7, 'REAR_CANNON', 14));
+        this.sfx.playVulcan();
+        this.cooldownTail = 10;
+        fired = true;
+      } else if (tailSlot === 'temporal_mines') {
+        this.bullets.push(new Projectile(this.player.x, this.player.y + 16, 0, 1.0, 'MINE', 45));
+        this.sfx.playLaser();
+        this.cooldownTail = 35;
+        fired = true;
+      }
+    }
+
+    // 4. ORBITAL DRONES
+    if (this.cooldownDrones <= 0 && (this.player.slots.drones === 'orbital_drones' || isNashwan)) {
+      const rx = 34;
+      const ry = 16;
+      [0, Math.PI].forEach(offset => {
+        const angle = this.player.droneAngle + offset;
+        const dx = this.player.x + Math.cos(angle) * rx;
+        const dy = this.player.y + Math.sin(angle) * ry;
+        this.bullets.push(new Projectile(dx, dy, 0, -7.5, 'DRONE_PULSE', 12));
+      });
+      this.cooldownDrones = 16;
+    }
+
+    // Heat Buildup
+    if (fired && !isNashwan) {
+      this.player.heat = Math.min(this.player.maxHeat, this.player.heat + heatCost);
+      if (this.player.heat >= this.player.maxHeat) {
+        // OVERHEAT LOCKOUT TRIPPED!
+        this.player.overheated = true;
+        this.player.overheatTimer = 110; // 1.8s
+        this.sfx.playOverheatAlarm();
+        this.addScreenShake(8);
+      }
+    }
+  }
+
+  // Golden Synergy 1 Helper: Spawn 3 refracted prism beams
+  spawnPrismBeams(x, y) {
+    [-3.0, 0, 3.0].forEach(vx => {
+      this.bullets.push(new Projectile(x, y, vx, -6.0, 'PRISM_BEAM', 24));
+    });
+  }
+
+  // Golden Synergy 2: CHRONO BACKFIRE NOVA (Deploy 8-way ring of temporal nova mines!)
+  triggerChronoBackfireNova() {
+    if (Math.random() < 0.15) { // Throttle slightly during continuous rewind
+      this.sfx.playLaser();
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        this.bullets.push(new Projectile(
+          this.player.x, this.player.y,
+          Math.cos(angle) * 3.5, Math.sin(angle) * 3.5,
+          'NOVA_MINE', 38
+        ));
+      }
+    }
+  }
+
+  // Golden Synergy 3: TESLA CHAIN SWARM (Lightning chains between drones & 4 nearest enemies!)
+  triggerTeslaChainSwarm() {
+    const targets = this.enemies.slice(0, 4);
+    targets.forEach(target => {
+      this.renderer.drawLightningArc(this.player.x, this.player.y, target.x, target.y, 4, packABGR(125, 211, 252));
+      target.takeDamage(12, this);
+    });
+  }
+
+  // -------------------------------------------------------------
+  // SPAWNERS & PARTICLES
+  // -------------------------------------------------------------
+  spawnEnemyWave() {
+    if (this.boss) return;
+
+    // Periodic wave types based on stage
+    const r = Math.random();
+    if (this.stage === 1) {
+      if (r < 0.6) {
+        // Trilobite swarm
+        const baseX = 40 + Math.random() * 240;
+        for (let i = 0; i < 3; i++) {
+          this.enemies.push(new Enemy(baseX + (i - 1) * 28, -20 - i * 15, 'trilobite', 1));
+        }
+      } else {
+        this.enemies.push(new Enemy(30 + Math.random() * 260, -20, 'ammonite', 1));
+      }
+    } else if (this.stage === 2) {
+      if (r < 0.5) this.enemies.push(new Enemy(40 + Math.random() * 240, -20, 'angler', 2));
+      else this.enemies.push(new Enemy(30 + Math.random() * 260, -20, 'cephalopod', 2));
+    } else if (this.stage === 3) {
+      if (r < 0.5) this.enemies.push(new Enemy(40 + Math.random() * 240, -20, 'gyrobomber', 3));
+      else this.enemies.push(new Enemy(50 + Math.random() * 220, -20, 'pistonbeetle', 3));
+    } else if (this.stage === 4) {
+      if (r < 0.5) this.enemies.push(new Enemy(40 + Math.random() * 240, -20, 'blitterbob', 4));
+      else this.enemies.push(new Enemy(50 + Math.random() * 220, -20, 'vectorglider', 4));
+    } else if (this.stage === 5) {
+      if (r < 0.6) this.enemies.push(new Enemy(40 + Math.random() * 240, -20, 'biodrone', 5));
+      else this.enemies.push(new Enemy(50 + Math.random() * 220, -20, 'facehugger', 5));
+    }
+  }
+
+  spawnCash(x, y, value) {
+    this.cashList.push(new CashBubble(x, y, value));
+  }
+
+  spawnSpark(x, y, vx, vy) {
+    this.particles.push(new Particle(x, y, vx, vy, packABGR(255, 240, 120), 18, 'spark'));
+  }
+
+  spawnSmoke(x, y) {
+    this.particles.push(new Particle(x, y, (Math.random() - 0.5) * 0.4, -0.4, packABGR(120, 140, 160), 22, 'smoke'));
+  }
+
+  spawnSteam(x, y) {
+    this.particles.push(new Particle(x, y, (Math.random() - 0.5) * 0.6, -0.8, packABGR(200, 220, 255), 18, 'steam'));
+  }
+
+  spawnDebris(x, y) {
+    const vx = (Math.random() - 0.5) * 4;
+    const vy = (Math.random() - 0.5) * 4 - 1;
+    this.particles.push(new Particle(x, y, vx, vy, PALETTE_CHROME[8], 30, 'debris'));
+  }
+
+  spawnPlasmaExplosion(x, y, radius) {
+    this.renderer.drawPlasmaOrb(x, y, radius, 'fire');
+    for (let i = 0; i < 16; i++) {
+      this.spawnSpark(x, y, (Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5);
+    }
+  }
+
+  addScore(pts) {
+    this.score += pts;
+    this.updateHUD();
+  }
+
+  addCredits(amt) {
+    this.credits += amt;
+    this.updateHUD();
+  }
+
+  addScreenShake(intensity) {
+    this.screenShake = Math.max(this.screenShake, intensity);
+  }
+
+  findClosestEnemy(x, y, maxDist = 999) {
+    let closest = null;
+    let minDist = maxDist;
+    this.enemies.forEach(e => {
+      const d = Math.hypot(e.x - x, e.y - y);
+      if (d < minDist) {
+        minDist = d;
+        closest = e;
+      }
+    });
+    if (this.boss && !this.boss.dead) {
+      const d = Math.hypot(this.boss.x - x, this.boss.y - y);
+      if (d < minDist) {
+        closest = this.boss;
+      }
+    }
+    return closest;
+  }
+
+  // -------------------------------------------------------------
+  // HUD REFRESH
+  // -------------------------------------------------------------
+  updateHUD() {
+    const shieldPct = Math.max(0, Math.round((this.player.shield / this.player.maxShield) * 100));
+    document.getElementById('shield-bar').style.width = `${shieldPct}%`;
+    document.getElementById('shield-val').textContent = `${shieldPct}%`;
+
+    const heatPct = Math.round((this.player.heat / this.player.maxHeat) * 100);
+    document.getElementById('heat-bar').style.width = `${heatPct}%`;
+    document.getElementById('heat-val').textContent = `${heatPct}%`;
+    document.getElementById('overheat-warning').style.display = this.player.overheated ? 'block' : 'none';
+
+    const chronoSec = (this.player.chronoEnergy / 60).toFixed(1);
+    const chronoPct = Math.round((this.player.chronoEnergy / this.player.maxChronoEnergy) * 100);
+    document.getElementById('chrono-bar').style.width = `${chronoPct}%`;
+    document.getElementById('chrono-val').textContent = `${chronoSec}s`;
+
+    document.getElementById('score-val').textContent = String(this.score).padStart(6, '0');
+    document.getElementById('hiscore-val').textContent = String(this.hiscore).padStart(6, '0');
+    document.getElementById('credits-val').textContent = String(this.credits).padStart(6, '0');
+
+    const epochNames = [
+      'EPOCH 1: CAMBRIAN REEF',
+      'EPOCH 2: ABYSSAL TRENCH',
+      'EPOCH 3: BABBAGE FOUNDRY',
+      'EPOCH 4: DEMOSCENE SILICON',
+      'EPOCH 5: XENITE HIVE'
+    ];
+    document.getElementById('epoch-badge').textContent = epochNames[this.stage - 1];
+    document.getElementById('nashwan-banner').style.display = this.player.isNashwanActive() ? 'block' : 'none';
+  }
+
+  // -------------------------------------------------------------
+  // MAIN GAME STEP & LOOP (60 FPS)
+  // -------------------------------------------------------------
+  step() {
+    if (this.isPaused || !this.gameStarted) {
+      if (this.isPaused) {
+        this.crispinShop.renderPortrait();
+      }
+      return;
+    }
+
+    // Cooldown ticks
+    if (this.cooldownNose > 0) this.cooldownNose--;
+    if (this.cooldownWing > 0) this.cooldownWing--;
+    if (this.cooldownTail > 0) this.cooldownTail--;
+    if (this.cooldownDrones > 0) this.cooldownDrones--;
+
+    // Reverse Scrolling Thrust check (Holding Down near screen bottom)
+    const isReverseThrust = (this.input.down && this.player.y > 140);
+
+    // Chrono-Reverse Time Rewind check
+    if (this.input.chronoRewind && this.player.chronoEnergy > 0) {
+      this.player.isRewinding = true;
+      this.player.chronoEnergy = Math.max(0, this.player.chronoEnergy - 1);
+      this.renderer.chromaticShift = 3; // Engaging rewind chromatic aberration!
+      this.sfx.playRewindWarp();
+      this.restoreState();
+
+      // Golden Synergy 2: Chrono Backfire Nova!
+      if (this.player.hasSynergyNova()) {
+        this.triggerChronoBackfireNova();
+      }
+    } else {
+      this.player.isRewinding = false;
+      this.renderer.chromaticShift = 0;
+      // Record state forward
+      this.captureState();
+
+      // Golden Synergy 2 Check for Reverse Scroll Thrust!
+      if (isReverseThrust && this.player.hasSynergyNova()) {
+        this.triggerChronoBackfireNova();
+      }
+
+      // Update Caverns & Scrolling
+      this.caverns.update(isReverseThrust);
+
+      // Update Player
+      this.player.update(this.input, this.sfx, this);
+
+      // Weapon firing
+      if (this.input.fire) {
+        this.fireWeapons();
+      }
+
+      // Check Boss Trigger at stage finish (~3000px)
+      if (this.caverns.scrollY >= 2800 && !this.bossSpawned) {
+        this.bossSpawned = true;
+        this.boss = new Boss(this.stage);
+        this.tracker.setPattern(5); // Switch to Boss Rave!
+      }
+
+      // Update Boss
+      if (this.boss && !this.boss.dead) {
+        this.boss.update(this);
+      }
+
+      // Spawn normal enemies
+      if (Math.random() < 0.025 && !this.boss) {
+        this.spawnEnemyWave();
+      }
+
+      // Update Enemies
+      this.enemies.forEach(e => e.update(this));
+      this.enemies = this.enemies.filter(e => !e.dead);
+
+      // Update Bullets
+      this.bullets.forEach(b => b.update(this));
+      this.bullets = this.bullets.filter(b => !b.dead);
+
+      // Update Cash Bubbles
+      this.cashList.forEach(c => c.update(this.player, this));
+      this.cashList = this.cashList.filter(c => !c.dead);
+
+      // Update Particles
+      this.particles.forEach(p => p.update());
+      this.particles = this.particles.filter(p => !p.dead);
+
+      // -------------------------------------------------------
+      // COLLISIONS & HIT DETECTION
+      // -------------------------------------------------------
+      // 1. Player Bullets vs Enemies
+      this.bullets.filter(b => !b.isEnemy).forEach(b => {
+        this.enemies.forEach(e => {
+          if (b.dead || e.dead) return;
+          if (Math.abs(b.x - e.x) < (e.w / 2 + 4) && Math.abs(b.y - e.y) < (e.h / 2 + 4)) {
+            b.dead = (b.type !== 'PLASMA' && b.type !== 'PRISM_BEAM'); // plasma & prism pierce!
+            e.takeDamage(b.damage, this);
+          }
+        });
+
+        // Player Bullets vs Boss
+        if (this.boss && !this.boss.dead && !b.dead) {
+          if (Math.abs(b.x - this.boss.x) < (this.boss.w / 2 + 6) && Math.abs(b.y - this.boss.y) < (this.boss.h / 2 + 6)) {
+            b.dead = (b.type !== 'PLASMA' && b.type !== 'PRISM_BEAM');
+            this.boss.takeDamage(b.damage, this);
+          }
+        }
+      });
+
+      // 2. Enemy Bullets vs Player & Orbiting Drones
+      this.bullets.filter(b => b.isEnemy).forEach(b => {
+        if (b.dead) return;
+
+        // Orbiting Drones Bullet Shield Block!
+        if (this.player.slots.drones === 'orbital_drones' || this.player.isNashwanActive()) {
+          const rx = 34; const ry = 16;
+          [0, Math.PI].forEach(offset => {
+            const angle = this.player.droneAngle + offset;
+            const dx = this.player.x + Math.cos(angle) * rx;
+            const dy = this.player.y + Math.sin(angle) * ry;
+            if (Math.hypot(b.x - dx, b.y - dy) < 10) {
+              b.dead = true;
+              this.sfx.playLaser();
+              this.spawnSpark(dx, dy, 0, -1);
+            }
+          });
+        }
+
+        // Direct Player Ship Hit
+        if (!b.dead && Math.abs(b.x - this.player.x) < 10 && Math.abs(b.y - this.player.y) < 12) {
+          b.dead = true;
+          this.player.takeDamage(b.damage, this.sfx, this);
+        }
+      });
+
+      // 3. Destructible Caverns vs Bullets & Player
+      this.caverns.checkBulletCollisions(this.bullets, this);
+      this.caverns.checkPlayerCollision(this.player, this.sfx, this);
+    }
+
+    // ---------------------------------------------------------
+    // RENDER SOFTWARE FRAMEBUFFER (320x200)
+    // ---------------------------------------------------------
+    this.renderer.clear(packABGR(6, 9, 14));
+
+    // Caverns & Parallax
+    this.caverns.render(this.renderer);
+
+    // Cash Bubbles
+    this.cashList.forEach(c => c.render(this.renderer));
+
+    // Enemies
+    this.enemies.forEach(e => e.render(this.renderer));
+
+    // Boss
+    if (this.boss && !this.boss.dead) {
+      this.boss.render(this.renderer);
+    }
+
+    // Projectiles
+    this.bullets.forEach(b => b.render(this.renderer));
+
+    // Player Ship (with Bolted Hardpoints & Dynamic Thrusters)
+    this.player.render(this.renderer, isReverseThrust);
+
+    // Particles
+    this.particles.forEach(p => p.render(this.renderer));
+
+    // Screen Shake Offset
+    if (this.screenShake > 0) {
+      this.screenShake *= 0.88;
+      if (this.screenShake < 0.5) this.screenShake = 0;
+    }
+
+    // Push Framebuffer to Canvas
+    this.renderer.present();
+
+    // Refresh HUD
+    this.updateHUD();
+  }
+
+  startLoop() {
+    const loop = () => {
+      this.step();
+      // Render Tracker visualizers
+      this.trackerUI.renderVisualizers();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+}
+
+
+
+// --- BOOTSTRAP ---
+window.addEventListener('DOMContentLoaded', () => {
+  window.xenon2 = new Xenon2Game();
+  window.xenon2.startLoop();
+});
+
+</script>
 </body>
 </html>
