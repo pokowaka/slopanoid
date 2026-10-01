@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arkanoid · Gemini 3.8 Flash Run (Scaffolding)</title>
+<style>
+  :root {
+    --bg: #07090e;
+    --card: #111726;
+    --border: #1f2a3e;
+    --amber: #f59e0b;
+    --cyan: #38bdf8;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
+  }
+  .scaffold-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    max-width: 680px;
+    width: 100%;
+    padding: 32px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+  }
+  .scaffold-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--amber), var(--cyan));
+  }
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--amber);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: var(--cyan);
+    margin-bottom: 20px;
+  }
+  .info-box {
+    background: #090d16;
+    border: 1px solid #1a2436;
+    border-radius: 6px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    color: #cbd5e1;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--amber);
+    color: #090d16;
+  }
+  .btn-secondary {
+    background: #1e293b;
+    color: #fff;
+    border-color: #334155;
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--cyan);
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+</style>
+</head>
+<body>
+<div class="scaffold-card">
+  <div class="badge-row">
+    <span class="badge">Gemini 3.8 Flash Run</span>
+    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
+  </div>
+  <h1>Arkanoid: The Secret of Brick Island</h1>
+  <div class="subtitle">Benchmark Challenge 1 · LucasArts Retro Tribute</div>
+
+  <div class="info-box">
+    <p><strong>Status:</strong> Ready for Gemini 3.8 Flash one-shot generation.</p>
+    <p style="margin-top: 8px;">
+      Feed <code>gemini-3.8/arkanoid/PROMPT.md</code> in a clean zero-shot context window to Gemini 3.8 Flash. Once generated, replace this file with the output code to play and evaluate.
+    </p>
+  </div>
+
+  <div class="actions">
+    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
+    <a href="../../opus-5.5/arkanoid/index.html" class="btn btn-secondary">🕹️ Compare with Opus 5.5 Run</a>
+    <a href="../index.html" class="btn btn-outline">&larr; Gemini 3.8 Hub</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SLOPANOID · Gemini 3.8 Flash Evaluation Run</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #07090e;
+    --card-bg: #101625;
+    --border: #1e293b;
+    --border-glow: #0284c7;
+    --gold: #f59e0b;
+    --cyan: #38bdf8;
+    --text: #f1f5f9;
+    --sub: #94a3b8;
+  }
+  html, body {
+    min-height: 100%;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+    overflow-x: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+    position: relative;
+    background: radial-gradient(circle at 50% 15%, #152238 0%, #090e1a 50%, #04060a 100%);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .top-nav {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  .top-nav a {
+    color: var(--cyan);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: bold;
+  }
+  .top-nav a:hover {
+    text-decoration: underline;
+  }
+
+  header {
+    text-align: center;
+    width: 100%;
+    padding: 24px 20px;
+    background: linear-gradient(180deg, #131e33 0%, #0c1322 100%);
+    border: 2px solid var(--border-glow);
+    border-radius: 14px;
+    box-shadow: 0 0 24px rgba(2, 132, 199, 0.25), inset 0 0 20px rgba(0, 0, 0, 0.7);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  }
+
+  .logo-title {
+    font-size: clamp(24px, 5vw, 44px);
+    font-weight: 900;
+    letter-spacing: clamp(3px, 1vw, 6px);
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .tagline {
+    font-size: clamp(12px, 2vw, 15px);
+    color: var(--cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  /* Status Box */
+  .status-box {
+    width: 100%;
+    background: rgba(16, 22, 37, 0.85);
+    border: 1px solid #1f2f4a;
+    border-radius: 10px;
+    padding: 20px 24px;
+    border-left: 5px solid var(--cyan);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+  .status-badge {
+    display: inline-block;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--cyan);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  /* Games Grid */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+    gap: 24px;
+    width: 100%;
+  }
+
+  .game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .game-card:hover {
+    transform: translateY(-3px);
+    border-color: #3b5074;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .game-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: #172033;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .game-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  .game-sub {
+    font-size: 12px;
+    color: var(--cyan);
+    font-weight: bold;
+  }
+  .game-desc {
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+  }
+  .btn {
+    padding: 9px 14px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: #07090e;
+  }
+  .btn-secondary {
+    background: #192338;
+    color: #cbd5e1;
+    border-color: #273752;
+  }
+  .btn-secondary:hover {
+    background: #23314d;
+    color: #fff;
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--cyan);
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+
+  footer {
+    text-align: center;
+    color: var(--sub);
+    font-size: 12px;
+    margin-top: 16px;
+  }
+  footer a {
+    color: var(--cyan);
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="top-nav">
+    <a href="../index.html">&larr; Return to AI Models Benchmark Hub</a>
+    <span style="color: var(--sub);">Model Run: Google Gemini 3.8 Flash</span>
+  </div>
+
+  <header>
+    <h1 class="logo-title">SLOPANOID ARCADE</h1>
+    <div class="tagline">Gemini 3.8 Flash Scaffolding &amp; Evaluation Suite</div>
+  </header>
+
+  <div class="status-box">
+    <div class="status-badge">Scaffolding Initialized</div>
+    <p>
+      The <strong>gemini-3.8/</strong> directory is scaffolded and ready for benchmark execution.
+      Each game subdirectory contains the exact canonical <code>PROMPT.md</code> specification. Run the prompt against <strong>Gemini 3.8 Flash</strong> in a single zero-shot turn in an isolated context and save the generated game files to the corresponding directory.
+    </p>
+  </div>
+
+  <main class="games-grid">
+
+    <!-- GAME 1 -->
+    <article class="game-card">
+      <div>
+        <div class="card-top">
+          <div class="game-icon">🧱</div>
+          <div>
+            <h2 class="game-title">Arkanoid</h2>
+            <div class="game-sub">The Secret of Brick Island</div>
+          </div>
+        </div>
+        <p class="game-desc">
+          LucasArts tribute featuring 33 mosaic levels, Web Audio OPL2 FM synthesizer with 7 soundtracks, insult sword fighting, and LeChuck boss fight.
+        </p>
+      </div>
+      <div class="button-group">
+        <a class="btn btn-primary" href="arkanoid/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-secondary" href="arkanoid/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-outline" href="../opus-5.5/arkanoid/index.html" target="_blank">Compare Opus 5.5 ↗</a>
+      </div>
+    </article>
+
+    <!-- GAME 2 -->
+    <article class="game-card">
+      <div>
+        <div class="card-top">
+          <div class="game-icon">🚀</div>
+          <div>
+            <h2 class="game-title">Xenon 2</h2>
+            <div class="game-sub">Megablast · Bitmap Brothers Tribute</div>
+          </div>
+        </div>
+        <p class="game-desc">
+          Vertical shmup with 320&times;200 software framebuffer, 8-channel Amiga MOD tracker sequencing Bomb the Bass with TB-303 filter sweeps, and Crispin's shop.
+        </p>
+      </div>
+      <div class="button-group">
+        <a class="btn btn-primary" href="xenon2/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-secondary" href="xenon2/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-outline" href="../opus-5.5/xenon2/index.html" target="_blank">Compare Opus 5.5 ↗</a>
+      </div>
+    </article>
+
+    <!-- GAME 3 -->
+    <article class="game-card">
+      <div>
+        <div class="card-top">
+          <div class="game-icon">⚔️</div>
+          <div>
+            <h2 class="game-title">Ghosts 'n Goblins</h2>
+            <div class="game-sub">The Cursed PC Gaming Museum</div>
+          </div>
+        </div>
+        <p class="game-desc">
+          Hardcore action platformer with tactical armor ejection, Strawberry Boxer Shorts mode (+35% speed &amp; double jump), monster possession, and 5 weapons.
+        </p>
+      </div>
+      <div class="button-group">
+        <a class="btn btn-primary" href="ghosts-n-goblins/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-secondary" href="ghosts-n-goblins/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-outline" href="../opus-5.5/ghosts-n-goblins/index.html" target="_blank">Compare Opus 5.5 ↗</a>
+      </div>
+    </article>
+
+    <!-- GAME 4 -->
+    <article class="game-card">
+      <div>
+        <div class="card-top">
+          <div class="game-icon">🎵</div>
+          <div>
+            <h2 class="game-title">Lemmings</h2>
+            <div class="game-sub">Beat Tribe · Playing Is Composing</div>
+          </div>
+        </div>
+        <p class="game-desc">
+          Psygnosis puzzle tribute where every level is an interactive step sequencer: terrain is score, lemmings are playheads, and saving the tribe unlocks audio stems.
+        </p>
+      </div>
+      <div class="button-group">
+        <a class="btn btn-primary" href="lemmings/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-secondary" href="lemmings/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-outline" href="../opus-5.5/lemmings/index.html" target="_blank">Compare Opus 5.5 ↗</a>
+      </div>
+    </article>
+
+  </main>
+
+  <footer>
+    <p>Hotkeys: Press <kbd>1</kbd>–<kbd>4</kbd> to jump to game scaffolding &middot; Return to <a href="../index.html">Main Benchmark Hub</a></p>
+  </footer>
+</div>
+
+<script>
+  window.addEventListener('keydown', (e) => {
+    if (e.key === '1') window.location.href = 'arkanoid/index.html';
+    if (e.key === '2') window.location.href = 'xenon2/index.html';
+    if (e.key === '3') window.location.href = 'ghosts-n-goblins/index.html';
+    if (e.key === '4') window.location.href = 'lemmings/index.html';
+  });
+</script>
+</body>
+</html>
