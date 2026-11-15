@@ -1,139 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Xenon 2: Megablast · Gemini 4 Carbon Run (Scaffolding)</title>
-<style>
-  :root {
-    --bg: #07090e;
-    --card: #111726;
-    --border: #1f2a3e;
-    --amber: #f59e0b;
-    --cyan: #38bdf8;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
-  }
-  .scaffold-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    max-width: 680px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .scaffold-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan));
-  }
-  .badge-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  h1 {
-    font-size: 24px;
-    margin-bottom: 4px;
-    color: #fff;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--cyan);
-    margin-bottom: 20px;
-  }
-  .info-box {
-    background: #090d16;
-    border: 1px solid #1a2436;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    color: #cbd5e1;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .btn {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid transparent;
-  }
-  .btn-primary {
-    background: var(--amber);
-    color: #090d16;
-  }
-  .btn-secondary {
-    background: #1e293b;
-    color: #fff;
-    border-color: #334155;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XENON II — MEGABLAST: Evolution &amp; Tracker Odyssey</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div class="scaffold-card">
-  <div class="badge-row">
-    <span class="badge">Gemini 4 Carbon Run</span>
-    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
-  </div>
-  <h1>Xenon 2: Megablast</h1>
-  <div class="subtitle">Benchmark Challenge 2 · Bitmap Brothers &amp; Amiga MOD Tracker Tribute</div>
+  <div class="cabinet-shell">
+    <!-- LEFT TELEMETRY & SYNERGY RACK -->
+    <aside class="side-panel left-panel">
+      <div class="brand-plate">
+        <div class="brand-kicker">BITMAP SHEEN · VGA MODE 13H</div>
+        <h1 class="brand-title">XENON II</h1>
+        <div class="brand-sub">MEGABLAST ODYSSEY</div>
+      </div>
 
-  <div class="info-box">
-    <p><strong>Status:</strong> Ready for Gemini 4 Carbon clean-room generation.</p>
-    <p style="margin-top: 8px;">
-      Feed <code>/var/tmp/bench-gemini-4-carbon/xenon2/PROMPT.md</code> in an isolated context window to Gemini 4 Carbon, then import the result with <code>cleanroom_harness.py collect gemini-4-carbon</code>.
-    </p>
+      <section class="panel-box">
+        <div class="box-hdr">SHIP TELEMETRY</div>
+        <div class="stat-row">
+          <span>SCORE</span>
+          <strong id="hud-score" class="val-gold">0000000</strong>
+        </div>
+        <div class="stat-row">
+          <span>CREDITS</span>
+          <strong id="hud-credits" class="val-emerald">350 CR</strong>
+        </div>
+        <div class="stat-row">
+          <span>SMART BOMBS</span>
+          <strong id="hud-bombs" class="val-pink">2</strong>
+        </div>
+
+        <div class="gauge-block">
+          <div class="gauge-label"><span>HULL INTEGRITY</span><span id="hud-hull-val">100/100</span></div>
+          <div class="gauge-track"><div id="hud-hull-bar" class="gauge-fill fill-hull" style="width:100%"></div></div>
+        </div>
+
+        <div class="gauge-block">
+          <div class="gauge-label"><span>ENERGY SHIELD</span><span id="hud-shield-val">50/50</span></div>
+          <div class="gauge-track"><div id="hud-shield-bar" class="gauge-fill fill-shield" style="width:100%"></div></div>
+        </div>
+
+        <div class="gauge-block">
+          <div class="gauge-label"><span>CHRONO REWIND [R/SHIFT]</span><span id="hud-chrono-val">3.0s</span></div>
+          <div class="gauge-track"><div id="hud-chrono-bar" class="gauge-fill fill-chrono" style="width:100%"></div></div>
+        </div>
+      </section>
+
+      <section class="panel-box">
+        <div class="box-hdr">BOLTED HARDPOINTS</div>
+        <div id="hud-hardpoint-list" class="rig-list"></div>
+      </section>
+
+      <section class="panel-box grow-box">
+        <div class="box-hdr">WEAPON SYNERGY MATRIX</div>
+        <div id="hud-synergy-badges" class="synergy-stack"></div>
+      </section>
+    </aside>
+
+    <!-- CENTER 320x200 VGA CRT MONITOR -->
+    <main class="center-stage">
+      <div class="crt-bezel">
+        <div class="bezel-top-strip">
+          <span id="hud-epoch-title" class="bezel-epoch">1. CAMBRIAN TRILOBITE REEF</span>
+          <span class="bezel-led"><i></i> 60 FPS LOCKED</span>
+          <span id="hud-epoch-year" class="bezel-year">520,000,000 BCE</span>
+        </div>
+
+        <div id="crt-viewport" class="crt-viewport crt-on">
+          <canvas id="game-canvas" width="320" height="200"></canvas>
+          <div class="crt-scanlines" aria-hidden="true"></div>
+          <div class="crt-glare" aria-hidden="true"></div>
+        </div>
+
+        <div class="controls-legend">
+          <span><b>MOVE:</b> Mouse / WASD / Arrows</span>
+          <span><b>FIRE:</b> Space / Z / L-Click</span>
+          <span><b>REV SCROLL:</b> Down / S (Bottom)</span>
+          <span><b>CHRONO REWIND:</b> R / Shift / R-Click</span>
+          <span><b>BOMB:</b> Q / X</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT 8-CHANNEL TRACKER ANALYSER & COMMAND DECK -->
+    <aside class="side-panel right-panel">
+      <section class="panel-box tracker-hud-box">
+        <div class="box-hdr">8-CH BOMB THE BASS SYNTH</div>
+        <canvas id="hud-analyser-canvas" width="236" height="78"></canvas>
+        <div id="hud-pattern-name" class="trk-now-playing">00: INTRO - PRECINCT AWAKEN</div>
+        <div id="hud-pattern-pos" class="trk-now-meta">PAT 00 · ROW 00 · 122 BPM</div>
+        <button id="btn-open-tracker" class="deck-btn btn-accent">TRACKER VIEW / JUKEBOX [T]</button>
+      </section>
+
+      <section class="panel-box">
+        <div class="box-hdr">CRISPIN'S PAWN EMPORIUM</div>
+        <button id="btn-open-shop" class="deck-btn btn-gold">DOCK AT CRISPIN'S SHOP [B]</button>
+        <div class="btn-grid-2">
+          <button id="btn-smart-bomb" class="deck-btn">BOMB [Q]</button>
+          <button id="btn-toggle-crt" class="deck-btn">CRT: ON [C]</button>
+        </div>
+        <button id="btn-mute-audio" class="deck-btn">AUDIO: LIVE [M]</button>
+      </section>
+
+      <section class="panel-box grow-box">
+        <div class="box-hdr">EVOLUTION EPOCH WARP [1-5]</div>
+        <div class="warp-stack">
+          <button class="warp-btn active" data-warp-stage="1"><span>[1]</span> Cambrian Trilobite Reef</button>
+          <button class="warp-btn" data-warp-stage="2"><span>[2]</span> Abyssal Nautiloid Trench</button>
+          <button class="warp-btn" data-warp-stage="3"><span>[3]</span> Babbage Clockwork Foundry</button>
+          <button class="warp-btn" data-warp-stage="4"><span>[4]</span> 1989 Demoscene Silicon</button>
+          <button class="warp-btn" data-warp-stage="5"><span>[5]</span> Biomechanical Xenite Hive</button>
+        </div>
+      </section>
+    </aside>
   </div>
 
-  <div class="actions">
-    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
-    <a href="../../fable-5.2/xenon2/index.html" class="btn btn-secondary">🕹️ Compare with Fable 5.2 Run</a>
-    <a href="../index.html" class="btn btn-outline">&larr; Gemini 4 Carbon Hub</a>
+  <!-- ======================================================================= -->
+  <!-- MODAL 1: CRISPIN'S INTERGALACTIC UPGRADE STORE & HARDPOINT PAPER-DOLL   -->
+  <!-- ======================================================================= -->
+  <div id="shop-modal" class="modal-backdrop hidden" role="dialog" aria-label="Crispin's Intergalactic Upgrade Store">
+    <div class="modal-window shop-window">
+      <header class="modal-header">
+        <div>
+          <span class="modal-tag">ELECTRO-DUB PAWNBROKER BAY</span>
+          <h2>CRISPIN'S INTERGALACTIC UPGRADE STORE</h2>
+        </div>
+        <div class="shop-hdr-right">
+          <div class="credits-pill">CREDITS: <strong id="shop-credits-val">350 CR</strong></div>
+          <button id="shop-undock-btn" class="launch-btn">UNDOCK &amp; BLAST [B / ENTER]</button>
+        </div>
+      </header>
+
+      <div class="shop-body">
+        <!-- Left Column: Crispin Animated Portrait + Live Paper-Doll Schematic -->
+        <div class="shop-left-col">
+          <div class="crispin-card">
+            <canvas id="crispin-canvas" width="144" height="144"></canvas>
+            <div class="crispin-speech">
+              <div class="crispin-name">CRISPIN · 50% TRADE-IN HAGGLER</div>
+              <p id="crispin-dialogue">"Welcome to Crispin's Emporium! Best chrome this side of the Cambrian, mate!"</p>
+            </div>
+          </div>
+
+          <div class="paperdoll-wrap">
+            <canvas id="paperdoll-canvas" width="320" height="200"></canvas>
+            <div id="paperdoll-slots" class="pd-slots-grid"></div>
+          </div>
+        </div>
+
+        <!-- Right Column: Synergy Matrix + Filter Tabs + 20 Weapons & Specials -->
+        <div class="shop-right-col">
+          <div id="shop-synergies" class="shop-synergy-bar"></div>
+
+          <div class="shop-tabs">
+            <button class="tab-btn active" data-shop-tab="all">ALL GEAR</button>
+            <button class="tab-btn" data-shop-tab="nose">NOSE</button>
+            <button class="tab-btn" data-shop-tab="leftWing">L-WING</button>
+            <button class="tab-btn" data-shop-tab="rightWing">R-WING</button>
+            <button class="tab-btn" data-shop-tab="rearTail">REAR TAIL</button>
+            <button class="tab-btn" data-shop-tab="drones">DRONES</button>
+            <button class="tab-btn" data-shop-tab="hull">HULL/ENG</button>
+            <button class="tab-btn" data-shop-tab="specials">SPECIALS &amp; NASHWAN</button>
+          </div>
+
+          <div id="shop-items-grid" class="shop-items-grid"></div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 2: 8-CHANNEL PROTRACKER / MEGABLAST SEQUENCER JUKEBOX [T]         -->
+  <!-- ======================================================================= -->
+  <div id="tracker-modal" class="modal-backdrop hidden" role="dialog" aria-label="8-Channel ProTracker Pattern Viewer">
+    <div class="modal-window tracker-window">
+      <header class="modal-header">
+        <div>
+          <span class="modal-tag">AMIGA / WEBAUDIO 8-CHANNEL REAL-TIME SEQUENCER</span>
+          <h2>MEGABLAST PROTRACKER ODYSSEY [T]</h2>
+        </div>
+        <div class="tracker-hdr-actions">
+          <button id="tracker-dub-btn" class="trk-ctrl-btn">DUB LOWPASS: OFF</button>
+          <button id="tracker-reset-ch-btn" class="trk-ctrl-btn">UNMUTE ALL 8 CH</button>
+          <button id="tracker-close-btn" class="launch-btn">RETURN TO SHIP [T / ESC]</button>
+        </div>
+      </header>
+
+      <div class="tracker-top-bar">
+        <canvas id="tracker-scope-canvas" width="320" height="58"></canvas>
+        <div class="tracker-pat-selector">
+          <div id="tracker-status-line" class="tracker-status-line">01: PRECINCT 13 MAIN GROOVE | ROW 00/3F | 122 BPM</div>
+          <div id="tracker-pattern-btns" class="tracker-pat-btns"></div>
+        </div>
+      </div>
+
+      <div class="tracker-grid-frame">
+        <div id="tracker-ch-headers" class="trk-ch-headers"></div>
+        <div id="tracker-rows-scroll" class="trk-rows-scroll"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ordered Pure Vanilla JS Modules (Works over both file:// and http://!) -->
+  <script src="palette.js"></script>
+  <script src="sprites.js"></script>
+  <script src="audio.js"></script>
+  <script src="weapons.js"></script>
+  <script src="stages.js"></script>
+  <script src="shop.js"></script>
+  <script src="tracker_ui.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>

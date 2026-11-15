@@ -93,7 +93,7 @@ Ghosts 'n Goblins producing a 21-module, 1.06 MB (23,580-line) platformer.
 
 ---
 
-## Gemini 4 Carbon — `gemini-4-carbon/` (in progress, 1/4 verified)
+## Gemini 4 Carbon — `gemini-4-carbon/` (in progress, 2/4 verified)
 
 Run in isolated `/var/tmp/bench-gemini-4-carbon/<game>` directories while
 `slopanoid` was locked (`chmod 000`). *(Arkanoid active wall time excludes one
@@ -102,9 +102,10 @@ Run in isolated `/var/tmp/bench-gemini-4-carbon/<game>` directories while
 | Game | Active wall time | LLM calls | Output tokens | Input (uncached) | Input (cached) | Input (total) | Peak ctx | Shipped |
 | :--- | --: | --: | --: | --: | --: | --: | --: | --: |
 | Arkanoid | 26.3 min | 52 | 172,845 | 666,763 | 7,815,538 | 8,482,301 | 322,215 | 137 KB · 3,557 lines |
-| Xenon 2 | *queued* | — | — | — | — | — | — | — |
+| Xenon 2 | 25.3 min | 26 | 143,803 | 193,518 | 3,012,434 | 3,205,952 | 206,236 | 266 KB · 7,799 lines |
 | Ghosts 'n Goblins | *queued* | — | — | — | — | — | — | — |
 | Lemmings | *queued* | — | — | — | — | — | — | — |
+| **Subtotal (2/4)** | **51.6 min** | **78** | **316,648** | **860,281** | **10,827,972** | **11,688,253** | — | **403 KB · 11,356 lines** |
 
 ---
 
