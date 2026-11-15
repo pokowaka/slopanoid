@@ -70,42 +70,43 @@ and solver *before* the game, then baked solution demos from it.
 
 ---
 
-## Head-to-head
+## Fable 5.2 — `fable-5.2/` (complete, 4/4 verified)
 
-| Metric | Gemini 3.8 Flash | Fable 5.1 | Ratio (Fable / Gemini) |
-| :--- | --: | --: | --: |
-| Wall time (parallel) | ~35.5 min | 57.3 min | 1.6× |
-| Agent-time (sum) | 43.7 min | 170.1 min | 3.9× |
-| LLM calls | 286 | 200 | 0.7× |
-| Output tokens | 560k | 820k | 1.5× |
-| Input tokens (total) | 31.7M | 30.6M | 1.0× |
-| Output tokens / call | ~2.0k | ~4.1k | 2.1× |
-| Shipped runtime bytes | 690 KB | 647 KB | 0.9× |
-| Output tokens / shipped KB | ~810 | ~1,270 | 1.6× |
-
-Both models land on almost identical total input volume by different routes:
-Gemini via many cheap calls, Fable via fewer calls against a larger context.
-Fable spends ~60% more output tokens per shipped kilobyte, reflecting heavier
-reasoning and self-built test harnesses rather than a bigger game.
-
----
-
-## Fable 5.2 — `fable-5.2/` (in progress, 3/4 verified)
-
-Run across 2026-11-10 – 2026-11-12 PST in isolated `/tmp/bench-fable-5.2/<game>`
-directories while `slopanoid` was locked (`chmod 000`). Lemmings is still queued.
+Run sequentially per game across 2026-11-10 – 2026-11-14 PST in isolated
+`/tmp/bench-fable-5.2/<game>` directories while `slopanoid` was locked (`chmod 000`).
 
 | Game | Wall time | LLM calls | Output tokens | Input (uncached) | Input (cached) | Input (total) | Peak ctx | Shipped |
 | :--- | --: | --: | --: | --: | --: | --: | --: | --: |
 | Arkanoid | 67.7 min | 56 | 346,262 | 647,013 | 17,971,423 | 18,618,436 | 422,023 | 206 KB · 3,930 lines |
 | Xenon 2 | 80.0 min | 58 | 458,112 | 696,207 | 19,799,757 | 20,495,964 | 528,057 | 272 KB · 3,769 lines |
 | Ghosts 'n Goblins *(+17 subagents)* | 115.4 min<br>(661.6 min agent-time) | 798 | 3,469,191 | 8,578,122 | 157,884,013 | 166,462,135 | 456,759 | 1,061 KB · 23,580 lines |
-| Lemmings | *queued* | — | — | — | — | — | — | — |
-| **Subtotal (3/4)** | **263.1 min wall**<br>(809.3 min agent-time) | **912** | **4,273,565** | **9,921,342** | **195,655,193** | **205,576,535** | — | **1,539 KB · 31,279 lines** |
+| Lemmings | 91.4 min | 77 | 435,775 | 934,866 | 27,486,135 | 28,421,001 | 504,718 | 211 KB · 3,736 lines |
+| **Total** | **354.5 min sequential**<br>(900.7 min agent-time) | **989** | **4,709,340** | **10,856,208** | **223,141,328** | **233,997,536** | — | **1,750 KB · 35,015 lines** |
 
-**Style:** Fable 5.2 builds ~2× larger single-file games on Arkanoid and Xenon 2
-(including strict CSP SHA-256 pinning, a Mode 13h height-field metallic shader,
-and an interactive 640×400 ProTracker jukebox), and on Ghosts 'n Goblins
-autonomously decomposed the game into 21 modules (`engine.js`, procedural sprite
-and backdrop libraries, stage/boss modules, FM/PSG synth) and fanned out parallel
-subagents to produce over 1 MB (23,580 lines) of runtime code.
+**Style:** Fable 5.2 scales up scope dramatically compared to 5.1: ~1.6–1.8×
+larger single-file builds on Arkanoid and Xenon 2, a 15-file deterministic
+simulator + headless Chrome/OfflineAudioContext test suite (`tools/verify.js`
+solving all 16 levels) on Lemmings, and autonomous 17-subagent fan-out on
+Ghosts 'n Goblins producing a 21-module, 1.06 MB (23,580-line) platformer.
+
+---
+
+## Head-to-head
+
+| Metric | Gemini 3.8 Flash | Fable 5.1 | Fable 5.2 | Ratio (5.2 / 5.1) |
+| :--- | --: | --: | --: | --: |
+| Max single-game wall time | 15.5 min | 57.3 min | 115.4 min | 2.0× |
+| Agent-time (sum) | 43.7 min | 170.1 min | 900.7 min | 5.3× |
+| LLM calls | 286 | 200 | 989 | 4.9× |
+| Output tokens | 560k | 820k | 4.71M | 5.7× |
+| Input tokens (total) | 31.7M | 30.6M | 234.0M | 7.6× |
+| Output tokens / call | ~2.0k | ~4.1k | ~4.8k | 1.2× |
+| Shipped runtime bytes | 690 KB | 647 KB | 1,750 KB | 2.7× |
+| Shipped runtime lines | 21,005 | 8,719 | 35,015 | 4.0× |
+| Output tokens / shipped KB | ~810 | ~1,270 | ~2,690 | 2.1× |
+
+Gemini 3.8 Flash and Fable 5.1 land on nearly identical shipped byte volume
+(~650–690 KB) and ~31M total input tokens, whereas Fable 5.2 pushes into a much
+larger regime (528k peak context, parallel subagent delegation on Ghosts 'n
+Goblins, and headless Chrome/OfflineAudioContext test suites), shipping 2.7× the
+runtime bytes and 4.0× the lines of Fable 5.1.

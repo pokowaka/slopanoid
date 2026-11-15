@@ -1,0 +1,64 @@
+/* BEAT TRIBE - page chrome only. The game itself is a 320x200 software framebuffer;
+   CSS just scales it with nearest-neighbour filtering and draws the CRT bezel. */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: radial-gradient(ellipse at 50% 35%, #1c1c2e 0%, #0b0b14 60%, #050508 100%);
+  color: #8a8ab0;
+  font: 12px/1.5 "Courier New", Courier, monospace;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#stage { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+#monitor { --s: 3px; position: relative; }
+#tube { position: relative; line-height: 0; }
+#screen {
+  display: block;
+  width: 960px; height: 600px;              /* overridden by JS with an integer scale */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  cursor: none;
+  background: #000;
+}
+#scan, #glass { position: absolute; inset: 0; pointer-events: none; display: none; }
+#chin { display: none; }
+#help { margin: 0; padding: 0 12px; text-align: center; max-width: 980px; opacity: 0.8; }
+#help b { color: #d8d8f0; font-weight: normal; }
+
+/* ---- CRT mode (toggle with C) ---- */
+#monitor.crt {
+  padding: 18px 20px 0 20px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, #6a6658 0%, #4a473d 35%, #33312a 100%);
+  box-shadow: 0 0 0 2px #1a1914, 0 18px 50px rgba(0, 0, 0, 0.7), inset 0 2px 3px rgba(255, 255, 255, 0.25), inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+}
+#monitor.crt #tube {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 0 6px #14130f, 0 0 0 8px #2b2922, inset 0 0 30px rgba(0, 0, 0, 0.9);
+}
+#monitor.crt #screen { filter: saturate(1.12) contrast(1.05) brightness(1.06); }
+#monitor.crt #scan {
+  display: block;
+  background: repeating-linear-gradient(to bottom,
+    rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) calc(var(--s) * 0.6),
+    rgba(0, 0, 0, 0.34) calc(var(--s) * 0.6), rgba(0, 0, 0, 0.34) var(--s));
+}
+#monitor.crt #glass {
+  display: block;
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.42) 100%),
+    linear-gradient(125deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 30%);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.55);
+}
+#monitor.crt #chin {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 30px; padding: 0 6px;
+  color: #1c1b16; letter-spacing: 2px; font-size: 11px;
+}
+#chin .badge { font-weight: bold; color: #e8e4d0; text-shadow: 0 1px 0 #000; }
+#chin .model { opacity: 0.75; }
+#chin .led { width: 9px; height: 5px; border-radius: 2px; background: #ff3b2f; box-shadow: 0 0 6px #ff3b2f, inset 0 1px 1px rgba(255, 255, 255, 0.5); }

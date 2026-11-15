@@ -23,13 +23,13 @@ Scaffolding for evaluating Google DeepMind's **Gemini Next** on the Slopanoid au
 
 ## 🚀 Air-Gapped Execution Instructions
 
-1. Stage `/tmp/bench-gemini-next` (with only `PROMPT.md` per game) and lock the `slopanoid` repo (working tree + `.git/`):
+1. Stage `/var/tmp/bench-gemini-next` (with only `PROMPT.md` per game; `/var/tmp` avoids macOS's 3-day midnight `/tmp` cleanup) and lock the `slopanoid` repo (working tree + `.git/`):
    ```bash
    ./scripts/cleanroom_harness.py prepare gemini-next
    # Optional kernel-enforced root lock:
    # ./scripts/cleanroom_harness.py prepare gemini-next --sudo-lock
    ```
-2. Close any workspace opened on `slopanoid`, open `/tmp/bench-gemini-next` (or `/tmp/bench-gemini-next/<game>`), and run **Gemini Next** on each `PROMPT.md`.
+2. Close any workspace opened on `slopanoid`, open `/var/tmp/bench-gemini-next/<game>`, and run **Gemini Next** on each `PROMPT.md`.
 3. Unlock the repo, copy the generated builds back into `simple-prompt/gemini-next/`, validate syntax/assets/clean-room overlap, and optionally record conversation metrics:
    ```bash
    python3 ~/.cache/slopanoid/cleanroom_harness.py collect gemini-next \

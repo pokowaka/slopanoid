@@ -29,6 +29,7 @@ from typing import Any
 
 GAMES: tuple[str, ...] = ("arkanoid", "xenon2", "ghosts-n-goblins", "lemmings")
 BASELINE_MODELS: tuple[str, ...] = ("opus-5.5", "gemini-3.8", "fable-5.1")
+STAGING_ROOT = Path("/var/tmp")  # Persists across macOS midnight /tmp cleanups
 CONTROL_DIR = Path.home() / ".cache" / "slopanoid"
 STATE_FILE = CONTROL_DIR / "state.json"
 CONTROL_SCRIPT = CONTROL_DIR / "cleanroom_harness.py"
@@ -438,7 +439,7 @@ def cmd_prepare(args: argparse.Namespace) -> int:
         staging_dir = (
             args.staging_dir.expanduser().resolve()
             if args.staging_dir and len(args.models) == 1
-            else Path("/tmp") / f"bench-{model}"
+            else STAGING_ROOT / f"bench-{model}"
         )
 
         # Prevent clobbering an existing generated build in /tmp unless --force
@@ -511,7 +512,7 @@ def cmd_collect(args: argparse.Namespace) -> int:
         staging_dir = (
             args.staging_dir.expanduser().resolve()
             if args.staging_dir and len(args.models) == 1
-            else Path(models_map.get(model, f"/tmp/bench-{model}"))
+            else Path(models_map.get(model, str(STAGING_ROOT / f"bench-{model}")))
         )
         if not staging_dir.is_dir():
             print(f"[ERROR] Staging directory not found: {staging_dir}", file=sys.stderr)
@@ -610,7 +611,9 @@ def cmd_status(args: argparse.Namespace) -> int:
         mode_label = "sudo root-lock" if state.get("sudo_lock") else "chmod 000"
         print(f"Locked at  : {state['locked_at']} ({mode_label})")
 
-    staging_dirs = sorted(Path("/tmp").glob("bench-*"))
+    staging_dirs = sorted(
+        {*STAGING_ROOT.glob("bench-*"), *Path("/tmp").glob("bench-*")}
+    )
     for m_dir in state.get("models", {}).values():
         p = Path(m_dir)
         if p.exists() and p not in staging_dirs:
@@ -652,13 +655,16 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
     if target.is_dir():
         target_dir = target.resolve()
-    elif (Path("/tmp") / f"bench-{args.target}").is_dir():
-        target_dir = (Path("/tmp") / f"bench-{args.target}").resolve()
-        model_name = args.target
     elif not is_repo_locked(repo_root) and (
         repo_root / "simple-prompt" / args.target
     ).is_dir():
         target_dir = (repo_root / "simple-prompt" / args.target).resolve()
+        model_name = args.target
+    elif (STAGING_ROOT / f"bench-{args.target}").is_dir():
+        target_dir = (STAGING_ROOT / f"bench-{args.target}").resolve()
+        model_name = args.target
+    elif (Path("/tmp") / f"bench-{args.target}").is_dir():
+        target_dir = (Path("/tmp") / f"bench-{args.target}").resolve()
         model_name = args.target
     else:
         print(

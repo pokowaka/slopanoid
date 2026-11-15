@@ -1,12 +1,12 @@
 # Slopanoid: Fable 5.2 Benchmark Run
 
-Scaffolding for evaluating Fable Studio's **Fable 5.2** on the Slopanoid autonomous retro game dev benchmark.
+Results of evaluating Fable Studio's **Fable 5.2** on the Slopanoid autonomous retro game dev benchmark.
 
 ## Benchmark Status
 - **Model:** Fable 5.2
 - **Execution Mode:** Single Turn (One-Shot), zero human intervention
 - **Constraints:** Zero external assets (100% procedural Web Audio & HTML5 Canvas), zero external libraries
-- **Current Status:** In Progress — 3/4 games generated clean-room and verified (`arkanoid`, `xenon2`, `ghosts-n-goblins`; `lemmings` queued)
+- **Current Status:** Complete — 4/4 games generated clean-room and verified (1,750 KB · 35,015 shipped runtime lines, see [`../metrics/`](../metrics/README.md))
 
 ---
 
