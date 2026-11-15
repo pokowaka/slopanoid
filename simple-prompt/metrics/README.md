@@ -21,12 +21,13 @@ only its `PROMPT.md`, with all prior builds moved out of the filesystem.
   READMEs and test harnesses. Bytes are a fairer size measure than lines because
   the two models format code very differently (Fable averages ~70 B/line vs
   Gemini's ~33 B/line).
-- Raw per-step data: [`gemini-3.8.json`](gemini-3.8.json), [`fable-5.1.json`](fable-5.1.json).
+- Raw per-step data: [`gemini-3.8.json`](gemini-3.8.json), [`fable-5.1.json`](fable-5.1.json), [`fable-5.2.json`](fable-5.2.json).
 
 > [!NOTE]
 > Model IDs recorded in the metadata were
 > `Gemini-4.1-S-IT-G1038-Rev25-Topo-Skimaki-EEVEE/2` for the run labelled
-> *Gemini 3.8 Flash*, and `claude-fable-5-1@default` for *Fable 5.1*.
+> *Gemini 3.8 Flash*, `claude-fable-5-1@default` for *Fable 5.1*, and
+> `claude-fable-5-2@default` for *Fable 5.2*.
 
 ---
 
@@ -86,3 +87,25 @@ Both models land on almost identical total input volume by different routes:
 Gemini via many cheap calls, Fable via fewer calls against a larger context.
 Fable spends ~60% more output tokens per shipped kilobyte, reflecting heavier
 reasoning and self-built test harnesses rather than a bigger game.
+
+---
+
+## Fable 5.2 — `fable-5.2/` (in progress, 3/4 verified)
+
+Run across 2026-11-10 – 2026-11-12 PST in isolated `/tmp/bench-fable-5.2/<game>`
+directories while `slopanoid` was locked (`chmod 000`). Lemmings is still queued.
+
+| Game | Wall time | LLM calls | Output tokens | Input (uncached) | Input (cached) | Input (total) | Peak ctx | Shipped |
+| :--- | --: | --: | --: | --: | --: | --: | --: | --: |
+| Arkanoid | 67.7 min | 56 | 346,262 | 647,013 | 17,971,423 | 18,618,436 | 422,023 | 206 KB · 3,930 lines |
+| Xenon 2 | 80.0 min | 58 | 458,112 | 696,207 | 19,799,757 | 20,495,964 | 528,057 | 272 KB · 3,769 lines |
+| Ghosts 'n Goblins *(+17 subagents)* | 115.4 min<br>(661.6 min agent-time) | 798 | 3,469,191 | 8,578,122 | 157,884,013 | 166,462,135 | 456,759 | 1,061 KB · 23,580 lines |
+| Lemmings | *queued* | — | — | — | — | — | — | — |
+| **Subtotal (3/4)** | **263.1 min wall**<br>(809.3 min agent-time) | **912** | **4,273,565** | **9,921,342** | **195,655,193** | **205,576,535** | — | **1,539 KB · 31,279 lines** |
+
+**Style:** Fable 5.2 builds ~2× larger single-file games on Arkanoid and Xenon 2
+(including strict CSP SHA-256 pinning, a Mode 13h height-field metallic shader,
+and an interactive 640×400 ProTracker jukebox), and on Ghosts 'n Goblins
+autonomously decomposed the game into 21 modules (`engine.js`, procedural sprite
+and backdrop libraries, stage/boss modules, FM/PSG synth) and fanned out parallel
+subagents to produce over 1 MB (23,580 lines) of runtime code.

@@ -16,8 +16,10 @@ Our goal is to run this identical 4-game challenge across frontier AI models und
 | Model / Architecture | Status | Games Completed | Collection Directory |
 | :--- | :--- | :--- | :--- |
 | **Gemini 3.8 Flash** | ✅ *Verified (100%)* | **4 / 4** | [`gemini-3.8/`](gemini-3.8/index.html) |
+| **Gemini Next** | 🚀 *In Progress* | **0 / 4** | [`gemini-next/`](gemini-next/index.html) |
 | **Gemini 4 Argon** | ⏳ *Queued* | 0 / 4 | `gemini-4-argon/` *(upcoming)* |
 | **Fable 5.1** | ✅ *Verified (100%)* | **4 / 4** | [`fable-5.1/`](fable-5.1/index.html) |
+| **Fable 5.2** | 🚀 *In Progress (3/4)* | **3 / 4** | [`fable-5.2/`](fable-5.2/index.html) |
 
 Token usage, LLM call counts and wall-clock time for each run are recorded in [`metrics/`](metrics/README.md).
 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+    Strict CSP: first-party scripts and styles only, no inline code, no network, no plugins.
+    TODO(security): frame-ancestors / X-Frame-Options cannot be set from a <meta> tag; when this
+    static game is hosted, send `Content-Security-Policy: frame-ancestors 'self'` as an HTTP header.
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Ghosts 'n Goblins: The Cursed PC Gaming Museum — retro arcade platformer</title>
+  <meta name="description" content="A dependency-free retro arcade action-platformer in the spirit of Ghosts 'n Goblins: eject your armour, run in strawberry boxer shorts, possess monsters and fight through six haunted parodies of classic PC games. 320x200 software framebuffer, FM-synth soundtrack, pure vanilla JavaScript.">
+  <meta name="theme-color" content="#0e0c0b">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="cabinet" class="cabinet">
+    <header class="plaque">
+      <p class="plaque__exhibit">Exhibit N&ordm; 1985</p>
+      <h1 class="plaque__title">Ghosts &rsquo;n Goblins <span class="plaque__sub">The Cursed PC Gaming Museum</span></h1>
+      <p class="plaque__note">Do not feed the Red Arremer</p>
+    </header>
+
+    <section id="monitor" class="monitor" aria-label="Game screen">
+      <div class="monitor__bezel">
+        <div class="monitor__tube">
+          <canvas id="screen" class="monitor__screen" width="320" height="200" tabindex="0"
+                  aria-label="Ghosts 'n Goblins: The Cursed PC Gaming Museum. Keyboard and mouse game."></canvas>
+          <div class="monitor__scanlines" aria-hidden="true"></div>
+          <div class="monitor__glass" aria-hidden="true"></div>
+        </div>
+        <div class="monitor__chin" aria-hidden="true">
+          <span class="monitor__brand">CURSED&#8209;VGA <i>14&Prime; SVGA 320&times;200 &middot; 256 colours &middot; 60&nbsp;Hz</i></span>
+          <span class="monitor__knobs"><b></b><b></b><b></b></span>
+          <span class="monitor__led"></span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="deck">
+      <div class="deck__buttons" role="group" aria-label="Cabinet switches">
+        <button type="button" id="btn-crt" class="switch" aria-pressed="true">CRT: ON</button>
+        <button type="button" id="btn-sound" class="switch" aria-pressed="true">SOUND: ON</button>
+        <button type="button" id="btn-full" class="switch">FULLSCREEN</button>
+      </div>
+      <dl class="keys" aria-label="Controls">
+        <div class="keys__row"><dt><kbd>A</kbd><kbd>D</kbd> / <kbd>&larr;</kbd><kbd>&rarr;</kbd></dt><dd>Move</dd></div>
+        <div class="keys__row"><dt><kbd>W</kbd><kbd>S</kbd> / <kbd>&uarr;</kbd><kbd>&darr;</kbd></dt><dd>Aim up &middot; crouch &middot; climb</dd></div>
+        <div class="keys__row"><dt><kbd>Space</kbd> / <kbd>Z</kbd></dt><dd>Jump</dd></div>
+        <div class="keys__row"><dt><kbd>J</kbd> / <kbd>X</kbd> / Left&#8209;click</dt><dd>Throw</dd></div>
+        <div class="keys__row"><dt><kbd>E</kbd> / <kbd>C</kbd> / Right&#8209;click</dt><dd>Eject armour &middot; possess &middot; magic</dd></div>
+        <div class="keys__row"><dt><kbd>Enter</kbd> <kbd>P</kbd> <kbd>T</kbd> <kbd>M</kbd></dt><dd>Start &middot; pause &middot; CRT &middot; mute</dd></div>
+      </dl>
+    </footer>
+  </main>
+
+  <noscript><p class="noscript">This cursed exhibit needs JavaScript to rise from its grave.</p></noscript>
+
+  <!-- engine + procedural art -->
+  <script src="js/engine.js"></script>
+  <script src="js/art_items.js"></script>
+  <script src="js/art_foes_a.js"></script>
+  <script src="js/art_foes_b.js"></script>
+  <script src="js/art_arthur.js"></script>
+  <script src="js/art_bosses.js"></script>
+  <script src="js/tiles_a.js"></script>
+  <script src="js/tiles_b.js"></script>
+  <script src="js/backdrops_a.js"></script>
+  <script src="js/backdrops_b.js"></script>
+  <!-- game -->
+  <script src="js/world.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/objects.js"></script>
+  <script src="js/enemies.js"></script>
+  <script src="js/bosses.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/stage.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
