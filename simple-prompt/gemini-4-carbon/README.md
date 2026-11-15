@@ -6,7 +6,7 @@ Scaffolding for evaluating Google DeepMind's **Gemini 4 Carbon** on the Slopanoi
 - **Model:** Gemini 4 Carbon
 - **Execution Mode:** Single Turn (One-Shot), zero human intervention
 - **Constraints:** Zero external assets (100% procedural Web Audio & HTML5 Canvas), zero external libraries
-- **Current Status:** Scaffolding Initialized (4/4 prompts staged)
+- **Current Status:** In Progress — 1/4 games generated clean-room and verified (`arkanoid`; `xenon2`, `ghosts-n-goblins`, `lemmings` queued)
 
 ---
 

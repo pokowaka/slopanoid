@@ -1,139 +1,3557 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Arkanoid · Gemini 4 Carbon Run (Scaffolding)</title>
-<style>
-  :root {
-    --bg: #07090e;
-    --card: #111726;
-    --border: #1f2a3e;
-    --amber: #f59e0b;
-    --cyan: #38bdf8;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
-  }
-  .scaffold-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    max-width: 680px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .scaffold-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan));
-  }
-  .badge-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  h1 {
-    font-size: 24px;
-    margin-bottom: 4px;
-    color: #fff;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--cyan);
-    margin-bottom: 20px;
-  }
-  .info-box {
-    background: #090d16;
-    border: 1px solid #1a2436;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    color: #cbd5e1;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .btn {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid transparent;
-  }
-  .btn-primary {
-    background: var(--amber);
-    color: #090d16;
-  }
-  .btn-secondary {
-    background: #1e293b;
-    color: #fff;
-    border-color: #334155;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SCUMM-ANOID: A self-contained 320x200 64-color EGA retro Arkanoid tribute to classic LucasArts adventures featuring a multi-channel Web Audio AdLib OPL2 FM synthesizer and 33 pixel-art mosaic levels.">
+  <!--
+    Security Note: Strict nonce-based CSP enforced without unsafe-inline or unsafe-eval.
+    When served over HTTP rather than file://, emit X-Frame-Options: DENY,
+    X-Content-Type-Options: nosniff, and per-request cryptographic CSP nonces.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-scummOPL2'; style-src 'nonce-scummOPL2'; img-src data:;">
+  <title>SCUMM-ANOID: Chronicles of AdLib &amp; EGA (33-Level LucasArts Tribute)</title>
+  <style nonce="scummOPL2">
+    :root {
+      --cab-bg: #0c0b09;
+      --cab-walnut-dark: #2a180d;
+      --cab-walnut-mid: #472815;
+      --cab-bezel: #17181c;
+      --cab-bezel-inner: #090a0d;
+      --cab-brass: #d49b35;
+      --cab-amber: #ffaa00;
+      --cab-cream: #e8dec8;
+      --cab-muted: #9a9282;
+      --cab-btn-bg: #23252b;
+      --cab-btn-hover: #32353e;
+      --cab-btn-border: #4a4e59;
+      --cab-led-on: #55ff55;
+      --cab-led-off: #550000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background-color: var(--cab-bg);
+      background-image:
+        radial-gradient(circle at 50% 18%, #1d1812 0%, #0c0b09 72%);
+      color: var(--cab-cream);
+      font-family: "Courier New", Courier, monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      overflow-x: hidden;
+    }
+
+    #arcade-cabinet {
+      width: min(980px, 96vw, calc((100vh - 148px) * 1.6));
+      min-width: 320px;
+      background: linear-gradient(90deg,
+        var(--cab-walnut-dark) 0%,
+        var(--cab-walnut-mid) 2.2%,
+        var(--cab-bezel) 2.6%,
+        var(--cab-bezel) 97.4%,
+        var(--cab-walnut-mid) 97.8%,
+        var(--cab-walnut-dark) 100%);
+      border: 3px solid #3a2312;
+      border-radius: 14px 14px 10px 10px;
+      box-shadow:
+        0 26px 64px rgba(0, 0, 0, 0.88),
+        inset 0 1px 0 rgba(255, 220, 160, 0.14);
+      padding: 14px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .marquee-bar {
+      background: linear-gradient(180deg, #241b10 0%, #14100b 100%);
+      border: 2px solid #5c4018;
+      border-radius: 6px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: inset 0 0 18px rgba(255, 170, 0, 0.12);
+    }
+
+    .marquee-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .marquee-bar h1 {
+      font-size: clamp(1rem, 2.1vw, 1.45rem);
+      letter-spacing: 0.14em;
+      color: var(--cab-amber);
+      text-transform: uppercase;
+      font-weight: 700;
+      text-shadow: 0 2px 0 #552200;
+    }
+
+    .marquee-sub {
+      font-size: clamp(0.68rem, 1.2vw, 0.8rem);
+      letter-spacing: 0.08em;
+      color: var(--cab-cream);
+      opacity: 0.85;
+    }
+
+    .audio-lamp {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: var(--cab-muted);
+      white-space: nowrap;
+    }
+
+    .led-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--cab-led-off);
+      border: 1px solid #220000;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .led-dot.is-online {
+      background: var(--cab-led-on);
+      border-color: #00aa00;
+      box-shadow: 0 0 8px rgba(85, 255, 85, 0.75);
+    }
+
+    .crt-housing {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 320 / 200;
+      background: var(--cab-bezel-inner);
+      border: 8px solid #101115;
+      border-radius: 10px;
+      box-shadow:
+        inset 0 0 24px rgba(0, 0, 0, 0.95),
+        0 2px 0 rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+      cursor: crosshair;
+    }
+
+    .crt-scanlines {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0) 0px,
+          rgba(0, 0, 0, 0) 2px,
+          rgba(0, 0, 0, 0.22) 3px,
+          rgba(0, 0, 0, 0.22) 4px
+        );
+      opacity: 0.65;
+      transition: opacity 0.2s ease;
+    }
+
+    .crt-scanlines.is-hidden {
+      opacity: 0;
+    }
+
+    .control-deck {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #121317;
+      border: 1px solid #2b2e37;
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+
+    .deck-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .arcade-btn {
+      appearance: none;
+      background: var(--cab-btn-bg);
+      color: var(--cab-cream);
+      border: 1px solid var(--cab-btn-border);
+      border-bottom-width: 3px;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-family: inherit;
+      font-size: 0.73rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background-color 0.12s ease, transform 0.06s ease;
+    }
+
+    .arcade-btn:hover {
+      background: var(--cab-btn-hover);
+      color: #ffff55;
+    }
+
+    .arcade-btn:active {
+      transform: translateY(1px);
+      border-bottom-width: 2px;
+    }
+
+    .arcade-btn.btn-primary {
+      background: #4e3208;
+      border-color: var(--cab-brass);
+      color: #ffff55;
+    }
+
+    .arcade-btn.btn-primary:hover {
+      background: #6b450c;
+    }
+
+    .deck-readout {
+      font-size: 0.72rem;
+      color: var(--cab-muted);
+      letter-spacing: 0.04em;
+      text-align: right;
+      flex: 1 1 240px;
+    }
+
+    @media (max-width: 640px) {
+      #arcade-cabinet {
+        padding: 10px 12px;
+      }
+      .crt-housing {
+        border-width: 4px;
+      }
+      .deck-readout {
+        text-align: left;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="scaffold-card">
-  <div class="badge-row">
-    <span class="badge">Gemini 4 Carbon Run</span>
-    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
-  </div>
-  <h1>Arkanoid: The Secret of Brick Island</h1>
-  <div class="subtitle">Benchmark Challenge 1 · LucasArts Retro Tribute</div>
+  <main id="arcade-cabinet" aria-label="SCUMM-ANOID Retro Arcade Cabinet">
+    <header class="marquee-bar">
+      <div class="marquee-title-group">
+        <h1>SCUMM-ANOID</h1>
+        <span class="marquee-sub">EGA 320x200 &bull; ADLIB YM3812 OPL2 FM</span>
+      </div>
+      <div class="audio-lamp" title="AdLib OPL2 Synthesizer Status">
+        <span id="opl-led" class="led-dot"></span>
+        <span id="opl-status-text">OPL2 STANDBY</span>
+      </div>
+    </header>
 
-  <div class="info-box">
-    <p><strong>Status:</strong> Ready for Gemini 4 Carbon clean-room generation.</p>
-    <p style="margin-top: 8px;">
-      Feed <code>/var/tmp/bench-gemini-4-carbon/arkanoid/PROMPT.md</code> in an isolated context window to Gemini 4 Carbon, then import the result with <code>cleanroom_harness.py collect gemini-4-carbon</code>.
-    </p>
-  </div>
+    <section class="crt-housing" aria-label="320x200 EGA Viewport">
+      <canvas id="game-canvas" width="320" height="200"></canvas>
+      <div id="crt-overlay" class="crt-scanlines"></div>
+    </section>
 
-  <div class="actions">
-    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
-    <a href="../../fable-5.2/arkanoid/index.html" class="btn btn-secondary">🕹️ Compare with Fable 5.2 Run</a>
-    <a href="../index.html" class="btn btn-outline">&larr; Gemini 4 Carbon Hub</a>
-  </div>
-</div>
+    <footer class="control-deck">
+      <div class="deck-buttons">
+        <button id="btn-start" class="arcade-btn btn-primary" type="button">START / LAUNCH [SPACE]</button>
+        <button id="btn-prev-lvl" class="arcade-btn" type="button" title="Select Previous Level">&lt; LVL</button>
+        <button id="btn-next-lvl" class="arcade-btn" type="button" title="Select Next Level">LVL &gt;</button>
+        <button id="btn-pause" class="arcade-btn" type="button">PAUSE [P]</button>
+        <button id="btn-mute" class="arcade-btn" type="button">ADLIB: ON [M]</button>
+        <button id="btn-crt" class="arcade-btn" type="button">SCANLINES [V]</button>
+      </div>
+      <div id="cabinet-status" class="deck-readout">
+        MOUSE OR A/D/ARROWS TO STEER &bull; SPACE/CLICK TO LAUNCH &amp; FIRE
+      </div>
+    </footer>
+  </main>
+
+  <script nonce="scummOPL2">
+  (function () {
+  'use strict';
+
+  /* =========================================================================
+   *Exact 64-Color IBM EGA Hardware Palette (6-bit RGBI/rgbi Registers 0..63)
+   * ========================================================================= */
+  const EGA_PALETTE = [
+    '#000000', '#0000AA', '#00AA00', '#00AAAA', '#AA0000', '#AA00AA', '#AAAA00', '#AAAAAA',
+    '#000055', '#0000FF', '#00AA55', '#00AAFF', '#AA0055', '#AA00FF', '#AAAA55', '#AAAAFF',
+    '#005500', '#0055AA', '#00FF00', '#00FFAA', '#AA5500', '#AA55AA', '#AAFF00', '#AAFFAA',
+    '#005555', '#0055FF', '#00FF55', '#00FFFF', '#AA5555', '#AA55FF', '#AAFF55', '#AAFFFF',
+    '#550000', '#5500AA', '#55AA00', '#55AAAA', '#FF0000', '#FF00AA', '#FFAA00', '#FFAAAA',
+    '#550055', '#5500FF', '#55AA55', '#55AAFF', '#FF0055', '#FF00FF', '#FFAA55', '#FFAAFF',
+    '#555500', '#5555AA', '#55FF00', '#55FFAA', '#FF5500', '#FF55AA', '#FFFF00', '#FFFFAA',
+    '#555555', '#5555FF', '#55FF55', '#55FFFF', '#FF5555', '#FF55FF', '#FFFF55', '#FFFFFF'
+  ];
+
+  const C = {
+  BLACK: EGA_PALETTE[0], BLUE: EGA_PALETTE[1], GREEN: EGA_PALETTE[2], CYAN: EGA_PALETTE[3],
+  RED: EGA_PALETTE[4], MAGENTA: EGA_PALETTE[5], OCHRE: EGA_PALETTE[6], LGRAY: EGA_PALETTE[7],
+  NAVY: EGA_PALETTE[8], ROYAL: EGA_PALETTE[9], SEA: EGA_PALETTE[10], SKY: EGA_PALETTE[11],
+  CRIMSON: EGA_PALETTE[12], VIOLET: EGA_PALETTE[13], KHAKI: EGA_PALETTE[14], PERIWINKLE: EGA_PALETTE[15],
+  FOREST: EGA_PALETTE[16], COBALT: EGA_PALETTE[17], LIME: EGA_PALETTE[18], MINT: EGA_PALETTE[19],
+  BROWN: EGA_PALETTE[20], PLUM: EGA_PALETTE[21], CHARTREUSE: EGA_PALETTE[22], PALEGREEN: EGA_PALETTE[23],
+  TEAL: EGA_PALETTE[24], AZURE: EGA_PALETTE[25], SPRING: EGA_PALETTE[26], AQUA: EGA_PALETTE[27],
+  ROSEWOOD: EGA_PALETTE[28], LAVENDER: EGA_PALETTE[29], ACID: EGA_PALETTE[30], ICE: EGA_PALETTE[31],
+  MAROON: EGA_PALETTE[32], INDIGO: EGA_PALETTE[33], LEAF: EGA_PALETTE[34], SLATE: EGA_PALETTE[35],
+  SCARLET: EGA_PALETTE[36], CERISE: EGA_PALETTE[37], GOLD: EGA_PALETTE[38], PEACH: EGA_PALETTE[39],
+  EGGPLANT: EGA_PALETTE[40], ELECTRIC: EGA_PALETTE[41], SAGE: EGA_PALETTE[42], CORNFLOWER: EGA_PALETTE[43],
+  RUBY: EGA_PALETTE[44], FUCHSIA: EGA_PALETTE[45], APRICOT: EGA_PALETTE[46], PINK: EGA_PALETTE[47],
+  OLIVE: EGA_PALETTE[48], DUSK: EGA_PALETTE[49], NEONLIME: EGA_PALETTE[50], FOAM: EGA_PALETTE[51],
+  ORANGE: EGA_PALETTE[52], CORAL: EGA_PALETTE[53], SUN: EGA_PALETTE[54], CREAM: EGA_PALETTE[55],
+  DGRAY: EGA_PALETTE[56], BBLUE: EGA_PALETTE[57], BGREEN: EGA_PALETTE[58], BCYAN: EGA_PALETTE[59],
+  BRED: EGA_PALETTE[60], BMAGENTA: EGA_PALETTE[61], BYELLOW: EGA_PALETTE[62], WHITE: EGA_PALETTE[63]
+  };
+
+  /* Per-world EGA color palettes for brick codes '1'..'6' and wall trim */
+  const WORLD_THEMES = [
+    {
+      title: 'MELEE ISLAND', hudTag: 'MELEE ISL',
+      mechanicLabel: 'INSULT SWORD PARRY',
+      wallDark: C.MAROON, wallMid: C.BROWN, wallHi: C.GOLD,
+      bricks: [C.BRED, C.GOLD, C.BYELLOW, C.BCYAN, C.BBLUE, C.WHITE],
+      shades: [C.RED, C.BROWN, C.OCHRE, C.CYAN, C.BLUE, C.LGRAY]
+    },
+    {
+      title: 'EDISON MANSION', hudTag: 'TENTACLE',
+      mechanicLabel: 'CHRON-O-JOHN PORTALS',
+      wallDark: C.EGGPLANT, wallMid: C.INDIGO, wallHi: C.BMAGENTA,
+      bricks: [C.BMAGENTA, C.BGREEN, C.LAVENDER, C.BYELLOW, C.BCYAN, C.APRICOT],
+      shades: [C.MAGENTA, C.GREEN, C.INDIGO, C.OCHRE, C.TEAL, C.BROWN]
+    },
+    {
+      title: 'LOST ATLANTIS', hudTag: 'ATLANTIS',
+      mechanicLabel: 'ANCIENT DART TRAPS',
+      wallDark: C.OLIVE, wallMid: C.BROWN, wallHi: C.GOLD,
+      bricks: [C.ORANGE, C.GOLD, C.BCYAN, C.CREAM, C.BGREEN, C.BRED],
+      shades: [C.MAROON, C.BROWN, C.TEAL, C.KHAKI, C.FOREST, C.RED]
+    },
+    {
+      title: 'DEEP SPACE SECTOR', hudTag: 'STAR WARS',
+      mechanicLabel: 'SUBSPACE GRAVITY WELL',
+      wallDark: C.NAVY, wallMid: C.DGRAY, wallHi: C.BCYAN,
+      bricks: [C.LGRAY, C.BRED, C.AZURE, C.BYELLOW, C.BCYAN, C.WHITE],
+      shades: [C.DGRAY, C.RED, C.BLUE, C.GOLD, C.TEAL, C.SLATE]
+    },
+    {
+      title: 'ISLAND OF LOOM', hudTag: 'LOOM',
+      mechanicLabel: 'DRAFT SPELL WEAVING',
+      wallDark: C.NAVY, wallMid: C.DUSK, wallHi: C.ICE,
+      bricks: [C.CORNFLOWER, C.ICE, C.BMAGENTA, C.BYELLOW, C.BGREEN, C.WHITE],
+      shades: [C.BLUE, C.CYAN, C.INDIGO, C.GOLD, C.SEA, C.PERIWINKLE]
+    },
+    {
+      title: 'HIGHWAY FREELANCE', hudTag: 'SAM & MAX',
+      mechanicLabel: 'WAK-A-RAT BOUNTY',
+      wallDark: C.MAROON, wallMid: C.DGRAY, wallHi: C.BYELLOW,
+      bricks: [C.WHITE, C.BRED, C.BYELLOW, C.AZURE, C.ORANGE, C.PINK],
+      shades: [C.LGRAY, C.RED, C.GOLD, C.BLUE, C.BROWN, C.CRIMSON]
+    },
+    {
+      title: 'LECHUCK FORTRESS', hudTag: 'LECHUCK',
+      mechanicLabel: 'GHOST PIRATE BOSS',
+      wallDark: C.MAROON, wallMid: C.RED, wallHi: C.ORANGE,
+      bricks: [C.BRED, C.ORANGE, C.BYELLOW, C.BGREEN, C.BMAGENTA, C.WHITE],
+      shades: [C.MAROON, C.RED, C.BROWN, C.FOREST, C.EGGPLANT, C.LGRAY]
+    }
+  ];
+
+  /* =========================================================================
+   * Crisp 3x5 Pixel Font Bitmasks (Each glyph is 15 bits: row0..row4, 3 bits)
+   * ========================================================================= */
+  const FONT_3X5 = {
+    'A': 0b010101111101101, 'B': 0b110101110101110, 'C': 0b011100100100011,
+    'D': 0b110101101101110, 'E': 0b111100110100111, 'F': 0b111100110100100,
+    'G': 0b011100101101011, 'H': 0b101101111101101, 'I': 0b111010010010111,
+    'J': 0b001001001101010, 'K': 0b101101110101101, 'L': 0b100100100100111,
+    'M': 0b101111101101101, 'N': 0b110101101101101, 'O': 0b010101101101010,
+    'P': 0b110101110100100, 'Q': 0b010101101011001, 'R': 0b110101110101101,
+    'S': 0b011100010001110, 'T': 0b111010010010010, 'U': 0b101101101101111,
+    'V': 0b101101101101010, 'W': 0b101101101111101, 'X': 0b101101010101101,
+    'Y': 0b101101010010010, 'Z': 0b111001010100111,
+    '0': 0b111101101101111, '1': 0b010110010010111, '2': 0b110001010100111,
+    '3': 0b110001010001110, '4': 0b101101111001001, '5': 0b111100110001110,
+    '6': 0b011100111101111, '7': 0b111001001010010, '8': 0b111101111101111,
+    '9': 0b111101111001110,
+    ':': 0b000010000010000, '-': 0b000000111000000, '/': 0b001001010100100,
+    '!': 0b010010010000010, '?': 0b110001010000010, '.': 0b000000000000010,
+    ',': 0b000000000010100, '\'': 0b010010000000000, '&': 0b010101010101011,
+    '+': 0b000010111010000, '<': 0b001010100010001, '>': 0b100010001010100,
+    '(': 0b001010100010001, ')': 0b100010001010100, '#': 0b101111101111101
+  };
+
+  /* =========================================================================
+   * High-Fidelity AdLib / YM3812 (OPL2) FM Synthesizer & Sequencer
+   * ========================================================================= */
+  function midiToHz(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  /* Seven distinct multi-channel LucasArts-inspired compositions (64 steps = 4 bars of 16ths).
+   * Note format in lead/harmony/bass: [midiNote, durationIn16ths, velocity0to100] or null for rest.
+   * Drum format: '' rest, 'K' kick, 'S' snare, 'H' closed hat, 'O' open hat, 'R' rimshot, 'B' both K+H, 'X' K+O.
+   */
+  const SOUNDTRACKS = [
+    /* 0: The Monkey Island Theme (Levels 1-6) - Syncopated D-Dorian / G-Mixolydian Reggae Steel-Pan */
+    {
+      name: 'Monkey Island Reggae',
+      bpm: 116,
+      swing: 0.04,
+      leadPatch: 'STEEL_PAN',
+      harmPatch: 'REGGAE_ORGAN',
+      bassPatch: 'ISLAND_BASS',
+      lead: [
+        [74,2,92], null, [77,2,84], [79,3,90], null, null, [81,2,95], null, [79,2,82], null, [77,2,86], [74,3,88], null, null, [72,2,80], null,
+        [74,3,94], null, null, [77,2,86], null, [79,2,90], [81,3,96], null, null, [84,2,92], null, [81,2,86], [79,4,90], null, null, null,
+        [81,2,92], null, [84,2,88], [86,3,96], null, null, [84,2,88], null, [81,2,86], null, [79,2,85], [77,3,88], null, null, [76,2,80], null,
+        [74,2,94], [76,2,82], [77,2,88], null, [79,3,92], null, null, [76,2,84], null, [72,2,86], [74,6,95], null, null, null, null, null
+      ],
+      harmony: [
+        null, null, [62,1,68], null, null, null, [65,1,72], null, null, null, [60,1,66], null, null, null, [64,1,70], null,
+        null, null, [62,1,68], null, null, null, [65,1,72], null, null, null, [67,1,70], null, null, null, [64,1,68], null,
+        null, null, [65,1,72], null, null, null, [69,1,74], null, null, null, [67,1,70], null, null, null, [64,1,68], null,
+        null, null, [62,1,70], null, null, null, [60,1,68], null, null, null, [62,2,74], null, null, null, [69,1,64], null
+      ],
+      bass: [
+        [38,3,92], null, null, [45,2,80], null, [48,2,84], [50,2,88], null, [36,3,90], null, null, [43,2,80], null, [48,2,85], null, null,
+        [38,3,92], null, null, [45,2,82], null, [50,2,88], null, null, [43,3,90], null, null, [47,2,82], [50,2,86], null, [48,2,84], null,
+        [41,3,92], null, null, [45,2,82], null, [48,2,86], [53,2,88], null, [43,3,90], null, null, [47,2,84], null, [45,2,82], [43,2,80], null,
+        [38,3,94], null, null, [41,2,84], null, [43,2,86], null, [36,2,88], null, null, [38,4,94], null, null, null, [45,2,80], null
+      ],
+      drums: [
+        'K','H','O','H', 'R','H','O','H', 'K','H','O','R', 'S','H','O','H',
+        'K','H','O','H', 'R','H','O','H', 'K','R','O','H', 'S','H','S','O',
+        'K','H','O','H', 'R','H','O','H', 'K','H','O','R', 'S','H','O','H',
+        'K','H','O','R', 'S','H','O','H', 'K','S','K','O', 'S','R','S','O'
+      ]
+    },
+
+    /* 1: The Purple Tentacle March (Levels 7-12) - Quirky Chromatic B-Movie Monster March */
+    {
+      name: 'Purple Tentacle March',
+      bpm: 130,
+      swing: 0.0,
+      leadPatch: 'MONSTER_SQUARE',
+      harmPatch: 'BRASS_STAB',
+      bassPatch: 'PUNCH_BASS',
+      lead: [
+        [72,2,92], null, [71,1,84], [72,1,88], [75,2,94], null, [78,2,96], null, [79,2,92], null, [80,2,90], [79,3,94], null, null, [75,1,82], [74,1,82],
+        [72,2,92], null, [75,2,88], null, [78,2,95], [79,2,92], [84,3,98], null, null, [83,1,86], [82,1,86], [81,1,86], [80,2,92], null, [79,2,90], null,
+        [77,2,90], null, [76,1,84], [77,1,88], [80,2,94], null, [79,2,90], null, [75,2,90], null, [74,1,84], [75,1,88], [78,2,94], null, [79,2,92], null,
+        [84,2,96], [83,1,86], [82,1,86], [80,2,92], [79,2,90], [78,2,92], [75,2,88], [74,2,88], [72,4,98], null, null, null, [67,1,84], [71,1,86], [72,2,94], null
+      ],
+      harmony: [
+        [60,1,76], null, null, null, [63,1,74], null, [66,1,78], null, [67,1,76], null, null, null, [68,2,78], null, null, null,
+        [60,1,76], null, null, null, [66,1,78], null, [67,1,76], null, [72,2,80], null, null, null, [68,1,74], null, [67,1,76], null,
+        [65,1,76], null, null, null, [68,1,78], null, [67,1,74], null, [63,1,76], null, null, null, [66,1,78], null, [67,1,76], null,
+        [72,1,80], null, [70,1,76], null, [68,1,78], null, [66,1,76], null, [60,3,82], null, null, null, null, null, [60,1,78], null
+      ],
+      bass: [
+        [48,2,96], null, [43,2,88], null, [48,2,94], null, [47,2,92], null, [46,2,92], null, [45,2,92], null, [44,2,94], null, [43,2,96], null,
+        [48,2,96], null, [43,2,88], null, [42,2,94], null, [43,2,92], null, [48,2,95], null, [46,2,90], null, [44,2,92], null, [43,2,95], null,
+        [41,2,94], null, [48,2,88], null, [44,2,92], null, [43,2,90], null, [39,2,94], null, [46,2,88], null, [42,2,92], null, [43,2,94], null,
+        [48,1,96], null, [47,1,92], null, [46,1,92], null, [45,1,92], null, [44,2,94], [43,2,94], [36,4,98], null, null, null, [43,1,88], null
+      ],
+      drums: [
+        'K','H','S','H', 'K','K','S','H', 'K','H','S','S', 'K','H','S','O',
+        'K','H','S','H', 'K','K','S','H', 'K','S','K','S', 'K','H','S','O',
+        'K','H','S','H', 'K','K','S','H', 'K','H','S','S', 'K','H','S','O',
+        'K','S','K','S', 'K','S','S','S', 'K','H','H','H', 'S','S','K','O'
+      ]
+    },
+
+    /* 2: The Atlantis Crypt (Levels 13-18) - Slow Sweeping Echo Pad, Sub Hum & Pentatonic Chimes */
+    {
+      name: 'Atlantis Crypt',
+      bpm: 90,
+      swing: 0.0,
+      leadPatch: 'CRYPT_CHIME',
+      harmPatch: 'CRYPT_PAD',
+      bassPatch: 'CRYPT_SUB',
+      pentatonicPool: [76, 79, 81, 83, 86, 88, 91],
+      lead: [
+        [76,4,82], null, null, null, null, null, [83,3,76], null, null, [84,3,74], null, null, [79,4,80], null, null, null,
+        null, null, [81,4,78], null, null, null, [76,4,74], null, null, null, [74,4,76], null, null, null, null, null,
+        [79,4,82], null, null, null, [83,3,78], null, null, [88,5,84], null, null, null, null, [86,4,76], null, null, null,
+        [83,4,78], null, null, null, [79,4,74], null, null, null, [76,8,84], null, null, null, null, null, null, null
+      ],
+      harmony: [
+        [64,16,66], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+        [65,16,64], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+        [62,16,66], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+        [64,16,68], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
+      ],
+      bass: [
+        [40,8,86], null, null, null, null, null, null, null, [40,8,80], null, null, null, null, null, null, null,
+        [41,8,84], null, null, null, null, null, null, null, [41,8,78], null, null, null, null, null, null, null,
+        [38,8,86], null, null, null, null, null, null, null, [43,8,80], null, null, null, null, null, null, null,
+        [40,12,88], null, null, null, null, null, null, null, null, null, null, null, [35,4,76], null, null, null
+      ],
+      drums: [
+        'K','','','H', '','','R','', '','','H','', 'K','','','O',
+        'K','','','H', '','','R','', '','','H','', '','','R','O',
+        'K','','','H', '','','R','', '','K','','H', '','','R','',
+        'K','','','H', '','','R','', 'K','','','O', '','','R',''
+      ]
+    },
+
+    /* 3: Space Combat Flight (Levels 19-24) - Driving 16th-Note Bassline, Soaring Synth & Rapid Snares */
+    {
+      name: 'Space Combat Flight',
+      bpm: 142,
+      swing: 0.0,
+      leadPatch: 'SPACE_LEAD',
+      harmPatch: 'SPACE_ARP',
+      bassPatch: 'SPACE_BASS',
+      lead: [
+        [69,3,95], null, null, [76,3,94], null, null, [77,2,92], null, [79,4,96], null, null, null, [76,2,90], null, [74,2,90], null,
+        [72,3,94], null, null, [79,3,96], null, null, [81,4,98], null, null, null, [83,2,92], null, [84,4,98], null, null, null,
+        [81,3,96], null, null, [84,3,96], null, null, [86,2,94], null, [88,4,100], null, null, null, [86,2,92], null, [84,2,92], null,
+        [83,2,94], null, [79,2,90], null, [81,4,96], null, null, null, [69,6,96], null, null, null, null, null, [76,2,90], null
+      ],
+      harmony: [
+        [57,1,68], [64,1,64], [69,1,68], [64,1,64], [57,1,68], [64,1,64], [69,1,68], [64,1,64],
+        [60,1,68], [67,1,64], [72,1,68], [67,1,64], [59,1,68], [67,1,64], [71,1,68], [67,1,64],
+        [53,1,68], [60,1,64], [65,1,68], [60,1,64], [55,1,68], [62,1,64], [67,1,68], [62,1,64],
+        [57,1,70], [64,1,66], [69,1,70], [72,1,68], [57,1,70], [64,1,66], [69,1,70], [76,1,72],
+        [53,1,68], [60,1,64], [69,1,68], [60,1,64], [55,1,68], [62,1,64], [71,1,68], [62,1,64],
+        [57,1,70], [64,1,66], [72,1,70], [64,1,66], [60,1,70], [67,1,66], [76,1,72], [67,1,66],
+        [55,1,70], [62,1,66], [71,1,70], [67,1,66], [53,1,70], [60,1,66], [69,1,70], [65,1,66],
+        [57,1,72], [64,1,68], [69,1,72], [64,1,68], [57,2,74], null, [64,2,74], null
+      ],
+      bass: [
+        [45,1,92],[45,1,84],[45,1,88],[45,1,84], [45,1,92],[45,1,84],[45,1,88],[45,1,84],
+        [48,1,92],[48,1,84],[48,1,88],[48,1,84], [43,1,92],[43,1,84],[43,1,88],[43,1,84],
+        [41,1,92],[41,1,84],[41,1,88],[41,1,84], [43,1,92],[43,1,84],[43,1,88],[43,1,84],
+        [45,1,94],[45,1,86],[45,1,90],[45,1,86], [45,1,94],[43,1,88],[45,1,92],[48,1,90],
+        [41,1,92],[41,1,84],[41,1,88],[41,1,84], [43,1,92],[43,1,84],[43,1,88],[43,1,84],
+        [45,1,94],[45,1,86],[45,1,90],[45,1,86], [48,1,92],[48,1,86],[48,1,90],[48,1,86],
+        [43,1,92],[43,1,86],[43,1,90],[43,1,86], [41,1,92],[41,1,86],[41,1,90],[41,1,86],
+        [45,1,96],[45,1,88],[45,1,92],[45,1,88], [45,2,96],null,[40,2,92],null
+      ],
+      drums: [
+        'B','H','H','H', 'S','H','B','S', 'B','H','H','S', 'S','H','O','S',
+        'B','H','H','H', 'S','H','B','S', 'B','S','B','S', 'S','S','O','S',
+        'B','H','H','H', 'S','H','B','S', 'B','H','H','S', 'S','H','O','S',
+        'B','S','H','S', 'B','S','H','S', 'B','S','S','S', 'K','S','X','S'
+      ]
+    },
+
+    /* 4: The Loom of Fate (Levels 25-30) - Four-Voice Classical Counterpoint in D Minor */
+    {
+      name: 'The Loom of Fate',
+      bpm: 108,
+      swing: 0.0,
+      leadPatch: 'LOOM_FLUTE',
+      harmPatch: 'LOOM_OBOE',
+      counterPatch: 'LOOM_HARPSICHORD',
+      bassPatch: 'LOOM_CELLO',
+      lead: [
+        [74,4,88], null, null, null, [73,2,82], null, [74,2,86], null, [77,4,92], null, null, null, [76,2,84], null, [74,2,84], null,
+        [82,4,94], null, null, null, [81,2,88], null, [79,2,86], null, [77,6,92], null, null, null, null, null, [76,2,84], null,
+        [79,4,90], null, null, null, [77,2,86], null, [76,2,84], null, [74,4,90], null, null, null, [73,4,88], null, null, null,
+        [74,2,88], null, [77,2,90], null, [81,4,94], null, null, null, [74,8,92], null, null, null, null, null, null, null
+      ],
+      harmony: [
+        [69,2,76], null, [65,2,74], null, [69,4,78], null, null, null, [69,2,76], null, [74,2,78], null, [72,4,76], null, null, null,
+        [70,2,78], null, [74,2,80], null, [72,2,76], null, [70,2,76], null, [69,4,80], null, null, null, [72,4,78], null, null, null,
+        [70,2,78], null, [67,2,76], null, [69,4,78], null, null, null, [65,2,76], null, [69,2,78], null, [69,4,80], null, null, null,
+        [69,2,78], null, [74,2,80], null, [73,4,82], null, null, null, [69,8,80], null, null, null, null, null, null, null
+      ],
+      counter: [
+        [57,2,70],[62,2,68],[65,2,70],[62,2,68], [57,2,70],[61,2,68],[64,2,70],[61,2,68],
+        [57,2,70],[62,2,68],[65,2,70],[69,2,72], [60,2,70],[64,2,68],[67,2,70],[64,2,68],
+        [58,2,70],[62,2,68],[67,2,72],[62,2,68], [57,2,70],[60,2,68],[65,2,70],[60,2,68],
+        [58,2,70],[62,2,68],[65,2,70],[62,2,68], [57,2,70],[61,2,68],[64,2,70],[61,2,68],
+        [55,2,70],[58,2,68],[62,2,70],[67,2,72], [57,2,70],[62,2,68],[65,2,70],[62,2,68],
+        [58,2,70],[62,2,68],[65,2,70],[62,2,68], [57,2,72],[61,2,70],[64,2,72],[69,2,74],
+        [58,2,72],[62,2,70],[65,2,72],[69,2,74], [57,2,72],[61,2,70],[64,2,72],[67,2,72],
+        [50,2,74],[57,2,72],[62,2,74],[65,2,74], [62,4,72],null,null,null
+      ],
+      bass: [
+        [50,4,84], null, null, null, [49,4,82], null, null, null, [50,4,84], null, null, null, [48,4,82], null, null, null,
+        [46,4,84], null, null, null, [45,4,82], null, null, null, [50,4,84], null, null, null, [48,4,82], null, null, null,
+        [43,4,84], null, null, null, [45,4,82], null, null, null, [46,4,84], null, null, null, [45,4,86], null, null, null,
+        [46,4,84], null, null, null, [45,4,86], null, null, null, [38,8,88], null, null, null, null, null, null, null
+      ],
+      drums: [
+        'K','','','', '','','H','', '','','','', '','','R','',
+        'K','','','', '','','H','', '','','','', '','','O','',
+        'K','','','', '','','H','', '','K','','', '','','R','',
+        'K','','','H', '','R','','H', 'K','','','', '','','',''
+      ]
+    },
+
+    /* 5: The Road to Sam & Max (Levels 31-32) - Swing-Jazz Walking Bass Blues & Pitch-Bending Sax */
+    {
+      name: 'Road to Sam & Max',
+      bpm: 124,
+      swing: 0.32,
+      leadPatch: 'JAZZ_SAX',
+      harmPatch: 'JAZZ_COMP',
+      bassPatch: 'WALKING_BASS',
+      lead: [
+        [70,3,94], null, null, [73,1,88], [74,3,95], null, null, [77,2,90], null, [80,2,94], [79,2,90], [77,2,92], null, [73,1,86], [74,2,90], null,
+        [75,3,94], null, null, [77,1,88], [80,3,96], null, null, [79,2,90], null, [77,2,92], [75,2,88], [74,3,92], null, null, [70,2,86], null,
+        [82,3,98], null, null, [80,1,90], [79,2,92], [77,2,90], [75,2,92], null, [73,2,94], [74,3,95], null, null, [70,3,90], null, null, null,
+        [72,2,90], null, [75,2,92], null, [74,2,94], [77,2,94], [80,3,96], null, null, [79,2,92], [70,5,96], null, null, null, null, null
+      ],
+      harmony: [
+        null, null, [62,2,72], null, null, null, [68,1,70], null, null, null, [62,2,72], null, null, null, [65,1,68], null,
+        null, null, [63,2,74], null, null, null, [69,1,72], null, null, null, [62,2,72], null, null, null, [68,1,70], null,
+        null, null, [63,2,74], null, null, null, [66,1,72], null, null, null, [62,2,72], null, null, null, [64,1,72], null,
+        null, null, [63,2,74], null, null, null, [66,2,76], null, null, null, [62,3,76], null, null, null, [65,1,72], null
+      ],
+      bass: [
+        [46,2,92], null, [50,2,88], null, [53,2,90], null, [55,2,88], null, [56,2,92], null, [55,2,88], null, [53,2,90], null, [50,2,88], null,
+        [51,2,92], null, [55,2,88], null, [58,2,90], null, [57,2,88], null, [46,2,92], null, [50,2,88], null, [53,2,90], null, [56,2,88], null,
+        [51,2,92], null, [55,2,88], null, [54,2,90], null, [51,2,88], null, [46,2,92], null, [50,2,88], null, [52,2,90], null, [55,2,88], null,
+        [48,2,92], null, [51,2,88], null, [53,2,94], null, [56,2,90], null, [46,2,94], null, [50,2,88], null, [53,2,90], null, [52,2,90], null
+      ],
+      drums: [
+        'K','','O','H', 'S','','O','R', 'K','','O','H', 'S','','O','H',
+        'K','','O','H', 'S','','O','R', 'K','','O','H', 'S','R','O','H',
+        'K','','O','H', 'S','','O','R', 'K','','O','H', 'S','','O','H',
+        'K','R','O','H', 'S','','O','S', 'K','','O','H', 'S','R','X','H'
+      ]
+    },
+
+    /* 6: LeChuck's Battle Anthem (Level 33) - Heavy Metal Distorted FM Guitar, Double-Time Drums & Dark Minor Bass */
+    {
+      name: 'LeChuck Battle Anthem',
+      bpm: 156,
+      swing: 0.0,
+      leadPatch: 'METAL_GUITAR',
+      harmPatch: 'POWER_CHORD',
+      bassPatch: 'METAL_BASS',
+      lead: [
+        [76,1,98],[77,1,92],[80,1,96],[77,1,92], [76,2,98],null,[83,2,98], null,[81,1,94],[80,1,94],[77,1,92],[76,1,96], [80,2,96],null,[77,2,94],null,
+        [76,1,98],[80,1,94],[83,1,98],[84,1,96], [88,3,100],null,null,[86,1,94], [84,2,96],null,[83,2,96],null, [80,4,98],null,null,null,
+        [81,1,96],[83,1,94],[84,1,98],[83,1,94], [81,2,96],null,[88,2,100], null,[86,1,96],[84,1,96],[83,1,94],[81,1,94], [80,2,98],null,[83,2,98],null,
+        [88,2,100],[87,2,98],[88,2,100],[91,2,100], [89,2,98],[88,2,98],[86,2,96],[84,2,96], [83,2,98],[80,2,96],[76,4,100],null,null,null,[80,1,94],[83,1,96]
+      ],
+      harmony: [
+        [52,2,88],null,[52,1,82],[52,1,84], [53,2,88],null,[52,2,88], null,[52,1,82],[52,1,84],[55,2,88], null,[53,2,88],null,null,null,
+        [52,2,88],null,[52,1,82],[52,1,84], [57,2,90],null,[55,2,88], null,[53,2,88],null,[52,4,92], null,null,null,[53,1,86],[55,1,88],
+        [57,2,88],null,[57,1,82],[57,1,84], [57,2,90],null,[60,2,90], null,[59,2,88],null,[56,4,90], null,null,null,[57,1,86],[59,1,88],
+        [52,2,92],[51,2,90],[52,2,92],[55,2,92], [53,2,90],[52,2,90],[50,2,88],[48,2,88], [47,2,92],null,[52,4,96],null,null,null,null,null
+      ],
+      bass: [
+        [40,1,96],[40,1,90],[40,1,92],[40,1,90], [41,1,96],[41,1,90],[40,1,94],[40,1,90],
+        [40,1,96],[40,1,90],[43,1,94],[43,1,90], [41,1,96],[41,1,90],[40,1,94],[40,1,90],
+        [40,1,96],[40,1,90],[40,1,92],[40,1,90], [45,1,96],[45,1,90],[43,1,94],[43,1,90],
+        [41,1,96],[41,1,90],[40,1,94],[40,1,90], [40,1,96],[39,1,92],[40,1,96],[43,1,92],
+        [45,1,96],[45,1,90],[45,1,92],[45,1,90], [45,1,96],[45,1,90],[48,1,94],[48,1,90],
+        [47,1,96],[47,1,90],[44,1,94],[44,1,90], [44,1,96],[44,1,90],[47,1,94],[47,1,90],
+        [40,2,98],[39,2,96],[40,2,98],[43,2,98], [41,2,96],[40,2,96],[38,2,94],[36,2,94],
+        [35,2,98],[40,1,94],[40,1,94],[40,4,100],null,null,null,null
+      ],
+      drums: [
+        'B','K','S','K', 'B','K','S','O', 'B','K','S','K', 'B','S','X','S',
+        'B','K','S','K', 'B','K','S','O', 'B','S','B','S', 'K','S','X','S',
+        'B','K','S','K', 'B','K','S','O', 'B','K','S','K', 'B','S','X','S',
+        'X','K','S','K', 'X','K','S','K', 'B','S','B','S', 'X','S','X','O'
+      ]
+    }
+  ];
+
+  const OPL2_PATCH_BANK = {
+    STEEL_PAN:       { c: 'sine',     m: 'sine',     r: 2.99,  mp: 3.8,  me: 0.35, a: 0.003, rel: 0.09, amp: 0.21 },
+    REGGAE_ORGAN:    { c: 'triangle', m: 'sine',     r: 2.0,   mp: 1.4,  me: 0.80, a: 0.004, rel: 0.04, amp: 0.13 },
+    MONSTER_SQUARE:  { c: 'square',   m: 'triangle', r: 1.5,   mp: 2.1,  me: 0.90, a: 0.005, rel: 0.05, amp: 0.13, vibHz: 7.5, vibD: 0.018 },
+    BRASS_STAB:      { c: 'sawtooth', m: 'sine',     r: 1.0,   mp: 2.5,  me: 0.60, a: 0.008, rel: 0.06, amp: 0.11 },
+    CRYPT_CHIME:     { c: 'sine',     m: 'sine',     r: 3.5,   mp: 3.2,  me: 0.20, a: 0.004, rel: 0.28, amp: 0.16, echo: true },
+    CRYPT_PAD:       { c: 'sine',     m: 'triangle', r: 1.004, mp: 1.3,  me: 0.70, a: 0.280, rel: 0.35, amp: 0.11, echo: true },
+    SPACE_LEAD:      { c: 'sawtooth', m: 'sine',     r: 1.0,   mp: 2.8,  me: 1.20, a: 0.008, rel: 0.08, amp: 0.15, vibHz: 5.5, vibD: 0.009 },
+    SPACE_ARP:       { c: 'sine',     m: 'square',   r: 2.0,   mp: 1.9,  me: 0.40, a: 0.003, rel: 0.03, amp: 0.09 },
+    LOOM_FLUTE:      { c: 'sine',     m: 'sine',     r: 2.0,   mp: 0.75, me: 0.35, a: 0.030, rel: 0.11, amp: 0.18, vibHz: 5.0, vibD: 0.008, echo: true },
+    LOOM_OBOE:       { c: 'sine',     m: 'sawtooth', r: 3.0,   mp: 1.9,  me: 1.10, a: 0.018, rel: 0.08, amp: 0.12 },
+    LOOM_HARPSICHORD:{ c: 'triangle', m: 'square',   r: 4.0,   mp: 3.1,  me: 0.25, a: 0.003, rel: 0.06, amp: 0.10 },
+    JAZZ_SAX:        { c: 'sine',     m: 'sawtooth', r: 2.0,   mp: 2.9,  me: 1.35, a: 0.016, rel: 0.09, amp: 0.19, bend: true, vibHz: 5.8, vibD: 0.013 },
+    JAZZ_COMP:       { c: 'sine',     m: 'sine',     r: 2.0,   mp: 1.5,  me: 0.35, a: 0.005, rel: 0.07, amp: 0.11 },
+    METAL_GUITAR:    { c: 'sawtooth', m: 'square',   r: 1.0,   mp: 4.4,  me: 2.20, a: 0.003, rel: 0.06, amp: 0.15, dist: true, vibHz: 6.5, vibD: 0.012 },
+    POWER_CHORD:     { c: 'sawtooth', m: 'sawtooth', r: 0.5,   mp: 3.2,  me: 1.80, a: 0.003, rel: 0.05, amp: 0.12, dist: true }
+  };
+
+  class AdLibOPL2Engine {
+    constructor() {
+      this.ctx = null;
+      this.muted = false;
+      this.playing = false;
+      this.worldIndex = 0;
+      this.levelIndex = 0;
+      this.stepIndex = 0;
+      this.nextNoteTime = 0;
+      this.schedulerTimer = null;
+      this.noiseBuffer = null;
+      this.metalCurve = this.buildDistortionCurve(28);
+      this.crushCurve = this.buildBitCrushCurve(12);
+    }
+
+    buildDistortionCurve(drive) {
+      const n = 512;
+      const curve = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const x = (i * 2) / n - 1;
+        curve[i] = ((3 + drive) * x * 20 * (Math.PI / 180)) / (Math.PI + drive * Math.abs(x));
+      }
+      return curve;
+    }
+
+    buildBitCrushCurve(steps) {
+      const n = 512;
+      const curve = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const x = (i * 2) / n - 1;
+        curve[i] = Math.round(x * steps) / steps;
+      }
+      return curve;
+    }
+
+    unlock() {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return false;
+        this.ctx = new AudioCtx();
+
+        this.limiter = this.ctx.createDynamicsCompressor();
+        this.limiter.threshold.value = -4;
+        this.limiter.knee.value = 4;
+        this.limiter.ratio.value = 14;
+        this.limiter.attack.value = 0.002;
+        this.limiter.release.value = 0.09;
+
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = this.muted ? 0 : 0.78;
+
+        this.musicBus = this.ctx.createGain();
+        this.musicBus.gain.value = 0.56;
+
+        this.sfxBus = this.ctx.createGain();
+        this.sfxBus.gain.value = 0.86;
+
+        /* Cavern stereo echo send for Atlantis & Loom */
+        this.echoDelay = this.ctx.createDelay(1.0);
+        this.echoDelay.delayTime.value = 0.31;
+        this.echoFeedback = this.ctx.createGain();
+        this.echoFeedback.gain.value = 0.34;
+        this.echoWet = this.ctx.createGain();
+        this.echoWet.gain.value = 0.28;
+        this.echoDelay.connect(this.echoFeedback);
+        this.echoFeedback.connect(this.echoDelay);
+        this.echoDelay.connect(this.echoWet);
+        this.echoWet.connect(this.musicBus);
+
+        this.musicBus.connect(this.limiter);
+        this.sfxBus.connect(this.limiter);
+        this.limiter.connect(this.masterGain);
+        this.masterGain.connect(this.ctx.destination);
+
+        /* Synthesize deterministic LFSR-flavored retro white noise buffer */
+        const len = this.ctx.sampleRate * 2;
+        this.noiseBuffer = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+        const data = this.noiseBuffer.getChannelData(0);
+        let lfsr = 0xACE1;
+        for (let i = 0; i < len; i++) {
+          const bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+          lfsr = (lfsr >> 1) | (bit << 15);
+          const white = (Math.random() * 2 - 1) * 0.65;
+          data[i] = white + ((lfsr & 1) ? 0.35 : -0.35);
+        }
+      }
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      return true;
+    }
+
+    setMuted(flag) {
+      this.muted = flag;
+      if (this.masterGain && this.ctx) {
+        this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 0.78, this.ctx.currentTime, 0.015);
+      }
+    }
+
+    startMusic(worldIndex, levelIndex) {
+      this.worldIndex = Math.max(0, Math.min(SOUNDTRACKS.length - 1, worldIndex));
+      this.levelIndex = levelIndex;
+      if (!this.ctx) return;
+      this.stepIndex = 0;
+      this.nextNoteTime = this.ctx.currentTime + 0.04;
+      this.playing = true;
+      if (!this.schedulerTimer) {
+        this.schedulerTimer = setInterval(() => this.schedulerTick(), 25);
+      }
+    }
+
+    stopMusic() {
+      this.playing = false;
+    }
+
+    getLevelVariation() {
+      /* Distinct iMUSE-style per-level musical variation across all 33 levels */
+      const withinWorld = this.levelIndex % 6;
+      const semitoneShifts = [0, 2, -2, 5, 3, 7];
+      const tempoScales = [1.0, 1.03, 0.98, 1.05, 1.02, 1.07];
+      if (this.worldIndex === 6) {
+        return { transpose: 0, tempoScale: 1.0, octaveSparkle: true };
+      }
+      return {
+        transpose: semitoneShifts[withinWorld],
+        tempoScale: tempoScales[withinWorld],
+        octaveSparkle: (withinWorld % 2) === 1
+      };
+    }
+
+    schedulerTick() {
+      if (!this.playing || !this.ctx || this.ctx.state !== 'running') return;
+      const track = SOUNDTRACKS[this.worldIndex];
+      const variation = this.getLevelVariation();
+      const bpm = track.bpm * variation.tempoScale;
+      const baseStepSec = 60 / bpm / 4;
+
+      while (this.nextNoteTime < this.ctx.currentTime + 0.12) {
+        const step = this.stepIndex % 64;
+        const swingOffset = (step % 2 === 1) ? baseStepSec * track.swing : 0;
+        const t = this.nextNoteTime + swingOffset;
+
+        const leadEv = track.lead[step];
+        if (leadEv) {
+          this.triggerFMVoice(
+            track.leadPatch,
+            leadEv[0] + variation.transpose,
+            leadEv[1] * baseStepSec,
+            leadEv[2] / 100,
+            t
+          );
+        } else if (this.worldIndex === 2 && (step % 4 === 2) && Math.random() < 0.42) {
+          /* Procedural haunting pentatonic chime ornament in The Atlantis Crypt */
+          const pool = track.pentatonicPool;
+          const chimeNote = pool[(step * 3 + this.levelIndex) % pool.length] + variation.transpose;
+          this.triggerFMVoice('CRYPT_CHIME', chimeNote, baseStepSec * 3.5, 0.55, t);
+        }
+
+        const harmEv = track.harmony && track.harmony[step];
+        if (harmEv) {
+          const harmOct = (variation.octaveSparkle && (step % 8 === 6)) ? 12 : 0;
+          this.triggerFMVoice(
+            track.harmPatch,
+            harmEv[0] + variation.transpose + harmOct,
+            harmEv[1] * baseStepSec,
+            harmEv[2] / 100,
+            t
+          );
+        }
+
+        if (track.counter && track.counter[step]) {
+          const cEv = track.counter[step];
+          this.triggerFMVoice(
+            track.counterPatch,
+            cEv[0] + variation.transpose,
+            cEv[1] * baseStepSec,
+            cEv[2] / 100,
+            t
+          );
+        }
+
+        const bassEv = track.bass[step];
+        if (bassEv) {
+          this.triggerBassVoice(
+            track.bassPatch,
+            bassEv[0] + variation.transpose,
+            bassEv[1] * baseStepSec,
+            bassEv[2] / 100,
+            t
+          );
+        }
+
+        const drumCode = track.drums[step % track.drums.length];
+        if (drumCode) {
+          this.triggerDrum(drumCode, t);
+        }
+
+        this.nextNoteTime += baseStepSec;
+        this.stepIndex = (this.stepIndex + 1) % 64;
+      }
+    }
+
+    /* 2-Operator Yamaha YM3812 (OPL2) FM Instrument Patch Renderer */
+    triggerFMVoice(patch, midi, dur, vel, time) {
+      const ctx = this.ctx;
+      const freq = midiToHz(midi);
+      const carrier = ctx.createOscillator();
+      const modulator = ctx.createOscillator();
+      const modGain = ctx.createGain();
+      const ampGain = ctx.createGain();
+      const p = OPL2_PATCH_BANK[patch] || OPL2_PATCH_BANK.STEEL_PAN;
+      const modPeak = freq * p.mp;
+      const modEnd = freq * p.me;
+      const attack = p.a;
+      const release = p.rel;
+      const peakAmp = p.amp * vel;
+      const vibratoHz = p.vibHz || 0;
+      const vibratoDepth = freq * (p.vibD || 0);
+
+      carrier.type = p.c;
+      modulator.type = p.m;
+
+      if (p.bend) {
+        carrier.frequency.setValueAtTime(freq * 0.91, time);
+        carrier.frequency.exponentialRampToValueAtTime(freq, time + 0.048);
+      } else {
+        carrier.frequency.setValueAtTime(freq, time);
+      }
+      modulator.frequency.setValueAtTime(freq * p.r, time);
+
+      modGain.gain.setValueAtTime(0.01, time);
+      modGain.gain.linearRampToValueAtTime(modPeak, time + attack);
+      modGain.gain.exponentialRampToValueAtTime(Math.max(1, modEnd), time + dur + release);
+
+      const stopTime = time + dur + release + 0.02;
+      ampGain.gain.setValueAtTime(0.0001, time);
+      ampGain.gain.linearRampToValueAtTime(peakAmp, time + attack);
+      ampGain.gain.setValueAtTime(peakAmp * 0.78, time + Math.max(attack, dur * 0.75));
+      ampGain.gain.exponentialRampToValueAtTime(0.0001, stopTime);
+
+      modulator.connect(modGain);
+      modGain.connect(carrier.frequency);
+
+      if (vibratoHz > 0) {
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.frequency.setValueAtTime(vibratoHz, time);
+        lfoGain.gain.setValueAtTime(vibratoDepth, time);
+        lfo.connect(lfoGain);
+        lfoGain.connect(carrier.frequency);
+        lfo.start(time);
+        lfo.stop(stopTime);
+      }
+
+      if (p.dist) {
+        const shaper = ctx.createWaveShaper();
+        shaper.curve = this.metalCurve;
+        const cabFilter = ctx.createBiquadFilter();
+        cabFilter.type = 'lowpass';
+        cabFilter.frequency.setValueAtTime(3100, time);
+        carrier.connect(shaper);
+        shaper.connect(cabFilter);
+        cabFilter.connect(ampGain);
+      } else {
+        carrier.connect(ampGain);
+      }
+
+      ampGain.connect(this.musicBus);
+      if (p.echo) {
+        ampGain.connect(this.echoDelay);
+      }
+
+      modulator.start(time);
+      carrier.start(time);
+      modulator.stop(stopTime);
+      carrier.stop(stopTime);
+    }
+
+    /* Fat Triangle Bass Synth with Fast-Decaying Resonant Low-Pass Filter */
+    triggerBassVoice(patch, midi, dur, vel, time) {
+      const ctx = this.ctx;
+      const freq = midiToHz(midi);
+      const osc = ctx.createOscillator();
+      const sub = ctx.createOscillator();
+      const subMix = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      const amp = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, time);
+
+      sub.type = (patch === 'METAL_BASS' || patch === 'SPACE_BASS') ? 'sawtooth' : 'sine';
+      sub.frequency.setValueAtTime(freq, time);
+      subMix.gain.value = (patch === 'CRYPT_SUB') ? 0.2 : 0.42;
+
+      filter.type = 'lowpass';
+      filter.Q.value = (patch === 'CRYPT_SUB') ? 1.8 : 4.2;
+      const startCut = (patch === 'CRYPT_SUB') ? 420 : 1850;
+      const endCut = (patch === 'METAL_BASS') ? 260 : 155;
+      filter.frequency.setValueAtTime(startCut, time);
+      filter.frequency.exponentialRampToValueAtTime(endCut, time + Math.min(0.13, dur * 0.85));
+
+      const stopTime = time + dur + 0.05;
+      const peak = 0.28 * vel;
+      amp.gain.setValueAtTime(0.0001, time);
+      amp.gain.linearRampToValueAtTime(peak, time + 0.006);
+      amp.gain.exponentialRampToValueAtTime(0.0001, stopTime);
+
+      osc.connect(filter);
+      sub.connect(subMix);
+      subMix.connect(filter);
+      filter.connect(amp);
+      amp.connect(this.musicBus);
+
+      osc.start(time);
+      sub.start(time);
+      osc.stop(stopTime);
+      sub.stop(stopTime);
+    }
+
+    /* Synthesized Noise & Pitch-Swept Retro Drum Kit */
+    triggerDrum(code, time) {
+      if (code === 'B') {
+        this.triggerDrum('K', time);
+        this.triggerDrum('H', time);
+        return;
+      }
+      if (code === 'X') {
+        this.triggerDrum('K', time);
+        this.triggerDrum('O', time);
+        return;
+      }
+      const ctx = this.ctx;
+      if (code === 'K') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(155, time);
+        osc.frequency.exponentialRampToValueAtTime(36, time + 0.085);
+        gain.gain.setValueAtTime(0.36, time);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.095);
+        osc.connect(gain);
+        gain.connect(this.musicBus);
+        osc.start(time);
+        osc.stop(time + 0.1);
+        return;
+      }
+
+      if (code === 'R') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(920, time);
+        osc.frequency.exponentialRampToValueAtTime(380, time + 0.028);
+        gain.gain.setValueAtTime(0.17, time);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.032);
+        osc.connect(gain);
+        gain.connect(this.musicBus);
+        osc.start(time);
+        osc.stop(time + 0.035);
+        return;
+      }
+
+      if (!this.noiseBuffer) return;
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuffer;
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      if (code === 'S') {
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1450, time);
+        filter.Q.value = 1.1;
+        gain.gain.setValueAtTime(0.24, time);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.11);
+
+        const body = ctx.createOscillator();
+        const bodyGain = ctx.createGain();
+        body.type = 'triangle';
+        body.frequency.setValueAtTime(195, time);
+        body.frequency.exponentialRampToValueAtTime(95, time + 0.05);
+        bodyGain.gain.setValueAtTime(0.16, time);
+        bodyGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.055);
+        body.connect(bodyGain);
+        bodyGain.connect(this.musicBus);
+        body.start(time);
+        body.stop(time + 0.06);
+
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.musicBus);
+        src.start(time, (this.stepIndex * 0.03) % 1.4, 0.12);
+      } else if (code === 'H' || code === 'O') {
+        const dur = (code === 'O') ? 0.14 : 0.035;
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(6800, time);
+        gain.gain.setValueAtTime(code === 'O' ? 0.13 : 0.09, time);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.musicBus);
+        src.start(time, (this.stepIndex * 0.05) % 1.4, dur + 0.01);
+      }
+    }
+
+    /* Dedicated Low-Fi Bit-Crushed SFX Channel */
+    playSFX(kind, param = 0) {
+      if (!this.ctx || this.muted || this.ctx.state !== 'running') return;
+      const ctx = this.ctx;
+      const now = ctx.currentTime;
+
+      const connectCrushed = (node, gainVal, dur) => {
+        const crusher = ctx.createWaveShaper();
+        crusher.curve = this.crushCurve;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(gainVal, now);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+        node.connect(crusher);
+        crusher.connect(g);
+        g.connect(this.sfxBus);
+      };
+
+      switch (kind) {
+        case 'paddle': {
+          const osc = ctx.createOscillator();
+          osc.type = 'square';
+          const base = 310 + param * 55;
+          osc.frequency.setValueAtTime(base, now);
+          osc.frequency.exponentialRampToValueAtTime(base * 1.65, now + 0.065);
+          connectCrushed(osc, 0.22, 0.075);
+          osc.start(now);
+          osc.stop(now + 0.08);
+          break;
+        }
+        case 'wall': {
+          const osc = ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(210, now);
+          osc.frequency.exponentialRampToValueAtTime(125, now + 0.04);
+          connectCrushed(osc, 0.18, 0.045);
+          osc.start(now);
+          osc.stop(now + 0.05);
+          break;
+        }
+        case 'brick': {
+          const osc = ctx.createOscillator();
+          const mod = ctx.createOscillator();
+          const mg = ctx.createGain();
+          const pitch = 440 * Math.pow(1.06, Math.min(14, param));
+          osc.type = 'sine';
+          mod.type = 'square';
+          osc.frequency.setValueAtTime(pitch, now);
+          osc.frequency.exponentialRampToValueAtTime(pitch * 1.25, now + 0.07);
+          mod.frequency.setValueAtTime(pitch * 2, now);
+          mg.gain.setValueAtTime(pitch * 1.8, now);
+          mg.gain.exponentialRampToValueAtTime(10, now + 0.07);
+          mod.connect(mg);
+          mg.connect(osc.frequency);
+          connectCrushed(osc, 0.24, 0.085);
+          mod.start(now);
+          osc.start(now);
+          mod.stop(now + 0.09);
+          osc.stop(now + 0.09);
+          break;
+        }
+        case 'armor': {
+          const osc = ctx.createOscillator();
+          const mod = ctx.createOscillator();
+          const mg = ctx.createGain();
+          osc.type = 'triangle';
+          mod.type = 'square';
+          osc.frequency.setValueAtTime(520, now);
+          mod.frequency.setValueAtTime(520 * 2.73, now);
+          mg.gain.setValueAtTime(980, now);
+          mg.gain.exponentialRampToValueAtTime(20, now + 0.09);
+          mod.connect(mg);
+          mg.connect(osc.frequency);
+          connectCrushed(osc, 0.25, 0.1);
+          mod.start(now);
+          osc.start(now);
+          mod.stop(now + 0.11);
+          osc.stop(now + 0.11);
+          break;
+        }
+        case 'steel': {
+          const osc = ctx.createOscillator();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(1180, now);
+          osc.frequency.exponentialRampToValueAtTime(740, now + 0.045);
+          connectCrushed(osc, 0.16, 0.05);
+          osc.start(now);
+          osc.stop(now + 0.055);
+          break;
+        }
+        case 'grog': {
+          if (this.noiseBuffer) {
+            const src = ctx.createBufferSource();
+            src.buffer = this.noiseBuffer;
+            const lp = ctx.createBiquadFilter();
+            lp.type = 'bandpass';
+            lp.frequency.setValueAtTime(620, now);
+            lp.frequency.exponentialRampToValueAtTime(110, now + 0.34);
+            lp.Q.value = 1.8;
+            src.connect(lp);
+            connectCrushed(lp, 0.38, 0.36);
+            src.start(now, 0, 0.38);
+          }
+          const boom = ctx.createOscillator();
+          boom.type = 'sawtooth';
+          boom.frequency.setValueAtTime(160, now);
+          boom.frequency.exponentialRampToValueAtTime(34, now + 0.32);
+          connectCrushed(boom, 0.30, 0.34);
+          boom.start(now);
+          boom.stop(now + 0.35);
+          break;
+        }
+        case 'laser': {
+          const osc = ctx.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(1180, now);
+          osc.frequency.exponentialRampToValueAtTime(175, now + 0.095);
+          connectCrushed(osc, 0.20, 0.10);
+          osc.start(now);
+          osc.stop(now + 0.105);
+          break;
+        }
+        case 'powerup': {
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((hz, i) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'square';
+            const t0 = now + i * 0.045;
+            osc.frequency.setValueAtTime(hz, t0);
+            g.gain.setValueAtTime(0.18, t0);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+            osc.connect(g);
+            g.connect(this.sfxBus);
+            osc.start(t0);
+            osc.stop(t0 + 0.095);
+          });
+          break;
+        }
+        case 'special': {
+          const notes = [587.33, 698.46, 880.0, 1174.66];
+          notes.forEach((hz, i) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'triangle';
+            const t0 = now + i * 0.055;
+            osc.frequency.setValueAtTime(hz, t0);
+            g.gain.setValueAtTime(0.22, t0);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.14);
+            osc.connect(g);
+            g.connect(this.sfxBus);
+            osc.start(t0);
+            osc.stop(t0 + 0.15);
+          });
+          break;
+        }
+        case 'warp': {
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(280, now);
+          osc.frequency.exponentialRampToValueAtTime(980, now + 0.11);
+          osc.frequency.exponentialRampToValueAtTime(420, now + 0.2);
+          connectCrushed(osc, 0.22, 0.21);
+          osc.start(now);
+          osc.stop(now + 0.22);
+          break;
+        }
+        case 'lose': {
+          const steps = [392, 369.99, 349.23, 311.13];
+          steps.forEach((hz, i) => {
+            const osc = ctx.createOscillator();
+            osc.type = 'sawtooth';
+            const g = ctx.createGain();
+            const t0 = now + i * 0.13;
+            osc.frequency.setValueAtTime(hz, t0);
+            osc.frequency.linearRampToValueAtTime(hz * 0.92, t0 + 0.12);
+            g.gain.setValueAtTime(0.22, t0);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.13);
+            osc.connect(g);
+            g.connect(this.sfxBus);
+            osc.start(t0);
+            osc.stop(t0 + 0.14);
+          });
+          break;
+        }
+        case 'clear': {
+          const fanfare = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5];
+          const times = [0, 0.08, 0.16, 0.24, 0.36, 0.46];
+          fanfare.forEach((hz, i) => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'square';
+            const t0 = now + times[i];
+            osc.frequency.setValueAtTime(hz, t0);
+            g.gain.setValueAtTime(0.20, t0);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+            osc.connect(g);
+            g.connect(this.sfxBus);
+            osc.start(t0);
+            osc.stop(t0 + 0.17);
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  /* =========================================================================
+   * All 33 Hardcoded LucasArts Pixel-Art Mosaic Levels (16 Cols x 11 Rows)
+   * Codes: '.'=Empty, '1'..'6'=Normal EGA Bricks, 'A'=2HP Armor, 'B'=3HP Armor,
+   *        'X'=Indestructible Steel, 'G'=Explosive 3x3 Grog Brick
+   * ========================================================================= */
+  const LEVELS = [
+    /* --- WORLD 0 (Levels 1-6): The Secret of Monkey Island --- */
+    {
+      world: 0, name: 'SCUMM BAR GROG MUG',
+      lore: 'CONTAINS RED DYE #2, KEROSENE, AND BATTERY ACID!',
+      grid: [
+        '...66666666.....', '..6633333366....', '..2222222222AA..', '..233G33G332.A..',
+        '..2333333332.A..', '..23G3333G32.A..', '..2333GG3332AA..', '..2333333332....',
+        '..2222222222....', '..AAAAAAAAAA....', '................'
+      ]
+    },
+    {
+      world: 0, name: 'THREE-HEADED MONKEY',
+      lore: 'LOOK BEHIND YOU! A THREE-HEADED MONKEY!',
+      grid: [
+        '.222..2222..222.', '2161221661221612', '2212222112222122', '.2G2..2GG2..2G2.',
+        '..222222222222..', '...2233333322...', '..22.2AAAA2.22..', '.22..222222..22.',
+        '.....22..22.....', '....22....22....', '................'
+      ]
+    },
+    {
+      world: 0, name: 'RUBBER CHICKEN PULLEY',
+      lore: 'THE ULTIMATE ZIP-LINE COMMUTING ACCESSORY.',
+      grid: [
+        '......AAAA......', '.....A4444A.....', '......AAAA......', '.......GG.......',
+        '...3333333333...', '..336133333333..', '.113333223333...', '..1333222233....',
+        '....333333......', '.....22..22.....', '....22....22....'
+      ]
+    },
+    {
+      world: 0, name: 'STANS COMPASS ANCHOR',
+      lore: 'PREVIOUSLY OWNED COFFINS AND FINE VESSELS!',
+      grid: [
+        '......AAAA......', '.....A6..6A.....', '......AAAA......', '....XXXXXXXX....',
+        '.......AA.......', '.......GG.......', '..44...AA...44..', '..444..AA..444..',
+        '...4444AA4444...', '....444GG444....', '......4444......'
+      ]
+    },
+    {
+      world: 0, name: 'VOODOO JUJU SKULL',
+      lore: 'FIVE MINUTES INSIDE THE SWAMP SHACK...',
+      grid: [
+        '....66666666....', '...6666666666...', '..66GG6666GG66..', '..661166661166..',
+        '..66666AA66666..', '...6666AA6666...', '....66666666....', '....6.6..6.6....',
+        '..556666666655..', '.55..BBBBBB..55.', '................'
+      ]
+    },
+    {
+      world: 0, name: 'SEA MONKEY GALLEON',
+      lore: 'BOUND FOR MONKEY ISLAND BY CINNAMON COMPASS!',
+      grid: [
+        '.......66.......', '..66..6666..66..', '.6666.66G6.6666.', '.6666.6666.6666.',
+        '.......22.......', '.22222222222222.', '..221G2222G122..', '...AAAAAAAAA2...',
+        '..444444444444..', '.44554455445544.', '................'
+      ]
+    },
+
+    /* --- WORLD 1 (Levels 7-12): Day of the Tentacle --- */
+    {
+      world: 1, name: 'PURPLE TENTACLE',
+      lore: 'I FEEL LIKE I COULD... TAKE OVER THE WORLD!',
+      grid: [
+        '......1111......', '.....111111.....', '....16411461....', '....11111111....',
+        '...2212112122...', '..22.11GG11.22..', '.22.11211211.22.', '....11111111....',
+        '...1121111211...', '..11111AA11111..', '................'
+      ]
+    },
+    {
+      world: 1, name: 'CHRON-O-JOHN BOOTH',
+      lore: 'FLUSH YOURSELF ACROSS FOUR HUNDRED YEARS!',
+      grid: [
+        '...AAAAAAAAAA...', '..A5555555555A..', '..A5554444555A..', '..A5544GG4455A..',
+        '..A5554444555A..', '..A5555555555A..', '..X5555225555X..', '..A5555555555A..',
+        '..A5533333355A..', '..BBBBBBBBBBBB..', '................'
+      ]
+    },
+    {
+      world: 1, name: 'WEIRD EDS HAMSTER',
+      lore: 'KEEP CLEAR OF ALL KITCHEN APPLIANCES!',
+      grid: [
+        '...66......66...', '..616666666616..', '..666466664666..', '..666661166666..',
+        '...6633GG3366...', '..666666666666..', '..664466664466..', '...6666666666...',
+        '....AAA..AAA....', '................', '................'
+      ]
+    },
+    {
+      world: 1, name: 'SLUDGE-O-MATIC VAT',
+      lore: 'PURE MUTAGENIC INDUSTRIAL RUNOFF!',
+      grid: [
+        '..BBBBBBBBBBBB..', '...2222GG2222...', '..A22GGGGGG22A..', '..A2222222222A..',
+        '..X4444444444X..', '..A22G2222G22A..', '..A2222GG2222A..', '...BBBBBBBBBB...',
+        '.....22..22.....', '....222..222....', '................'
+      ]
+    },
+    {
+      world: 1, name: 'HOAGIES STORM KITE',
+      lore: 'ONE LAB COAT, ONE BATTERY, ONE LIGHTNING BOLT!',
+      grid: [
+        '.......44.......', '......4114......', '.....41GG14.....', '....41144114....',
+        '...4114AA4114...', '....41144114....', '.....411114.....', '......4114......',
+        '.......44.55....', '........55.55...', '..........AA....'
+      ]
+    },
+    {
+      world: 1, name: 'SECRET LAB CLOCK',
+      lore: 'BEHIND THE GRANDFATHER CLOCK LIES THE LAB!',
+      grid: [
+        '....BBBBBBBB....', '...B44444444B...', '...B46644664B...', '...B464GG464B...',
+        '...B44444444B...', '....AAAAAAAA....', '....A114411A....', '....A114411A....',
+        '....X11GG11X....', '...BBBBBBBBBB...', '................'
+      ]
+    },
+
+    /* --- WORLD 2 (Levels 13-18): Indiana Jones and the Fate of Atlantis --- */
+    {
+      world: 2, name: 'INDYS FEDORA & WHIP',
+      lore: 'I NEVER LEAVE PLATONIC DIALOGUES WITHOUT IT.',
+      grid: [
+        '.....222222.....', '....22222222....', '....11111111....', '.22222222222222.',
+        '................', '...AAAAAAAA.....', '..AA......AA....', '..A...GG...A....',
+        '...AA....AA.....', '.....AAAAA333...', '............33..'
+      ]
+    },
+    {
+      world: 2, name: 'HORNED IDOL STATUE',
+      lore: 'DROP AN ORICHALCUM BEAD INTO ITS JAWS!',
+      grid: [
+        '.22..........22.', '.222..BBBB..222.', '..222B2222B222..', '....B2G22G2B....',
+        '....B221122B....', '.....B1GG1B.....', '...AA222222AA...', '..AA22333322AA..',
+        '..X.22222222.X..', '....BBBBBBBB....', '................'
+      ]
+    },
+    {
+      world: 2, name: 'ATLANTEAN SUNSTONE',
+      lore: 'NOON SUNS AND HORNS ALIGN THE LOST GATES!',
+      grid: [
+        '.....222222.....', '...2211111122...', '..211444444112..', '.2144AA22AA4412.',
+        '.214A22GG22A412.', '.214A22GG22A412.', '.2144AA22AA4412.', '..211444444112..',
+        '...2211111122...', '.....222222.....', '................'
+      ]
+    },
+    {
+      world: 2, name: 'TIKAL MAYAN PYRAMID',
+      lore: 'STERNHART LEFT CLUES BENEATH THE JUNGLE MOSS.',
+      grid: [
+        '......BBBB......', '.....B2GG2B.....', '....AAAAAAAA....', '....44222244....',
+        '...AAAAAAAAAA...', '..55222GG22255..', '.AAAAAAAAAAAAAA.', '.221122GG221122.',
+        'X44444444444444X', '2222222222222222', '................'
+      ]
+    },
+    {
+      world: 2, name: 'SUBMARINE U-BOAT',
+      lore: 'DIVE! SET BEARING FOR THE AEGEAN TRENCH!',
+      grid: [
+        '.......AA.......', '.......AA.......', '.....BBBBBB.....', '....B33GG33B....',
+        '.AAAAAAAAAAAAAA.', 'A44644G44G44644A', '.BBBBBBBBBBBBBB.', '................',
+        '.33333333333333.', '................', '................'
+      ]
+    },
+    {
+      world: 2, name: 'GOD-MACHINE CORE',
+      lore: 'TEN BEADS TURN MEN INTO RADIANT GODS!',
+      grid: [
+        '..XX..BBBB..XX..', '..11.B2GG2B.11..', '..11B244442B11..', '..AAB44GG44BAA..',
+        '...114GGGG411...', '..AAB44GG44BAA..', '..11B244442B11..', '..11.B2GG2B.11..',
+        '..XX..BBBB..XX..', '.....111111.....', '................'
+      ]
+    },
+
+    /* --- WORLD 3 (Levels 19-24): Star Wars Space Combat Flight --- */
+    {
+      world: 3, name: 'T-65 X-WING S-FOILS',
+      lore: 'LOCK S-FOILS IN ATTACK POSITION!',
+      grid: [
+        '2..............2', '211....66....112', '.111..6556..111.', '..111.6GG6.111..',
+        '...AAAAAAAAAA...', '....A664466A....', '...AAAAAAAAAA...', '..111.6GG6.111..',
+        '.111..6226..111.', '211..........112', '2..............2'
+      ]
+    },
+    {
+      world: 3, name: 'TIE INTERCEPTOR',
+      lore: 'SCREAMING TWIN ION ENGINES ON YOUR SIX!',
+      grid: [
+        'AA............AA', 'A3A..........A3A', 'A3A...BBBB...A3A', 'A3AAAB1551BAA33A',
+        'X3333B5GG5B3333X', 'A3AAAB1551BAA33A', 'A3A...BBBB...A3A', 'A3A..........A3A',
+        'AA............AA', '................', '................'
+      ]
+    },
+    {
+      world: 3, name: 'REBEL STARBIRD',
+      lore: 'MAY THE FORCE GUIDE EVERY RICOCHET.',
+      grid: [
+        '.......22.......', '..22...22...22..', '.222...22...222.', '222..22GG22..222',
+        '222.22222222.222', '222222AAAA222222', '.22222A44A22222.', '..22222GG22222..',
+        '...2222222222...', '.....222222.....', '................'
+      ]
+    },
+    {
+      world: 3, name: 'MYNOCK ASTEROID DEN',
+      lore: 'THIS IS NO CAVE! WATCH THE GRAVITY ANOMALY!',
+      grid: [
+        '...AAAA..BBBB...', '..A11G1AA1G11B..', '.A111111111111B.', '.A1G11X..X11G1B.',
+        '..A1111GG1111B..', '...AAA1111BBB...', '..AA111GG111AA..', '.A114411114411A.',
+        '..AA11111111AA..', '....AAAAAAAA....', '................'
+      ]
+    },
+    {
+      world: 3, name: 'STAR DESTROYER',
+      lore: 'TARGET THE BRIDGE SHIELD GENERATOR DOMES!',
+      grid: [
+        '.....G....G.....', '....BBBBBBBB....', '......AAAA......', '.....A1661A.....',
+        '....A116611A....', '...A111GG111A...', '..A1115555111A..', '.A11111GG11111A.',
+        'A11111111111111A', '.......44.......', '................'
+      ]
+    },
+    {
+      world: 3, name: 'DEATH STAR TRENCH',
+      lore: 'TWO METERS WIDE! AIM FOR THE THERMAL PORT!',
+      grid: [
+        '....AAAAAAAA....', '..AA11....11AA..', '.A1111....1111A.', '.A11X1....1X11A.',
+        'A111X1.GG.1X111A', 'A11111GGGG11111A', 'A11112GGGG21111A', '.A11122GG22111A.',
+        '..AA11111111AA..', '....BBBBBBBB....', '................'
+      ]
+    },
+
+    /* --- WORLD 4 (Levels 25-30): LOOM --- */
+    {
+      world: 4, name: 'BOBBIN THREADBARE',
+      lore: 'CHILD OF THE GRAY ROBE BENEATH CYGNUS.',
+      grid: [
+        '....11111111....', '...1111111111...', '..111111111111..', '..11........11..',
+        '.11..46..64..11.', '.11..6G..G6..11.', '..11........11..', '..1111AAAA1111..',
+        '...1112222111...', '....11111111....', '................'
+      ]
+    },
+    {
+      world: 4, name: 'THE ELDER DISTAFF',
+      lore: 'SPIN E-C-E-D TO UNSEAL WHAT WAS CLOSED!',
+      grid: [
+        '......4444......', '.....42GG24.....', '.....426624.....', '......BBBB......',
+        '.......AA.......', '...33..AA..55...', '..3G3..AA..5G5..', '...33..AA..55...',
+        '.......AA.......', '......2222......', '................'
+      ]
+    },
+    {
+      world: 4, name: 'WHITE SWAN OF LOOM',
+      lore: 'THEY TRANSCENDED BEYOND THE THIRD SHADOW.',
+      grid: [
+        '..........666...', '.........66462..', '.66......66.....', '6666....66..6666',
+        '66666..66..66666', '.666666GG666666.', '..666666666666..', '...666AAAA666...',
+        '..111111111111..', '.22112211221122.', '................'
+      ]
+    },
+    {
+      world: 4, name: 'CRYSTALGARD SPHERE',
+      lore: 'GAZE UPON FATE THROUGH EMERALD GLASS!',
+      grid: [
+        '.....555555.....', '...5522222255...', '..522662222225..', '.526622AA222225.',
+        '.52222AGGA22225.', '.52222AGGA22225.', '..52222AA22225..', '...5522222255...',
+        '....BBBBBBBB....', '...B444GG444B...', '................'
+      ]
+    },
+    {
+      world: 4, name: 'SLEEPING DRAGON',
+      lore: 'DO NOT TURN FLAME TO GOLD NEAR HER HOARD!',
+      grid: [
+        '....33333.......', '...3346333..33..', '..2233333..3333.', '......333.33G33.',
+        '....3333333333..', '...33G33AA333...', '...3333AAAA33...', '....334444443...',
+        '...444G444G444..', '..BBBBBBBBBBBB..', '................'
+      ]
+    },
+    {
+      world: 4, name: 'CHAOS LOOM RIFT',
+      lore: 'HALF THE PATTERN BELONGS TO CHAOS NOW!',
+      grid: [
+        '1122334..4332211', 'AA1122....2211AA', '55AA1G....G1AA55', '6655AA....AA5566',
+        '11665G....G56611', 'X2116......6112X', '3221G......G1223', '43322A....A22334',
+        'BB4332....2334BB', '55BB44G..G44BB55', '................'
+      ]
+    },
+
+    /* --- WORLD 5 (Levels 31-32): Sam & Max Hit the Road --- */
+    {
+      world: 5, name: 'MAX LAGOMORPH GRIN',
+      lore: 'YOU CRACK ME UP, LITTLE BUDDY!',
+      grid: [
+        '..111......111..', '..161......161..', '..161......161..', '..111111111111..',
+        '.11141111114111.', '.11111122111111.', '.11AAAAAAAAAA11.', '.111G1G11G1G111.',
+        '..111111111111..', '....BBBBBBBB....', '................'
+      ]
+    },
+    {
+      world: 5, name: 'DESOTO PATROL CAR',
+      lore: 'MIND THE OVERPASS AND THE BIGFOOT TOTEM!',
+      grid: [
+        '.......22.......', '....AAAAAAAA....', '...A44444444A...', '..A4466446644A..',
+        '.BBBBBBBBBBBBBB.', 'B111122GG221111B', 'B311111GG111113B', 'XBBBBBBBBBBBBBBX',
+        '..AA........AA..', '..AA........AA..', '................'
+      ]
+    },
+
+    /* --- WORLD 6 (Level 33): Ghost Pirate LeChuck Boss Finale --- */
+    {
+      world: 6, name: 'LECHUCKS HELLSHIP',
+      lore: 'DODGE VOODOO CANNONS & DOUSE HIM IN ROOT BEER!',
+      grid: [
+        '................', '................', '................', '..XX..BBBB..XX..',
+        '.1111B2GG2B1111.', '.1AA1B2442B1AA1.', '..1122GGGG2211..', '...BBBBBBBBBB...',
+        '..331144441133..', '.33G11AAAA11G33.', '................'
+      ]
+    }
+  ];
+
+  /* Insult Sword-Fighting Pairs for World 0 */
+  const INSULT_PAIRS = [
+    ['YOU FIGHT LIKE A DAIRY FARMER!', 'HOW APPROPRIATE, YOU FIGHT LIKE A COW!'],
+    ['SOON YOU WILL WEAR MY SWORD LIKE A SHISH KEBAB!', 'FIRST STOP WAVING IT LIKE A FEATHER DUSTER!'],
+    ['PEOPLE FALL AT MY FEET WHEN THEY SEE ME COMING!', 'EVEN BEFORE THEY SMELL YOUR BREATH?'],
+    ['MY HANDKERCHIEF WILL WIPE UP YOUR BLOOD!', 'SO YOU GOT THAT JOB AS JANITOR AFTER ALL!']
+  ];
+
+  /* Loom Musical Draft Rune Names for World 4 */
+  const LOOM_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C\''];
+
+  /* =========================================================================
+   * Geometry & Deterministic Sub-Stepped Circle-vs-AABB Collision Solver
+   * ========================================================================= */
+  function clamp(v, lo, hi) {
+    return v < lo ? lo : (v > hi ? hi : v);
+  }
+
+  /**
+   * Resolves circle (ball) vs axis-aligned rectangle (brick) penetration and
+   * corner/edge velocity reflection without tunneling or seam double-flips.
+   *
+   * @param {object} ball - { x, y, vx, vy, r }
+   * @param {object} rect - { x, y, w, h }
+   * @return {object|null} Contact descriptor { nx, ny, pen } if intersecting.
+   */
+  function testCircleAABB(ball, rect) {
+    const px = clamp(ball.x, rect.x, rect.x + rect.w);
+    const py = clamp(ball.y, rect.y, rect.y + rect.h);
+    const dx = ball.x - px;
+    const dy = ball.y - py;
+    const distSq = dx * dx + dy * dy;
+    if (distSq >= ball.r * ball.r) {
+      return null;
+    }
+
+    if (distSq > 1e-6) {
+      const dist = Math.sqrt(distSq);
+      return {
+        nx: dx / dist,
+        ny: dy / dist,
+        pen: ball.r - dist
+      };
+    }
+
+    /* Circle center inside AABB: push out along minimum face overlap */
+    const leftPen = (ball.x - rect.x) + ball.r;
+    const rightPen = (rect.x + rect.w - ball.x) + ball.r;
+    const topPen = (ball.y - rect.y) + ball.r;
+    const botPen = (rect.y + rect.h - ball.y) + ball.r;
+    const minPen = Math.min(leftPen, rightPen, topPen, botPen);
+    if (minPen === leftPen) return { nx: -1, ny: 0, pen: leftPen };
+    if (minPen === rightPen) return { nx: 1, ny: 0, pen: rightPen };
+    if (minPen === topPen) return { nx: 0, ny: -1, pen: topPen };
+    return { nx: 0, ny: 1, pen: botPen };
+  }
+
+  function applyContactBounce(ball, contact) {
+    ball.x += contact.nx * (contact.pen + 0.02);
+    ball.y += contact.ny * (contact.pen + 0.02);
+
+    const speed = Math.hypot(ball.vx, ball.vy) || 1;
+    const dot = ball.vx * contact.nx + ball.vy * contact.ny;
+    if (dot < 0) {
+      ball.vx -= 2 * dot * contact.nx;
+      ball.vy -= 2 * dot * contact.ny;
+    }
+
+    /* Prevent near-horizontal infinite wall-to-wall lock */
+    const minVy = speed * 0.25;
+    if (Math.abs(ball.vy) < minVy) {
+      const signY = ball.vy >= 0 ? 1 : -1;
+      const signX = ball.vx >= 0 ? 1 : -1;
+      ball.vy = signY * minVy;
+      ball.vx = signX * Math.sqrt(Math.max(0.01, speed * speed - ball.vy * ball.vy));
+    } else {
+      const cur = Math.hypot(ball.vx, ball.vy) || 1;
+      ball.vx = (ball.vx / cur) * speed;
+      ball.vy = (ball.vy / cur) * speed;
+    }
+  }
+
+  /* =========================================================================
+   * Main SCUMM-ANOID Game State & Engine
+   * ========================================================================= */
+  const ARENA = {
+    W: 320,
+    H: 200,
+    LEFT: 8,
+    RIGHT: 312,
+    TOP: 16,
+    BOTTOM: 200,
+    GRID_X: 16,
+    GRID_Y: 23,
+    BRICK_W: 18,
+    BRICK_H: 7,
+    PADDLE_Y: 185
+  };
+
+  const HIGHSCORE_KEY = 'scummanoid_ega_highscore_v1';
+
+  function loadHighScore() {
+    try {
+      const raw = localStorage.getItem(HIGHSCORE_KEY);
+      if (raw === null) return 10000;
+      const parsed = Number(raw);
+      if (Number.isSafeInteger(parsed) && parsed >= 0 && parsed <= 99999999) {
+        return parsed;
+      }
+    } catch (_) {
+      /* Storage blocked in strict sandbox; fallback cleanly */
+    }
+    return 10000;
+  }
+
+  function saveHighScore(score) {
+    const clean = Math.max(0, Math.min(99999999, Math.floor(score)));
+    try {
+      localStorage.setItem(HIGHSCORE_KEY, String(clean));
+    } catch (_) {
+      /* Ignore sandbox quota/permission restrictions */
+    }
+  }
+
+  class ScummAnoidGame {
+    constructor(canvas, audio, uiRefs) {
+      this.canvas = canvas;
+      this.ctx = canvas.getContext('2d');
+      this.ctx.imageSmoothingEnabled = false;
+      this.audio = audio;
+      this.ui = uiRefs;
+
+      this.state = 'MENU'; /* MENU | PLAYING | LEVEL_CLEAR | GAME_OVER | VICTORY */
+      this.paused = false;
+      this.selectedLevel = 0;
+      this.levelIndex = 0;
+      this.score = 0;
+      this.highScore = loadHighScore();
+      this.lives = 3;
+      this.combo = 0;
+      this.clock = 0;
+
+      this.keys = { left: false, right: false };
+      this.mouseX = 160;
+      this.useMouse = false;
+
+      this.paddle = {
+        x: 141,
+        y: ARENA.PADDLE_Y,
+        w: 38,
+        h: 5,
+        laser: false,
+        catchMode: false,
+        expanded: false,
+        laserCooldown: 0,
+        shrinkTimer: 0
+      };
+
+      this.ball = {
+        x: 160,
+        y: ARENA.PADDLE_Y - 3,
+        vx: 72,
+        vy: -102,
+        r: 2.4,
+        stuck: true,
+        stuckOffset: 0,
+        stuckTimer: 0,
+        baseSpeed: 122,
+        slowFactor: 1.0
+      };
+
+      this.bricks = [];
+      this.powerups = [];
+      this.lasers = [];
+      this.particles = [];
+      this.hazards = [];
+      this.bannerText = '';
+      this.bannerTimer = 0;
+      this.bannerColor = C.BYELLOW;
+
+      /* Custom world mechanic runtime state */
+      this.swordTarget = null;
+      this.portalCooldown = 0;
+      this.dartTimer = 3.2;
+      this.dartTelegraphSide = 0;
+      this.gravityWell = { x: 160, y: 128, phase: 0 };
+      this.loomNotes = [];
+      this.wakRat = { x: 120, y: 124, vx: 52, active: true, stun: 0 };
+      this.boss = null;
+      this.fireworks = [];
+
+      this.buildStars();
+      this.loadLevel(0, false);
+    }
+
+    buildStars() {
+      this.stars = [];
+      for (let i = 0; i < 42; i++) {
+        this.stars.push({
+          x: (i * 73 + 19) % 296 + 12,
+          y: (i * 41 + 11) % 168 + 20,
+          depth: (i % 3) + 1,
+          twinkle: i * 0.7
+        });
+      }
+    }
+
+    unlockAndSyncAudio() {
+      const ok = this.audio.unlock();
+      if (ok && this.ui.led) {
+        this.ui.led.classList.toggle('is-online', !this.audio.muted);
+        this.ui.ledText.textContent = this.audio.muted ? 'OPL2 MUTED' : 'OPL2 ACTIVE';
+      }
+    }
+
+    startNewGame(startLvl) {
+      this.unlockAndSyncAudio();
+      this.score = 0;
+      this.lives = 3;
+      this.paused = false;
+      this.loadLevel(startLvl, true);
+      this.state = 'PLAYING';
+      this.updateCabinetStatus();
+    }
+
+    loadLevel(idx, startAudio) {
+      this.levelIndex = clamp(idx, 0, LEVELS.length - 1);
+      this.selectedLevel = this.levelIndex;
+      const spec = LEVELS[this.levelIndex];
+      const theme = WORLD_THEMES[spec.world];
+
+      this.bricks = [];
+      for (let r = 0; r < spec.grid.length; r++) {
+        const rowStr = spec.grid[r];
+        for (let c = 0; c < rowStr.length; c++) {
+          const ch = rowStr[c];
+          if (ch === '.') continue;
+          let type = 'normal';
+          let hp = 1;
+          let maxHp = 1;
+          let color = theme.bricks[0];
+          let shade = theme.shades[0];
+
+          if (ch >= '1' && ch <= '6') {
+            const ci = Number(ch) - 1;
+            color = theme.bricks[ci];
+            shade = theme.shades[ci];
+          } else if (ch === 'A') {
+            type = 'armor'; hp = 2; maxHp = 2;
+            color = C.LGRAY; shade = C.DGRAY;
+          } else if (ch === 'B') {
+            type = 'armor'; hp = 3; maxHp = 3;
+            color = C.GOLD; shade = C.BROWN;
+          } else if (ch === 'X') {
+            type = 'steel'; hp = 999; maxHp = 999;
+            color = C.SLATE; shade = C.DGRAY;
+          } else if (ch === 'G') {
+            type = 'grog'; hp = 1; maxHp = 1;
+            color = C.BGREEN; shade = C.GREEN;
+          }
+
+          this.bricks.push({
+            col: c,
+            row: r,
+            x: ARENA.GRID_X + c * ARENA.BRICK_W,
+            y: ARENA.GRID_Y + r * ARENA.BRICK_H,
+            w: ARENA.BRICK_W - 1,
+            h: ARENA.BRICK_H - 1,
+            type,
+            hp,
+            maxHp,
+            color,
+            shade,
+            flash: 0,
+            alive: true
+          });
+        }
+      }
+
+      this.powerups = [];
+      this.lasers = [];
+      this.particles = [];
+      this.hazards = [];
+      this.combo = 0;
+      this.portalCooldown = 0;
+      this.dartTimer = 2.8;
+      this.dartTelegraphSide = 0;
+      this.loomNotes = [];
+
+      this.swordTarget = (spec.world === 0) ? {
+        x: 60, y: 122, vx: 46, active: true, pairIdx: this.levelIndex % INSULT_PAIRS.length, cooldown: 0
+      } : null;
+
+      this.gravityWell = { x: 160, y: 126, phase: 0 };
+      this.wakRat = { x: 140, y: 125, vx: 58, active: true, stun: 0 };
+
+      /* Level 33 Moving Ghost Pirate LeChuck Boss! */
+      if (spec.world === 6) {
+        this.boss = {
+          x: 142,
+          y: 22,
+          w: 36,
+          h: 20,
+          vx: 44,
+          hp: 24,
+          maxHp: 24,
+          fireTimer: 1.6,
+          flash: 0
+        };
+      } else {
+        this.boss = null;
+      }
+
+      this.resetPaddleAndBall(true);
+      this.showBanner(`LVL ${String(this.levelIndex + 1).padStart(2, '0')}: ${spec.name}`, C.BYELLOW, 2.8);
+
+      if (startAudio) {
+        this.audio.startMusic(spec.world, this.levelIndex);
+      }
+      this.updateCabinetStatus();
+    }
+
+    resetPaddleAndBall(resetPowers) {
+      if (resetPowers) {
+        this.paddle.laser = false;
+        this.paddle.catchMode = false;
+        this.paddle.expanded = false;
+      }
+      this.paddle.shrinkTimer = 0;
+      this.syncPaddleWidth();
+      this.paddle.x = clamp(160 - this.paddle.w / 2, ARENA.LEFT + 2, ARENA.RIGHT - this.paddle.w - 2);
+
+      const baseSpd = 118 + Math.min(36, this.levelIndex * 1.1);
+      this.ball.baseSpeed = baseSpd;
+      this.ball.slowFactor = 1.0;
+      this.ball.stuck = true;
+      this.ball.stuckOffset = 0;
+      this.ball.stuckTimer = 0;
+      this.ball.x = this.paddle.x + this.paddle.w / 2;
+      this.ball.y = this.paddle.y - this.ball.r - 0.5;
+      this.ball.vx = baseSpd * 0.52;
+      this.ball.vy = -baseSpd * 0.85;
+    }
+
+    syncPaddleWidth() {
+      let w = this.paddle.expanded ? 56 : 38;
+      if (this.paddle.shrinkTimer > 0) {
+        w = Math.max(24, w - 12);
+      }
+      this.paddle.w = w;
+      this.paddle.x = clamp(this.paddle.x, ARENA.LEFT + 1, ARENA.RIGHT - this.paddle.w - 1);
+    }
+
+    showBanner(text, color, duration) {
+      this.bannerText = text;
+      this.bannerColor = color || C.BYELLOW;
+      this.bannerTimer = duration || 2.2;
+    }
+
+    addScore(pts) {
+      this.score += pts;
+      if (this.score > this.highScore) {
+        this.highScore = this.score;
+        saveHighScore(this.highScore);
+      }
+    }
+
+    launchOrFire() {
+      this.unlockAndSyncAudio();
+
+      if (this.state === 'MENU') {
+        this.startNewGame(this.selectedLevel);
+        return;
+      }
+      if (this.state === 'LEVEL_CLEAR') {
+        if (this.levelIndex + 1 < LEVELS.length) {
+          this.loadLevel(this.levelIndex + 1, true);
+          this.state = 'PLAYING';
+        } else {
+          this.enterVictory();
+        }
+        return;
+      }
+      if (this.state === 'GAME_OVER' || this.state === 'VICTORY') {
+        this.state = 'MENU';
+        this.audio.stopMusic();
+        this.updateCabinetStatus();
+        return;
+      }
+      if (this.paused) return;
+
+      if (this.ball.stuck) {
+        this.ball.stuck = false;
+        const speed = this.ball.baseSpeed * this.ball.slowFactor;
+        const rel = clamp(this.ball.stuckOffset / (this.paddle.w * 0.5), -0.8, 0.8);
+        const angle = rel * 0.95 + (rel === 0 ? 0.28 : 0);
+        this.ball.vx = Math.sin(angle) * speed;
+        this.ball.vy = -Math.cos(angle) * speed;
+        this.audio.playSFX('paddle', 1);
+        return;
+      }
+
+      if (this.paddle.laser && this.paddle.laserCooldown <= 0) {
+        this.paddle.laserCooldown = 0.22;
+        this.lasers.push(
+          { x: this.paddle.x + 3, y: this.paddle.y - 4, vy: -220, alive: true },
+          { x: this.paddle.x + this.paddle.w - 4, y: this.paddle.y - 4, vy: -220, alive: true }
+        );
+        this.audio.playSFX('laser');
+      }
+    }
+
+    enterVictory() {
+      this.state = 'VICTORY';
+      this.audio.stopMusic();
+      this.audio.playSFX('clear');
+      this.fireworks = [];
+      this.updateCabinetStatus();
+    }
+
+    updateCabinetStatus() {
+      if (!this.ui.status) return;
+      const spec = LEVELS[this.levelIndex];
+      const worldTheme = WORLD_THEMES[spec.world];
+      if (this.state === 'MENU') {
+        this.ui.status.textContent = `SELECT START LEVEL [${this.selectedLevel + 1}/33]: ${LEVELS[this.selectedLevel].name}`;
+      } else if (this.state === 'PLAYING') {
+        this.ui.status.textContent = `${worldTheme.title} (${this.levelIndex + 1}/33) - ${worldTheme.mechanicLabel}`;
+      } else if (this.state === 'LEVEL_CLEAR') {
+        this.ui.status.textContent = `STAGE ${this.levelIndex + 1} CLEARED! PRESS SPACE OR CLICK TO CONTINUE`;
+      } else if (this.state === 'VICTORY') {
+        this.ui.status.textContent = `LECHUCK DEFEATED! FINAL SCORE: ${this.score}`;
+      } else {
+        this.ui.status.textContent = `GAME OVER - PRESS SPACE OR CLICK FOR MAIN MENU`;
+      }
+    }
+
+    spawnParticles(x, y, color, count) {
+      for (let i = 0; i < count; i++) {
+        const ang = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+        const spd = 22 + Math.random() * 68;
+        this.particles.push({
+          x, y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd,
+          life: 0.28 + Math.random() * 0.28,
+          color
+        });
+      }
+    }
+
+    maybeSpawnPowerup(x, y, forceDrop) {
+      if (!forceDrop && Math.random() > 0.21) return;
+      const pool = ['L', 'E', 'C', 'S', 'L', 'E', 'C', 'S', 'P'];
+      const kind = pool[Math.floor(Math.random() * pool.length)];
+      this.powerups.push({ x: clamp(x - 5, ARENA.LEFT + 4, ARENA.RIGHT - 16), y, w: 11, h: 7, vy: 42, kind, alive: true });
+    }
+
+    applyPowerup(kind) {
+      this.audio.playSFX('powerup');
+      this.addScore(250);
+      switch (kind) {
+        case 'L':
+          this.paddle.laser = true;
+          this.showBanner('SPACE-RANGER BLASTERS ARMED! [SPACE/CLICK]', C.BRED, 2.0);
+          break;
+        case 'E':
+          this.paddle.expanded = true;
+          this.syncPaddleWidth();
+          this.showBanner('RUBBER CHICKEN PULLEY EXPANSION!', C.BYELLOW, 2.0);
+          break;
+        case 'C':
+          this.paddle.catchMode = true;
+          this.showBanner('MAGNETIC COMPASS CATCH ENGAGED!', C.BCYAN, 2.0);
+          break;
+        case 'S':
+          this.ball.slowFactor = 0.72;
+          this.rescaleBallSpeed();
+          this.showBanner('SANDS OF TIME: BALL DECELERATED!', C.BGREEN, 2.0);
+          break;
+        case 'P':
+          this.lives = Math.min(9, this.lives + 1);
+          this.showBanner('LUCASARTS GOLD GUY: +1 EXTRA LIFE!', C.GOLD, 2.2);
+          break;
+      }
+    }
+
+    rescaleBallSpeed() {
+      if (this.ball.stuck) return;
+      const target = this.ball.baseSpeed * this.ball.slowFactor;
+      const cur = Math.hypot(this.ball.vx, this.ball.vy) || 1;
+      this.ball.vx = (this.ball.vx / cur) * target;
+      this.ball.vy = (this.ball.vy / cur) * target;
+    }
+
+    /* Damages a brick and triggers recursive 3x3 Scumm Bar Grog chain explosions! */
+    damageBrick(brick, amount, silent) {
+      if (!brick.alive || brick.type === 'steel') {
+        brick.flash = 0.12;
+        if (!silent) this.audio.playSFX('steel');
+        return;
+      }
+
+      brick.hp -= amount;
+      brick.flash = 0.12;
+
+      if (brick.hp > 0) {
+        if (!silent) this.audio.playSFX('armor');
+        this.addScore(35);
+        this.spawnParticles(brick.x + brick.w / 2, brick.y + brick.h / 2, C.WHITE, 4);
+        return;
+      }
+
+      brick.alive = false;
+      this.combo++;
+      const cx = brick.x + brick.w / 2;
+      const cy = brick.y + brick.h / 2;
+      this.addScore(brick.type === 'grog' ? 150 : (brick.maxHp * 60 + Math.min(100, this.combo * 10)));
+      this.spawnParticles(cx, cy, brick.color, brick.type === 'grog' ? 14 : 7);
+      this.maybeSpawnPowerup(cx, cy, false);
+
+      /* World 4 (LOOM) Musical Draft 4-Note Spell-Weaving */
+      if (LEVELS[this.levelIndex].world === 4) {
+        this.advanceLoomDraft();
+      }
+
+      if (brick.type === 'grog') {
+        if (!silent) this.audio.playSFX('grog');
+        this.triggerGrogExplosion(brick);
+      } else if (!silent) {
+        this.audio.playSFX('brick', this.combo);
+      }
+    }
+
+    triggerGrogExplosion(originBrick) {
+      const queue = [originBrick];
+      const visited = new Set([originBrick]);
+      while (queue.length > 0) {
+        const src = queue.shift();
+        const sx = src.x + src.w / 2;
+        const sy = src.y + src.h / 2;
+        this.spawnParticles(sx, sy, C.BGREEN, 10);
+        for (let i = 0; i < this.bricks.length; i++) {
+          const nb = this.bricks[i];
+          if (!nb.alive || nb.type === 'steel' || visited.has(nb)) continue;
+          if (Math.abs(nb.col - src.col) <= 1 && Math.abs(nb.row - src.row) <= 1) {
+            if (nb.type === 'grog') {
+              visited.add(nb);
+              nb.alive = false;
+              this.addScore(180);
+              queue.push(nb);
+            } else {
+              this.damageBrick(nb, 3, true);
+            }
+          }
+        }
+      }
+    }
+
+    advanceLoomDraft() {
+      const noteIdx = (this.combo + this.levelIndex) % LOOM_NOTES.length;
+      this.loomNotes.push(LOOM_NOTES[noteIdx]);
+      if (this.loomNotes.length >= 4) {
+        const spellStr = this.loomNotes.join('-');
+        this.loomNotes = [];
+        this.audio.playSFX('special');
+        this.addScore(500);
+        let crackedAny = false;
+        for (let i = 0; i < this.bricks.length; i++) {
+          const b = this.bricks[i];
+          if (b.alive && b.type === 'armor' && b.hp > 1) {
+            b.hp -= 1;
+            b.flash = 0.25;
+            crackedAny = true;
+          }
+        }
+        if (crackedAny) {
+          this.showBanner(`DRAFT ${spellStr}: OPENING CRACKS ARMOR! +500`, C.ICE, 2.2);
+        } else {
+          this.maybeSpawnPowerup(this.ball.x, this.ball.y, true);
+          this.showBanner(`DRAFT ${spellStr}: TRANSCENDENCE GIFT! +500`, C.BMAGENTA, 2.2);
+        }
+      }
+    }
+
+    countRemainingTargets() {
+      let count = 0;
+      for (let i = 0; i < this.bricks.length; i++) {
+        const b = this.bricks[i];
+        if (b.alive && b.type !== 'steel') count++;
+      }
+      if (this.boss && this.boss.hp > 0) count += this.boss.hp;
+      return count;
+    }
+
+    update(dt) {
+      this.clock += dt;
+      if (this.bannerTimer > 0) {
+        this.bannerTimer = Math.max(0, this.bannerTimer - dt);
+      }
+
+      if (this.state === 'VICTORY') {
+        this.updateVictoryFireworks(dt);
+        return;
+      }
+      if (this.state !== 'PLAYING' || this.paused) {
+        return;
+      }
+
+      /* Update Paddle Timers & Steering */
+      if (this.paddle.laserCooldown > 0) this.paddle.laserCooldown -= dt;
+      if (this.paddle.shrinkTimer > 0) {
+        this.paddle.shrinkTimer -= dt;
+        if (this.paddle.shrinkTimer <= 0) this.syncPaddleWidth();
+      }
+
+      const moveSpeed = 215;
+      if (this.keys.left) {
+        this.paddle.x -= moveSpeed * dt;
+        this.useMouse = false;
+      }
+      if (this.keys.right) {
+        this.paddle.x += moveSpeed * dt;
+        this.useMouse = false;
+      }
+      if (this.useMouse) {
+        const targetX = this.mouseX - this.paddle.w / 2;
+        this.paddle.x += (targetX - this.paddle.x) * Math.min(1, dt * 24);
+      }
+      this.paddle.x = clamp(this.paddle.x, ARENA.LEFT + 1, ARENA.RIGHT - this.paddle.w - 1);
+
+      /* Gradually restore slow-ball speed back toward 1.0 */
+      if (this.ball.slowFactor < 1.0 && !this.ball.stuck) {
+        this.ball.slowFactor = Math.min(1.0, this.ball.slowFactor + dt * 0.022);
+        this.rescaleBallSpeed();
+      }
+
+      /* Update Brick Flash */
+      for (let i = 0; i < this.bricks.length; i++) {
+        if (this.bricks[i].flash > 0) this.bricks[i].flash = Math.max(0, this.bricks[i].flash - dt);
+      }
+
+      /* Update World-Specific Mechanics */
+      this.updateWorldMechanics(dt);
+
+      /* Update Ball (Sub-Stepped for Tunnel-Free Corner Accuracy) */
+      if (this.ball.stuck) {
+        this.ball.x = clamp(
+          this.paddle.x + this.paddle.w / 2 + this.ball.stuckOffset,
+          this.paddle.x + 2,
+          this.paddle.x + this.paddle.w - 2
+        );
+        this.ball.y = this.paddle.y - this.ball.r - 0.4;
+        this.ball.stuckTimer += dt;
+        if (this.paddle.catchMode && this.ball.stuckTimer > 5.5) {
+          this.launchOrFire();
+        }
+      } else {
+        const totalMove = Math.hypot(this.ball.vx * dt, this.ball.vy * dt);
+        const steps = Math.max(1, Math.ceil(totalMove / 1.4));
+        const subDt = dt / steps;
+        for (let s = 0; s < steps; s++) {
+          if (!this.stepBallPhysics(subDt)) break;
+        }
+      }
+
+      /* Update Space-Ranger Lasers */
+      for (let i = this.lasers.length - 1; i >= 0; i--) {
+        const lz = this.lasers[i];
+        lz.y += lz.vy * dt;
+        if (lz.y < ARENA.TOP) {
+          this.lasers.splice(i, 1);
+          continue;
+        }
+        /* Check Boss Hit */
+        if (this.boss && this.boss.hp > 0 &&
+            lz.x >= this.boss.x && lz.x <= this.boss.x + this.boss.w &&
+            lz.y >= this.boss.y && lz.y <= this.boss.y + this.boss.h) {
+          this.damageBoss(1);
+          this.lasers.splice(i, 1);
+          continue;
+        }
+        /* Check Sword Parry Hit */
+        if (this.swordTarget && this.swordTarget.active &&
+            Math.abs(lz.x - this.swordTarget.x) < 9 && Math.abs(lz.y - this.swordTarget.y) < 6) {
+          this.triggerInsultParry();
+          this.lasers.splice(i, 1);
+          continue;
+        }
+        /* Check Brick Hit */
+        for (let bIdx = 0; bIdx < this.bricks.length; bIdx++) {
+          const b = this.bricks[bIdx];
+          if (b.alive && lz.x >= b.x && lz.x <= b.x + b.w && lz.y >= b.y && lz.y <= b.y + b.h) {
+            this.damageBrick(b, 1, false);
+            this.lasers.splice(i, 1);
+            break;
+          }
+        }
+      }
+
+      /* Update Falling Power-ups */
+      for (let i = this.powerups.length - 1; i >= 0; i--) {
+        const p = this.powerups[i];
+        p.y += p.vy * dt;
+        if (p.y > ARENA.BOTTOM) {
+          this.powerups.splice(i, 1);
+          continue;
+        }
+        if (p.x + p.w >= this.paddle.x && p.x <= this.paddle.x + this.paddle.w &&
+            p.y + p.h >= this.paddle.y && p.y <= this.paddle.y + this.paddle.h + 3) {
+          this.applyPowerup(p.kind);
+          this.powerups.splice(i, 1);
+        }
+      }
+
+      /* Update Particles */
+      for (let i = this.particles.length - 1; i >= 0; i--) {
+        const pt = this.particles[i];
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        pt.life -= dt;
+        if (pt.life <= 0) this.particles.splice(i, 1);
+      }
+
+      /* Check Level Completion */
+      if (this.countRemainingTargets() === 0) {
+        this.addScore(500 + this.lives * 100);
+        if (this.levelIndex === LEVELS.length - 1) {
+          this.enterVictory();
+        } else {
+          this.state = 'LEVEL_CLEAR';
+          this.audio.playSFX('clear');
+          this.updateCabinetStatus();
+        }
+      }
+    }
+
+    stepBallPhysics(subDt) {
+      const ball = this.ball;
+      ball.x += ball.vx * subDt;
+      ball.y += ball.vy * subDt;
+
+      /* Arena Walls */
+      if (ball.x - ball.r < ARENA.LEFT) {
+        ball.x = ARENA.LEFT + ball.r;
+        ball.vx = Math.abs(ball.vx);
+        this.audio.playSFX('wall');
+      } else if (ball.x + ball.r > ARENA.RIGHT) {
+        ball.x = ARENA.RIGHT - ball.r;
+        ball.vx = -Math.abs(ball.vx);
+        this.audio.playSFX('wall');
+      }
+      if (ball.y - ball.r < ARENA.TOP) {
+        ball.y = ARENA.TOP + ball.r;
+        ball.vy = Math.abs(ball.vy);
+        this.audio.playSFX('wall');
+      }
+
+      /* Bottom Pit Loss */
+      if (ball.y - ball.r > ARENA.BOTTOM) {
+        this.handleBallLost();
+        return false;
+      }
+
+      /* Paddle Bounce / Magnetic Catch */
+      if (ball.vy > 0) {
+        const padRect = { x: this.paddle.x, y: this.paddle.y, w: this.paddle.w, h: this.paddle.h };
+        const pContact = testCircleAABB(ball, padRect);
+        if (pContact) {
+          this.combo = 0;
+          const hitOffset = clamp(ball.x - (this.paddle.x + this.paddle.w / 2), -this.paddle.w / 2, this.paddle.w / 2);
+          if (this.paddle.catchMode) {
+            ball.stuck = true;
+            ball.stuckOffset = hitOffset;
+            ball.stuckTimer = 0;
+            ball.y = this.paddle.y - ball.r - 0.4;
+            this.audio.playSFX('paddle', 0);
+            return false;
+          }
+          const normOffset = hitOffset / (this.paddle.w / 2);
+          const maxBounceAngle = 1.12;
+          const bounceAngle = normOffset * maxBounceAngle;
+          const speed = ball.baseSpeed * ball.slowFactor;
+          ball.vx = Math.sin(bounceAngle) * speed;
+          ball.vy = -Math.cos(bounceAngle) * speed;
+          ball.y = this.paddle.y - ball.r - 0.05;
+          this.audio.playSFX('paddle', Math.abs(normOffset));
+          return true;
+        }
+      }
+
+      /* Moving Boss LeChuck Collision (Level 33) */
+      if (this.boss && this.boss.hp > 0) {
+        const bContact = testCircleAABB(ball, this.boss);
+        if (bContact) {
+          applyContactBounce(ball, bContact);
+          this.damageBoss(2);
+        }
+      }
+
+      /* Deepest-Penetration Brick Contact Resolution (Prevents Two-Brick Seam Bugs) */
+      let bestBrick = null;
+      let bestContact = null;
+      for (let i = 0; i < this.bricks.length; i++) {
+        const b = this.bricks[i];
+        if (!b.alive) continue;
+        const c = testCircleAABB(ball, b);
+        if (c && (!bestContact || c.pen > bestContact.pen)) {
+          bestContact = c;
+          bestBrick = b;
+        }
+      }
+
+      if (bestBrick && bestContact) {
+        applyContactBounce(ball, bestContact);
+        this.damageBrick(bestBrick, 1, false);
+      }
+
+      return true;
+    }
+
+    handleBallLost() {
+      this.lives -= 1;
+      this.audio.playSFX('lose');
+      if (this.lives <= 0) {
+        this.state = 'GAME_OVER';
+        this.audio.stopMusic();
+        this.updateCabinetStatus();
+      } else {
+        this.resetPaddleAndBall(true);
+      }
+    }
+
+    damageBoss(amt) {
+      if (!this.boss || this.boss.hp <= 0) return;
+      this.boss.hp = Math.max(0, this.boss.hp - amt);
+      this.boss.flash = 0.16;
+      this.addScore(120 * amt);
+      this.spawnParticles(this.boss.x + this.boss.w / 2, this.boss.y + this.boss.h / 2, C.BGREEN, 9);
+      if (this.boss.hp === 0) {
+        this.audio.playSFX('grog');
+        this.spawnParticles(this.boss.x + 18, this.boss.y + 10, C.BYELLOW, 28);
+        this.showBanner('ROOT BEER OVERLOAD! LECHUCK VAPORIZED!', C.BGREEN, 3.0);
+      } else {
+        this.audio.playSFX('armor');
+      }
+    }
+
+    triggerInsultParry() {
+      if (!this.swordTarget || !this.swordTarget.active) return;
+      const pair = INSULT_PAIRS[this.swordTarget.pairIdx];
+      this.swordTarget.active = false;
+      this.swordTarget.cooldown = 6.5;
+      this.swordTarget.pairIdx = (this.swordTarget.pairIdx + 1) % INSULT_PAIRS.length;
+      this.addScore(500);
+      this.audio.playSFX('special');
+      this.spawnParticles(this.swordTarget.x, this.swordTarget.y, C.GOLD, 12);
+      this.showBanner(pair[1], C.BGREEN, 2.8);
+    }
+
+    updateWorldMechanics(dt) {
+      const world = LEVELS[this.levelIndex].world;
+
+      /* World 0: Insult Sword-Fighting Cutlass Parry */
+      if (world === 0 && this.swordTarget) {
+        const st = this.swordTarget;
+        if (st.active) {
+          st.x += st.vx * dt;
+          if (st.x < 34 || st.x > 286) st.vx = -st.vx;
+          if (!this.ball.stuck && Math.hypot(this.ball.x - st.x, this.ball.y - st.y) < 8.5) {
+            this.ball.vy = -Math.abs(this.ball.vy);
+            this.triggerInsultParry();
+          }
+        } else {
+          st.cooldown -= dt;
+          if (st.cooldown <= 0) {
+            st.active = true;
+            this.showBanner(INSULT_PAIRS[st.pairIdx][0], C.CORAL, 2.5);
+          }
+        }
+      }
+
+      /* World 1: Day of the Tentacle Chron-o-John Twin Portals */
+      if (world === 1) {
+        if (this.portalCooldown > 0) this.portalCooldown -= dt;
+        const leftPortal = { x: 30, y: 126 };
+        const rightPortal = { x: 290, y: 126 };
+        if (!this.ball.stuck && this.portalCooldown <= 0) {
+          if (Math.hypot(this.ball.x - leftPortal.x, this.ball.y - leftPortal.y) < 8) {
+            this.ball.x = rightPortal.x - 9;
+            this.ball.y = rightPortal.y;
+            this.portalCooldown = 0.85;
+            this.audio.playSFX('warp');
+            this.spawnParticles(leftPortal.x, leftPortal.y, C.BCYAN, 8);
+            this.spawnParticles(rightPortal.x, rightPortal.y, C.BMAGENTA, 8);
+          } else if (Math.hypot(this.ball.x - rightPortal.x, this.ball.y - rightPortal.y) < 8) {
+            this.ball.x = leftPortal.x + 9;
+            this.ball.y = leftPortal.y;
+            this.portalCooldown = 0.85;
+            this.audio.playSFX('warp');
+            this.spawnParticles(rightPortal.x, rightPortal.y, C.BMAGENTA, 8);
+            this.spawnParticles(leftPortal.x, leftPortal.y, C.BCYAN, 8);
+          }
+        }
+      }
+
+      /* World 2: Fate of Atlantis Ancient Poison Dart Traps */
+      if (world === 2) {
+        this.dartTimer -= dt;
+        if (this.dartTimer < 0.9 && this.dartTelegraphSide === 0) {
+          this.dartTelegraphSide = (Math.random() < 0.5) ? -1 : 1;
+        }
+        if (this.dartTimer <= 0) {
+          const fromLeft = this.dartTelegraphSide <= 0;
+          this.hazards.push({
+            kind: 'dart',
+            x: fromLeft ? ARENA.LEFT + 2 : ARENA.RIGHT - 10,
+            y: 138 + ((Math.floor(this.clock * 10) % 3) * 12),
+            vx: fromLeft ? 78 : -78,
+            vy: 28,
+            w: 8,
+            h: 3
+          });
+          this.dartTelegraphSide = 0;
+          this.dartTimer = 3.4;
+        }
+      }
+
+      /* World 3: Space Combat Subspace Gravity Well */
+      if (world === 3) {
+        this.gravityWell.phase += dt * 2.4;
+        this.gravityWell.x = 160 + Math.sin(this.gravityWell.phase * 0.6) * 52;
+        if (!this.ball.stuck) {
+          const dx = this.gravityWell.x - this.ball.x;
+          const dy = this.gravityWell.y - this.ball.y;
+          const dist = Math.max(18, Math.hypot(dx, dy));
+          if (dist < 76) {
+            const pull = (1650 / (dist * dist)) * dt * 60;
+            this.ball.vx += (dx / dist) * pull;
+            this.ball.vy += (dy / dist) * pull;
+            this.rescaleBallSpeed();
+          }
+        }
+      }
+
+      /* World 5: Sam & Max Highway Wak-A-Rat Patrol */
+      if (world === 5) {
+        const rat = this.wakRat;
+        if (rat.stun > 0) {
+          rat.stun -= dt;
+        } else {
+          rat.x += rat.vx * dt;
+          if (rat.x < 28 || rat.x > 282) rat.vx = -rat.vx;
+          if (!this.ball.stuck && Math.hypot(this.ball.x - rat.x, this.ball.y - rat.y) < 9) {
+            rat.stun = 3.0;
+            this.ball.vy = -Math.abs(this.ball.vy);
+            this.addScore(600);
+            this.audio.playSFX('special');
+            this.maybeSpawnPowerup(rat.x, rat.y, true);
+            this.showBanner('FREELANCE POLICE WAK-A-RAT BOUNTY! +600', C.BYELLOW, 2.0);
+          }
+        }
+      }
+
+      /* World 6 (Level 33): Moving Ghost Pirate LeChuck Boss & Voodoo Projectiles */
+      if (world === 6 && this.boss && this.boss.hp > 0) {
+        const b = this.boss;
+        if (b.flash > 0) b.flash = Math.max(0, b.flash - dt);
+        const rage = 1 + (1 - b.hp / b.maxHp) * 0.65;
+        b.x += b.vx * rage * dt;
+        if (b.x < ARENA.LEFT + 10) { b.x = ARENA.LEFT + 10; b.vx = Math.abs(b.vx); }
+        if (b.x + b.w > ARENA.RIGHT - 10) { b.x = ARENA.RIGHT - 10 - b.w; b.vx = -Math.abs(b.vx); }
+
+        b.fireTimer -= dt * rage;
+        if (b.fireTimer <= 0) {
+          b.fireTimer = 1.75;
+          this.hazards.push({
+            kind: 'voodoo',
+            x: b.x + b.w / 2 - 3,
+            y: b.y + b.h,
+            vx: clamp((this.paddle.x + this.paddle.w / 2 - (b.x + b.w / 2)) * 0.25, -34, 34),
+            vy: 74,
+            w: 6,
+            h: 6
+          });
+          this.audio.playSFX('laser');
+        }
+      }
+
+      /* Update Active Hazards (Atlantean Darts & LeChuck Voodoo Skulls) */
+      for (let i = this.hazards.length - 1; i >= 0; i--) {
+        const hz = this.hazards[i];
+        hz.x += hz.vx * dt;
+        hz.y += hz.vy * dt;
+        if (hz.x < ARENA.LEFT || hz.x > ARENA.RIGHT || hz.y > ARENA.BOTTOM) {
+          this.hazards.splice(i, 1);
+          continue;
+        }
+        /* Ball shatters hazard in mid-air */
+        if (!this.ball.stuck &&
+            this.ball.x + this.ball.r >= hz.x && this.ball.x - this.ball.r <= hz.x + hz.w &&
+            this.ball.y + this.ball.r >= hz.y && this.ball.y - this.ball.r <= hz.y + hz.h) {
+          this.spawnParticles(hz.x + 3, hz.y + 2, C.GOLD, 7);
+          this.addScore(150);
+          this.audio.playSFX('brick', 3);
+          this.hazards.splice(i, 1);
+          continue;
+        }
+        /* Hazard strikes paddle */
+        if (hz.x + hz.w >= this.paddle.x && hz.x <= this.paddle.x + this.paddle.w &&
+            hz.y + hz.h >= this.paddle.y && hz.y <= this.paddle.y + this.paddle.h + 2) {
+          this.hazards.splice(i, 1);
+          this.spawnParticles(this.paddle.x + this.paddle.w / 2, this.paddle.y, C.BRED, 10);
+          if (hz.kind === 'voodoo') {
+            if (this.paddle.expanded || this.paddle.laser) {
+              this.paddle.expanded = false;
+              this.paddle.laser = false;
+              this.paddle.shrinkTimer = 5.0;
+              this.syncPaddleWidth();
+              this.audio.playSFX('armor');
+              this.showBanner('VOODOO BLAST CURSED YOUR PADDLE!', C.BRED, 2.0);
+            } else {
+              this.handleBallLost();
+              return;
+            }
+          } else {
+            this.paddle.shrinkTimer = 6.0;
+            this.paddle.laser = false;
+            this.syncPaddleWidth();
+            this.audio.playSFX('armor');
+            this.showBanner('POISON DART! PADDLE SHRUNK!', C.ORANGE, 1.8);
+          }
+        }
+      }
+    }
+
+    updateVictoryFireworks(dt) {
+      if (Math.random() < dt * 3.5) {
+        const fx = 40 + Math.random() * 240;
+        const fy = 36 + Math.random() * 75;
+        const colors = [C.BYELLOW, C.BCYAN, C.BMAGENTA, C.BGREEN, C.BRED];
+        const col = colors[Math.floor(Math.random() * colors.length)];
+        this.spawnParticles(fx, fy, col, 16);
+      }
+      for (let i = this.particles.length - 1; i >= 0; i--) {
+        const pt = this.particles[i];
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        pt.vy += 35 * dt;
+        pt.life -= dt;
+        if (pt.life <= 0) this.particles.splice(i, 1);
+      }
+    }
+
+    /* =======================================================================
+     * 320x200 64-Color EGA Pixel-Art Rendering Pipeline
+     * ======================================================================= */
+    drawPixelText(str, x, y, color, shadow) {
+      const upper = String(str).toUpperCase();
+      let cx = Math.floor(x);
+      const cy = Math.floor(y);
+      for (let i = 0; i < upper.length; i++) {
+        const ch = upper[i];
+        if (ch === ' ') {
+          cx += 4;
+          continue;
+        }
+        const mask = FONT_3X5[ch];
+        if (mask !== undefined) {
+          if (shadow) {
+            this.ctx.fillStyle = shadow;
+            for (let r = 0; r < 5; r++) {
+              for (let c = 0; c < 3; c++) {
+                if ((mask >> (14 - (r * 3 + c))) & 1) {
+                  this.ctx.fillRect(cx + c + 1, cy + r + 1, 1, 1);
+                }
+              }
+            }
+          }
+          this.ctx.fillStyle = color;
+          for (let r = 0; r < 5; r++) {
+            for (let c = 0; c < 3; c++) {
+              if ((mask >> (14 - (r * 3 + c))) & 1) {
+                this.ctx.fillRect(cx + c, cy + r, 1, 1);
+              }
+            }
+          }
+        }
+        cx += 4;
+      }
+    }
+
+    drawCenteredText(str, y, color, shadow) {
+      const w = String(str).length * 4 - 1;
+      this.drawPixelText(str, Math.floor((320 - w) / 2), y, color, shadow);
+    }
+
+    drawParallaxBackground(world) {
+      const ctx = this.ctx;
+      const par = Math.floor((this.paddle.x - 140) * 0.12);
+      const parNear = Math.floor((this.paddle.x - 140) * 0.24);
+
+      if (world === 0) {
+        /* Night Over Melee Island */
+        ctx.fillStyle = C.NAVY;
+        ctx.fillRect(8, 16, 304, 184);
+        ctx.fillStyle = C.BLUE;
+        ctx.fillRect(8, 132, 304, 30);
+        ctx.fillStyle = C.BLACK;
+        ctx.fillRect(8, 162, 304, 38);
+        /* Moon & Twinkling Stars */
+        ctx.fillStyle = C.CREAM;
+        ctx.fillRect(256 - par, 28, 12, 12);
+        ctx.fillStyle = C.NAVY;
+        ctx.fillRect(260 - par, 29, 9, 9);
+        this.drawStarLayer(par, C.WHITE);
+        /* Cliffside Lookout & Scumm Bar Pier Silhouette */
+        ctx.fillStyle = C.BLACK;
+        ctx.fillRect(14 - parNear, 118, 36, 44);
+        ctx.fillRect(26 - parNear, 108, 18, 12);
+        ctx.fillRect(220 - parNear, 148, 78, 14);
+        /* Warm Scumm Bar Window & Water Shimmer */
+        ctx.fillStyle = C.GOLD;
+        ctx.fillRect(244 - parNear, 151, 5, 4);
+        ctx.fillRect(256 - parNear, 151, 5, 4);
+        for (let i = 0; i < 6; i++) {
+          ctx.fillStyle = (i % 2 === 0) ? C.BYELLOW : C.ORANGE;
+          ctx.fillRect(245 - parNear + ((i * 3 + Math.floor(this.clock * 5)) % 14), 165 + i * 4, 6, 1);
+        }
+      } else if (world === 1) {
+        /* Edison Mansion & Sludge Lab */
+        ctx.fillStyle = C.EGGPLANT;
+        ctx.fillRect(8, 16, 304, 184);
+        ctx.fillStyle = C.NAVY;
+        ctx.fillRect(8, 16, 304, 68);
+        this.drawStarLayer(par, C.LAVENDER);
+        /* Crooked Mansard Silhouette */
+        ctx.fillStyle = C.BLACK;
+        ctx.fillRect(46 - par, 124, 54, 76);
+        ctx.fillRect(54 - par, 110, 38, 16);
+        ctx.fillRect(216 - par, 118, 56, 82);
+        ctx.fillStyle = C.BYELLOW;
+        ctx.fillRect(64 - par, 132, 6, 8);
+        ctx.fillRect(236 - par, 130, 6, 8);
+        /* Bubbling Radioactive Sludge River */
+        ctx.fillStyle = C.FOREST;
+        ctx.fillRect(8, 186, 304, 14);
+        ctx.fillStyle = C.BGREEN;
+        for (let i = 0; i < 9; i++) {
+          const bx = 20 + ((i * 33 + Math.floor(this.clock * 18)) % 280);
+          ctx.fillRect(bx, 188 + (i % 3) * 2, 4, 2);
+        }
+      } else if (world === 2) {
+        /* Dusty Mayan / Atlantean Temple Vault */
+        ctx.fillStyle = C.BLACK;
+        ctx.fillRect(8, 16, 304, 184);
+        ctx.fillStyle = C.MAROON;
+        for (let y = 24; y < 192; y += 22) {
+          ctx.fillRect(8, y, 304, 1);
+          for (let x = 16 + ((y % 44 === 0) ? 14 : 0); x < 304; x += 36) {
+            ctx.fillRect(x - par, y, 1, 22);
+          }
+        }
+        /* Glowing Orichalcum Lava Conduits */
+        ctx.fillStyle = C.ORANGE;
+        ctx.fillRect(58 - parNear, 16, 3, 184);
+        ctx.fillRect(258 - parNear, 16, 3, 184);
+        ctx.fillStyle = C.BYELLOW;
+        const pulseY = 20 + (Math.floor(this.clock * 45) % 170);
+        ctx.fillRect(59 - parNear, pulseY, 1, 10);
+        ctx.fillRect(259 - parNear, pulseY, 1, 10);
+      } else if (world === 3) {
+        /* Deep Space Combat Flight & Death Star Horizon */
+        ctx.fillStyle = C.BLACK;
+        ctx.fillRect(8, 16, 304, 184);
+        for (let i = 0; i < this.stars.length; i++) {
+          const st = this.stars[i];
+          const sx = 10 + ((st.x + Math.floor(this.clock * 14 * st.depth) - par * st.depth + 600) % 296);
+          ctx.fillStyle = st.depth === 3 ? C.WHITE : (st.depth === 2 ? C.BCYAN : C.DGRAY);
+          ctx.fillRect(sx, st.y, 1, 1);
+        }
+        /* Trench Surface Grid */
+        ctx.fillStyle = C.DGRAY;
+        ctx.fillRect(8, 174, 304, 1);
+        for (let i = 0; i < 8; i++) {
+          const gx = 16 + ((i * 38 - parNear + 304) % 296);
+          ctx.fillRect(gx, 175, 1, 25);
+        }
+      } else if (world === 4) {
+        /* Island of Loom Crystal Spires */
+        ctx.fillStyle = C.NAVY;
+        ctx.fillRect(8, 16, 304, 184);
+        this.drawStarLayer(par, C.ICE);
+        ctx.fillStyle = C.COBALT;
+        ctx.fillRect(68 - par, 118, 18, 82);
+        ctx.fillRect(72 - par, 98, 10, 20);
+        ctx.fillRect(232 - par, 124, 20, 76);
+        ctx.fillRect(237 - par, 104, 10, 20);
+        ctx.fillStyle = C.ICE;
+        ctx.fillRect(76 - par, 92, 2, 6);
+        ctx.fillRect(241 - par, 98, 2, 6);
+      } else if (world === 5) {
+        /* Sam & Max Noir Highway */
+        ctx.fillStyle = C.NAVY;
+        ctx.fillRect(8, 16, 304, 120);
+        ctx.fillStyle = C.BLACK;
+        ctx.fillRect(8, 136, 304, 64);
+        /* City Skyline */
+        ctx.fillStyle = C.DGRAY;
+        for (let i = 0; i < 9; i++) {
+          const bx = 14 + i * 33 - par;
+          const bh = 18 + ((i * 17) % 28);
+          ctx.fillRect(bx, 136 - bh, 24, bh);
+        }
+        /* Perspective Highway Dashes */
+        ctx.fillStyle = C.BYELLOW;
+        for (let i = 0; i < 4; i++) {
+          const dy = 142 + ((i * 14 + Math.floor(this.clock * 40)) % 54);
+          ctx.fillRect(158 - parNear, dy, 4, 7);
+        }
+      } else {
+        /* Level 33: LeChuck's Subterranean Lava Cavern */
+        ctx.fillStyle = C.BLACK;
+        ctx.fillRect(8, 16, 304, 184);
+        ctx.fillStyle = C.MAROON;
+        for (let i = 0; i < 10; i++) {
+          const sx = 12 + i * 30 - par;
+          ctx.fillRect(sx, 16, 12, 10 + (i % 3) * 6);
+        }
+        ctx.fillStyle = C.RED;
+        ctx.fillRect(8, 182, 304, 18);
+        ctx.fillStyle = C.ORANGE;
+        ctx.fillRect(8, 190, 304, 10);
+        ctx.fillStyle = C.BYELLOW;
+        for (let i = 0; i < 10; i++) {
+          const lx = 14 + ((i * 31 + Math.floor(this.clock * 26)) % 290);
+          ctx.fillRect(lx, 192 + (i % 2) * 3, 8, 2);
+        }
+      }
+    }
+
+    drawStarLayer(par, color) {
+      const ctx = this.ctx;
+      for (let i = 0; i < 26; i++) {
+        const st = this.stars[i];
+        if (st.y > 128) continue;
+        const blink = Math.sin(this.clock * 3 + st.twinkle) > -0.4;
+        ctx.fillStyle = blink ? color : C.DGRAY;
+        ctx.fillRect(clamp(st.x - Math.floor(par * 0.5), 10, 308), st.y, 1, 1);
+      }
+    }
+
+    drawArenaFrame(theme) {
+      const ctx = this.ctx;
+      /* Top HUD Bar */
+      ctx.fillStyle = C.BLACK;
+      ctx.fillRect(0, 0, 320, 16);
+      ctx.fillStyle = theme.wallMid;
+      ctx.fillRect(0, 15, 320, 1);
+
+      /* Left & Right Architectural EGA Pillars */
+      for (const wx of [0, 312]) {
+        ctx.fillStyle = theme.wallDark;
+        ctx.fillRect(wx, 16, 8, 184);
+        ctx.fillStyle = theme.wallMid;
+        ctx.fillRect(wx + 2, 16, 4, 184);
+        ctx.fillStyle = theme.wallHi;
+        ctx.fillRect(wx + 3, 16, 1, 184);
+        for (let y = 20; y < 196; y += 14) {
+          ctx.fillStyle = C.BLACK;
+          ctx.fillRect(wx, y, 8, 1);
+        }
+      }
+    }
+
+    drawGoldGuyIcon(x, y) {
+      const ctx = this.ctx;
+      ctx.fillStyle = C.GOLD;
+      ctx.fillRect(x + 2, y, 2, 2);
+      ctx.fillRect(x + 1, y + 2, 4, 2);
+      ctx.fillRect(x + 5, y + 1, 1, 2);
+      ctx.fillRect(x + 1, y + 4, 1, 2);
+      ctx.fillRect(x + 4, y + 4, 1, 2);
+      ctx.fillStyle = C.BYELLOW;
+      ctx.fillRect(x, y + 6, 6, 1);
+    }
+
+    drawHUD(spec, theme) {
+      this.drawPixelText(`SCR:${String(this.score).padStart(6, '0')}`, 4, 5, C.WHITE, C.BLUE);
+      this.drawPixelText(`HI:${String(this.highScore).padStart(6, '0')}`, 86, 5, C.BYELLOW, C.BROWN);
+      this.drawPixelText(`L:${String(this.levelIndex + 1).padStart(2, '0')}/33`, 164, 5, C.BCYAN, C.TEAL);
+
+      if (spec.world === 4) {
+        const runes = this.loomNotes.length ? this.loomNotes.join('') : '----';
+        this.drawPixelText(`LOOM:${runes}`, 206, 5, C.ICE, C.NAVY);
+      } else {
+        this.drawPixelText(theme.hudTag, 206, 5, C.BGREEN, C.FOREST);
+      }
+
+      const shownLives = Math.min(5, this.lives);
+      for (let i = 0; i < shownLives; i++) {
+        this.drawGoldGuyIcon(312 - (i + 1) * 8, 4);
+      }
+    }
+
+    drawBricks() {
+      const ctx = this.ctx;
+      for (let i = 0; i < this.bricks.length; i++) {
+        const b = this.bricks[i];
+        if (!b.alive) continue;
+
+        if (b.flash > 0) {
+          ctx.fillStyle = C.WHITE;
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+          continue;
+        }
+
+        /* Shadow bevel + Main EGA body + Top-Left Highlight */
+        ctx.fillStyle = b.shade;
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x, b.y, b.w - 1, b.h - 1);
+        ctx.fillStyle = C.WHITE;
+        ctx.fillRect(b.x, b.y, b.w - 2, 1);
+
+        if (b.type === 'steel') {
+          ctx.fillStyle = C.BLACK;
+          ctx.fillRect(b.x + 2, b.y + 2, 2, 2);
+          ctx.fillRect(b.x + b.w - 4, b.y + 2, 2, 2);
+        } else if (b.type === 'grog') {
+          /* Bubbling Scumm Bar Grog Acid Highlights */
+          const fizz = Math.floor(this.clock * 8 + b.col) % 3;
+          ctx.fillStyle = C.BYELLOW;
+          ctx.fillRect(b.x + 3 + fizz * 3, b.y + 2, 2, 2);
+          ctx.fillStyle = C.ACID;
+          ctx.fillRect(b.x + 11 - fizz * 2, b.y + 3, 2, 1);
+        } else if (b.type === 'armor' && b.hp < b.maxHp) {
+          /* Visible Progressive Crack Lines on Damaged Armor Bricks */
+          ctx.fillStyle = C.BLACK;
+          ctx.fillRect(b.x + 5, b.y, 1, 3);
+          ctx.fillRect(b.x + 6, b.y + 2, 2, 2);
+          ctx.fillRect(b.x + 8, b.y + 4, 1, 2);
+          if (b.maxHp === 3 && b.hp === 1) {
+            ctx.fillRect(b.x + 12, b.y + 1, 1, 4);
+            ctx.fillRect(b.x + 10, b.y + 3, 3, 1);
+          }
+        }
+      }
+    }
+
+    drawWorldMechanics(world) {
+      const ctx = this.ctx;
+
+      /* World 0: Spinning Cutlass Parry Target */
+      if (world === 0 && this.swordTarget && this.swordTarget.active) {
+        const sx = Math.floor(this.swordTarget.x);
+        const sy = Math.floor(this.swordTarget.y);
+        const spin = Math.floor(this.clock * 12) % 2;
+        ctx.fillStyle = C.WHITE;
+        if (spin === 0) {
+          ctx.fillRect(sx - 6, sy - 1, 12, 2);
+        } else {
+          ctx.fillRect(sx - 1, sy - 6, 2, 12);
+        }
+        ctx.fillStyle = C.GOLD;
+        ctx.fillRect(sx - 2, sy - 2, 4, 4);
+      }
+
+      /* World 1: Chron-o-John Twin Time Portals */
+      if (world === 1) {
+        const pulse = Math.floor(this.clock * 10) % 2;
+        for (const [px, colA, colB] of [[30, C.BCYAN, C.WHITE], [290, C.BMAGENTA, C.BYELLOW]]) {
+          ctx.fillStyle = colA;
+          ctx.fillRect(px - 5, 119, 10, 14);
+          ctx.fillStyle = C.BLACK;
+          ctx.fillRect(px - 3, 121, 6, 10);
+          ctx.fillStyle = pulse ? colB : colA;
+          ctx.fillRect(px - 1, 123, 2, 6);
+        }
+      }
+
+      /* World 2: Atlantean Wall Gargoyle Telegraph */
+      if (world === 2 && this.dartTelegraphSide !== 0) {
+        const gx = this.dartTelegraphSide < 0 ? 8 : 308;
+        ctx.fillStyle = (Math.floor(this.clock * 16) % 2) ? C.BYELLOW : C.BRED;
+        ctx.fillRect(gx, 136, 4, 30);
+      }
+
+      /* World 3: Subspace Gravity Well Concentric Radar Rings */
+      if (world === 3) {
+        const gx = Math.floor(this.gravityWell.x);
+        const gy = Math.floor(this.gravityWell.y);
+        const rPhase = Math.floor(this.clock * 12) % 10;
+        ctx.strokeStyle = C.INDIGO;
+        ctx.strokeRect(gx - 14 + rPhase, gy - 14 + rPhase, Math.max(2, 28 - rPhase * 2), Math.max(2, 28 - rPhase * 2));
+        ctx.fillStyle = C.BCYAN;
+        ctx.fillRect(gx - 1, gy - 1, 3, 3);
+      }
+
+      /* World 5: Sam & Max Highway Wak-A-Rat */
+      if (world === 5 && this.wakRat.stun <= 0) {
+        const rx = Math.floor(this.wakRat.x);
+        const ry = Math.floor(this.wakRat.y);
+        ctx.fillStyle = C.LGRAY;
+        ctx.fillRect(rx - 5, ry - 2, 10, 5);
+        ctx.fillStyle = C.PINK;
+        ctx.fillRect(rx - 7, ry, 2, 2);
+        ctx.fillRect(rx + 4, ry - 4, 2, 2);
+        ctx.fillStyle = C.BRED;
+        ctx.fillRect(rx + 2, ry - 1, 2, 1);
+      }
+
+      /* World 6 (Level 33): Ghost Pirate LeChuck Moving Boss Sprite & Health Bar! */
+      if (world === 6 && this.boss && this.boss.hp > 0) {
+        const bx = Math.floor(this.boss.x);
+        const by = Math.floor(this.boss.y);
+        const flash = this.boss.flash > 0;
+        /* Tricorne Pirate Hat */
+        ctx.fillStyle = flash ? C.WHITE : C.NAVY;
+        ctx.fillRect(bx + 4, by, 28, 5);
+        ctx.fillRect(bx + 10, by - 3, 16, 3);
+        ctx.fillStyle = C.GOLD;
+        ctx.fillRect(bx + 16, by, 4, 3);
+        /* Ghostly Green Skull Face & Red Eyes */
+        ctx.fillStyle = flash ? C.WHITE : C.BGREEN;
+        ctx.fillRect(bx + 9, by + 5, 18, 7);
+        ctx.fillStyle = C.BRED;
+        ctx.fillRect(bx + 12, by + 7, 3, 2);
+        ctx.fillRect(bx + 21, by + 7, 3, 2);
+        /* Flaming Ghost Beard & Pirate Coat */
+        const flick = Math.floor(this.clock * 14) % 2;
+        ctx.fillStyle = flick ? C.ORANGE : C.BRED;
+        ctx.fillRect(bx + 7, by + 12, 22, 5);
+        ctx.fillStyle = C.BYELLOW;
+        ctx.fillRect(bx + 10 + flick * 2, by + 17, 4, 3);
+        ctx.fillRect(bx + 20 - flick * 2, by + 17, 4, 3);
+        /* Boss Health Bar */
+        ctx.fillStyle = C.DGRAY;
+        ctx.fillRect(110, 17, 100, 3);
+        ctx.fillStyle = C.BGREEN;
+        ctx.fillRect(110, 17, Math.ceil((this.boss.hp / this.boss.maxHp) * 100), 3);
+      }
+
+      /* Active Projectiles (Atlantean Darts & LeChuck Voodoo Skulls) */
+      for (let i = 0; i < this.hazards.length; i++) {
+        const hz = this.hazards[i];
+        const hx = Math.floor(hz.x);
+        const hy = Math.floor(hz.y);
+        if (hz.kind === 'voodoo') {
+          ctx.fillStyle = C.BGREEN;
+          ctx.fillRect(hx, hy, 6, 6);
+          ctx.fillStyle = C.BRED;
+          ctx.fillRect(hx + 1, hy + 1, 1, 2);
+          ctx.fillRect(hx + 4, hy + 1, 1, 2);
+        } else {
+          ctx.fillStyle = C.GOLD;
+          ctx.fillRect(hx, hy, 8, 2);
+          ctx.fillStyle = C.BGREEN;
+          ctx.fillRect(hz.vx > 0 ? hx + 6 : hx, hy, 2, 2);
+        }
+      }
+    }
+
+    drawPaddleAndBall() {
+      const ctx = this.ctx;
+      const px = Math.floor(this.paddle.x);
+      const py = Math.floor(this.paddle.y);
+      const pw = Math.floor(this.paddle.w);
+
+      /* Paddle Core */
+      ctx.fillStyle = C.BLUE;
+      ctx.fillRect(px, py + 1, pw, 4);
+      ctx.fillStyle = this.paddle.catchMode ? C.BCYAN : C.LGRAY;
+      ctx.fillRect(px + 3, py, pw - 6, 3);
+      ctx.fillStyle = C.WHITE;
+      ctx.fillRect(px + 4, py, pw - 8, 1);
+
+      /* Rubber Chicken Endcaps when Expanded, else Classic Red Bumper Tips */
+      if (this.paddle.expanded) {
+        ctx.fillStyle = C.BYELLOW;
+        ctx.fillRect(px - 2, py - 1, 6, 5);
+        ctx.fillRect(px + pw - 4, py - 1, 6, 5);
+        ctx.fillStyle = C.BRED;
+        ctx.fillRect(px - 3, py, 2, 2);
+        ctx.fillRect(px + pw + 1, py, 2, 2);
+      } else {
+        ctx.fillStyle = C.BRED;
+        ctx.fillRect(px, py, 4, 5);
+        ctx.fillRect(px + pw - 4, py, 4, 5);
+      }
+
+      /* Space-Ranger Twin Blaster Turrets */
+      if (this.paddle.laser) {
+        ctx.fillStyle = C.WHITE;
+        ctx.fillRect(px + 2, py - 3, 2, 3);
+        ctx.fillRect(px + pw - 4, py - 3, 2, 3);
+        ctx.fillStyle = C.BRED;
+        ctx.fillRect(px + 2, py - 4, 2, 1);
+        ctx.fillRect(px + pw - 4, py - 4, 2, 1);
+      }
+
+      /* Magnetic Compass Aura */
+      if (this.paddle.catchMode && (Math.floor(this.clock * 10) % 2 === 0)) {
+        ctx.fillStyle = C.BCYAN;
+        ctx.fillRect(px + 5, py - 1, pw - 10, 1);
+      }
+
+      /* Lasers */
+      ctx.fillStyle = C.BYELLOW;
+      for (let i = 0; i < this.lasers.length; i++) {
+        const lz = this.lasers[i];
+        ctx.fillRect(Math.floor(lz.x), Math.floor(lz.y), 2, 5);
+      }
+
+      /* Crisp Pixel Ball */
+      const bx = Math.round(this.ball.x - 2);
+      const by = Math.round(this.ball.y - 2);
+      ctx.fillStyle = C.BCYAN;
+      ctx.fillRect(bx, by + 1, 5, 3);
+      ctx.fillRect(bx + 1, by, 3, 5);
+      ctx.fillStyle = C.WHITE;
+      ctx.fillRect(bx + 1, by + 1, 3, 3);
+    }
+
+    drawPowerups() {
+      const ctx = this.ctx;
+      for (let i = 0; i < this.powerups.length; i++) {
+        const p = this.powerups[i];
+        const x = Math.floor(p.x);
+        const y = Math.floor(p.y);
+
+        if (p.kind === 'L') {
+          /* Space-Ranger Blaster Capsule */
+          ctx.fillStyle = C.RED;
+          ctx.fillRect(x, y, 11, 7);
+          ctx.fillStyle = C.BYELLOW;
+          ctx.fillRect(x + 2, y - 1, 2, 3);
+          ctx.fillRect(x + 7, y - 1, 2, 3);
+          this.drawPixelText('L', x + 4, y + 1, C.WHITE, null);
+        } else if (p.kind === 'E') {
+          /* Rubber Chicken With a Pulley Icon */
+          ctx.fillStyle = C.BROWN;
+          ctx.fillRect(x, y, 11, 7);
+          ctx.fillStyle = C.BYELLOW;
+          ctx.fillRect(x + 1, y + 2, 8, 3);
+          ctx.fillStyle = C.BRED;
+          ctx.fillRect(x + 9, y + 2, 2, 2);
+          ctx.fillStyle = C.LGRAY;
+          ctx.fillRect(x + 4, y + 1, 3, 5);
+        } else if (p.kind === 'C') {
+          /* Magnetic Compass Icon */
+          ctx.fillStyle = C.BLUE;
+          ctx.fillRect(x, y, 11, 7);
+          ctx.fillStyle = C.GOLD;
+          ctx.fillRect(x + 2, y + 1, 7, 5);
+          ctx.fillStyle = C.BRED;
+          ctx.fillRect(x + 5, y + 1, 2, 2);
+          ctx.fillStyle = C.WHITE;
+          ctx.fillRect(x + 4, y + 3, 2, 2);
+        } else if (p.kind === 'S') {
+          /* Tiny Hourglass Icon */
+          ctx.fillStyle = C.FOREST;
+          ctx.fillRect(x, y, 11, 7);
+          ctx.fillStyle = C.GOLD;
+          ctx.fillRect(x + 3, y, 5, 1);
+          ctx.fillRect(x + 3, y + 6, 5, 1);
+          ctx.fillStyle = C.BYELLOW;
+          ctx.fillRect(x + 4, y + 1, 3, 2);
+          ctx.fillRect(x + 5, y + 3, 1, 1);
+          ctx.fillRect(x + 4, y + 4, 3, 2);
+        } else if (p.kind === 'P') {
+          /* Pixelated LucasArts Gold Guy Extra Life Logo */
+          ctx.fillStyle = C.NAVY;
+          ctx.fillRect(x, y, 11, 7);
+          this.drawGoldGuyIcon(x + 3, y);
+        }
+      }
+    }
+
+    drawParticles() {
+      const ctx = this.ctx;
+      for (let i = 0; i < this.particles.length; i++) {
+        const pt = this.particles[i];
+        ctx.fillStyle = pt.color;
+        ctx.fillRect(Math.floor(pt.x), Math.floor(pt.y), 2, 2);
+      }
+    }
+
+    drawMenuScreen() {
+      const ctx = this.ctx;
+      const previewSpec = LEVELS[this.selectedLevel];
+      const previewTheme = WORLD_THEMES[previewSpec.world];
+      this.drawParallaxBackground(previewSpec.world);
+      this.drawArenaFrame(previewTheme);
+      this.drawPixelText('1UP 000000', 8, 5, C.WHITE, C.BLUE);
+      this.drawCenteredText('INSERT COIN / FREE PLAY', 5, C.BYELLOW, C.BROWN);
+      this.drawPixelText('OPL2 FM', 284, 5, C.BGREEN, C.FOREST);
+
+      /* Recessed EGA Title Card */
+      ctx.fillStyle = C.BLACK;
+      ctx.fillRect(24, 24, 272, 162);
+      ctx.strokeStyle = C.GOLD;
+      ctx.strokeRect(25.5, 25.5, 269, 159);
+      ctx.strokeStyle = C.BROWN;
+      ctx.strokeRect(27.5, 27.5, 265, 155);
+
+      /* Iconic Gold Guy Emblem + Title */
+      this.drawGoldGuyIcon(157, 32);
+      this.drawCenteredText('LUCASARTS ARCHIVE TRIBUTE', 42, C.GOLD, C.BROWN);
+      this.drawCenteredText('SCUMM-ANOID: EGA & ADLIB OPL2', 52, C.BYELLOW, C.RED);
+
+      /* Power-up Legend Row */
+      this.drawCenteredText('POWER-UPS: L-BLASTER E-CHICKEN C-COMPASS', 67, C.BCYAN, C.NAVY);
+      this.drawCenteredText('S-HOURGLASS P-GOLDGUY   G-GROG 3X3 BLAST', 75, C.BGREEN, C.FOREST);
+
+      /* Interactive 33-Level & 7-Soundtrack Selector */
+      ctx.fillStyle = C.NAVY;
+      ctx.fillRect(38, 88, 244, 42);
+      ctx.strokeStyle = C.BCYAN;
+      ctx.strokeRect(38.5, 88.5, 243, 41);
+
+      const lvlNum = String(this.selectedLevel + 1).padStart(2, '0');
+      this.drawCenteredText(`< STAGE ${lvlNum}/33: ${previewSpec.name} >`, 94, C.WHITE, C.BLUE);
+      this.drawCenteredText(`WORLD: ${previewTheme.title}`, 104, C.BYELLOW, C.BROWN);
+      this.drawCenteredText(`ADLIB TRACK: ${SOUNDTRACKS[previewSpec.world].name}`, 114, C.BMAGENTA, C.EGGPLANT);
+
+      this.drawCenteredText(`HIGH SCORE: ${String(this.highScore).padStart(7, '0')}`, 138, C.GOLD, C.BLACK);
+
+      if (Math.floor(this.clock * 3) % 2 === 0) {
+        this.drawCenteredText('CLICK OR PRESS SPACE TO START & UNLOCK OPL2', 154, C.BGREEN, C.BLACK);
+      }
+      this.drawCenteredText('USE < LVL / LVL > BUTTONS TO JUMP TO ANY WORLD', 168, C.LGRAY, C.BLACK);
+    }
+
+    drawOverlayCard(title, line1, line2, line3, borderColor) {
+      const ctx = this.ctx;
+      ctx.fillStyle = C.BLACK;
+      ctx.fillRect(34, 64, 252, 76);
+      ctx.strokeStyle = borderColor;
+      ctx.strokeRect(35.5, 65.5, 249, 73);
+      this.drawCenteredText(title, 74, borderColor, C.NAVY);
+      this.drawCenteredText(line1, 90, C.WHITE, C.BLACK);
+      this.drawCenteredText(line2, 102, C.BCYAN, C.BLACK);
+      if (Math.floor(this.clock * 3) % 2 === 0) {
+        this.drawCenteredText(line3, 120, C.BGREEN, C.BLACK);
+      }
+    }
+
+    render() {
+      if (this.state === 'MENU') {
+        this.drawMenuScreen();
+        return;
+      }
+
+      const spec = LEVELS[this.levelIndex];
+      const theme = WORLD_THEMES[spec.world];
+
+      this.drawParallaxBackground(spec.world);
+      this.drawArenaFrame(theme);
+      this.drawHUD(spec, theme);
+      this.drawBricks();
+      this.drawWorldMechanics(spec.world);
+      this.drawPowerups();
+      this.drawPaddleAndBall();
+      this.drawParticles();
+
+      if (this.bannerTimer > 0 && this.state === 'PLAYING') {
+        this.ctx.fillStyle = C.BLACK;
+        this.ctx.fillRect(12, 192, 296, 7);
+        this.drawCenteredText(this.bannerText.slice(0, 48), 193, this.bannerColor, null);
+      }
+
+      if (this.paused && this.state === 'PLAYING') {
+        this.drawOverlayCard(
+          'GAME PAUSED',
+          spec.name,
+          spec.lore.slice(0, 42),
+          'PRESS P OR CLICK PAUSE TO RESUME',
+          C.BYELLOW
+        );
+      } else if (this.state === 'LEVEL_CLEAR') {
+        this.drawOverlayCard(
+          `STAGE ${this.levelIndex + 1} COMPLETE!`,
+          spec.name,
+          `SCORE: ${this.score}   LIVES BONUS: +${this.lives * 100}`,
+          'PRESS SPACE OR CLICK FOR NEXT STAGE',
+          C.BGREEN
+        );
+      } else if (this.state === 'GAME_OVER') {
+        this.drawOverlayCard(
+          'GAME OVER - YOU FIGHT LIKE A COW!',
+          `FINAL SCORE: ${this.score}`,
+          `HIGH SCORE: ${this.highScore}`,
+          'PRESS SPACE OR CLICK FOR MAIN MENU',
+          C.BRED
+        );
+      } else if (this.state === 'VICTORY') {
+        this.drawOverlayCard(
+          'VICTORY OVER GHOST PIRATE LECHUCK!',
+          `ALL 33 LUCASARTS ARCHIVES CLEARED!`,
+          `FINAL SCORE: ${this.score}  HI: ${this.highScore}`,
+          'FIREWORKS OVER MELEE! PRESS SPACE FOR MENU',
+          C.GOLD
+        );
+      }
+    }
+  }
+
+  /* =========================================================================
+   * Self-Verification Physics Invariant Suite (Used by Automated Test Harness)
+   * ========================================================================= */
+  function testPhysicsInvariants() {
+    /* Verify 45-degree corner bounce reflects away from corner cleanly */
+    const cornerBall = { x: 48.4, y: 48.4, vx: 60, vy: 60, r: 2.5 };
+    const brick = { x: 50, y: 50, w: 17, h: 6 };
+    const cHit = testCircleAABB(cornerBall, brick);
+    if (!cHit) throw new Error('Expected diagonal corner collision');
+    applyContactBounce(cornerBall, cHit);
+    if (!(cornerBall.vx < 0 && cornerBall.vy < 0)) {
+      throw new Error('Expected 45-deg corner hit to reflect both vx and vy outward');
+    }
+
+    /* Verify seam hit across two adjacent horizontal bricks reflects vy once without flipping vx */
+    const seamBall = { x: 68, y: 57.2, vx: 45, vy: -80, r: 2.5 };
+    const leftBrick = { x: 50, y: 50, w: 18, h: 6 };
+    const rightBrick = { x: 68, y: 50, w: 18, h: 6 };
+    let best = null;
+    for (const b of [leftBrick, rightBrick]) {
+      const c = testCircleAABB(seamBall, b);
+      if (c && (!best || c.pen > best.pen)) best = c;
+    }
+    if (!best) throw new Error('Expected seam collision');
+    applyContactBounce(seamBall, best);
+    if (!(seamBall.vy > 0 && seamBall.vx > 0)) {
+      throw new Error('Expected seam bounce to invert vy while keeping vx sign intact');
+    }
+
+    /* Verify Grog 3x3 chain explosion clears adjacent normal, armored, and chained Grog bricks */
+    const dummyAudio = { unlock() { return false; }, startMusic() {}, stopMusic() {}, playSFX() {}, muted: true };
+    const dummyCanvas = {
+      getContext: () => ({
+        imageSmoothingEnabled: false,
+        fillRect() {},
+        strokeRect() {}
+      })
+    };
+    const g = new ScummAnoidGame(dummyCanvas, dummyAudio, {});
+    g.loadLevel(0, false);
+    const grogBrick = g.bricks.find((b) => b.type === 'grog' && b.alive);
+    if (!grogBrick) throw new Error('Level 1 must contain Grog bricks');
+    const beforeAlive = g.bricks.filter((b) => b.alive).length;
+    g.damageBrick(grogBrick, 1, true);
+    const afterAlive = g.bricks.filter((b) => b.alive).length;
+    if (!(afterAlive <= beforeAlive - 4)) {
+      throw new Error('Expected Grog brick 3x3 chain explosion to destroy multiple neighboring bricks');
+    }
+  }
+
+  /* =========================================================================
+   * Browser Bootstrap & User-Interaction Audio / Input Wiring
+   * ========================================================================= */
+  const canvas = document.getElementById('game-canvas');
+  const uiRefs = {
+    led: document.getElementById('opl-led'),
+    ledText: document.getElementById('opl-status-text'),
+    status: document.getElementById('cabinet-status'),
+    btnStart: document.getElementById('btn-start'),
+    btnPrev: document.getElementById('btn-prev-lvl'),
+    btnNext: document.getElementById('btn-next-lvl'),
+    btnPause: document.getElementById('btn-pause'),
+    btnMute: document.getElementById('btn-mute'),
+    btnCrt: document.getElementById('btn-crt'),
+    crtOverlay: document.getElementById('crt-overlay')
+  };
+
+  const audio = new AdLibOPL2Engine();
+  const game = new ScummAnoidGame(canvas, audio, uiRefs);
+
+  function togglePause() {
+    if (game.state !== 'PLAYING') return;
+    game.paused = !game.paused;
+    if (game.paused) {
+      audio.stopMusic();
+    } else {
+      audio.startMusic(LEVELS[game.levelIndex].world, game.levelIndex);
+    }
+  }
+
+  function toggleMute() {
+    game.unlockAndSyncAudio();
+    audio.setMuted(!audio.muted);
+    if (uiRefs.btnMute) {
+      uiRefs.btnMute.textContent = audio.muted ? 'ADLIB: OFF [M]' : 'ADLIB: ON [M]';
+    }
+    if (uiRefs.led) {
+      uiRefs.led.classList.toggle('is-online', !audio.muted);
+      uiRefs.ledText.textContent = audio.muted ? 'OPL2 MUTED' : 'OPL2 ACTIVE';
+    }
+  }
+
+  function shiftSelectedLevel(delta) {
+    game.unlockAndSyncAudio();
+    if (game.state === 'MENU') {
+      game.selectedLevel = (game.selectedLevel + delta + LEVELS.length) % LEVELS.length;
+      audio.playSFX('paddle', (game.selectedLevel % 5) * 0.2);
+      game.updateCabinetStatus();
+    } else {
+      const nextIdx = (game.levelIndex + delta + LEVELS.length) % LEVELS.length;
+      game.loadLevel(nextIdx, true);
+      game.state = 'PLAYING';
+    }
+  }
+
+  canvas.addEventListener('mousemove', (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width > 0) {
+      game.mouseX = ((ev.clientX - rect.left) / rect.width) * ARENA.W;
+      game.useMouse = true;
+    }
+  });
+
+  canvas.addEventListener('mousedown', (ev) => {
+    if (ev.button === 0) {
+      game.launchOrFire();
+    }
+  });
+
+  canvas.addEventListener('touchmove', (ev) => {
+    if (ev.touches && ev.touches.length > 0) {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0) {
+        game.mouseX = ((ev.touches[0].clientX - rect.left) / rect.width) * ARENA.W;
+        game.useMouse = true;
+      }
+      ev.preventDefault();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchstart', (ev) => {
+    if (ev.touches && ev.touches.length > 0) {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0) {
+        game.mouseX = ((ev.touches[0].clientX - rect.left) / rect.width) * ARENA.W;
+        game.useMouse = true;
+      }
+    }
+    game.launchOrFire();
+  }, { passive: true });
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.code === 'ArrowLeft' || ev.code === 'KeyA') {
+      if (game.state === 'MENU') {
+        shiftSelectedLevel(-1);
+      } else {
+        game.keys.left = true;
+      }
+    } else if (ev.code === 'ArrowRight' || ev.code === 'KeyD') {
+      if (game.state === 'MENU') {
+        shiftSelectedLevel(1);
+      } else {
+        game.keys.right = true;
+      }
+    } else if (ev.code === 'Space' || ev.code === 'Enter') {
+      ev.preventDefault();
+      game.launchOrFire();
+    } else if (ev.code === 'KeyP' || ev.code === 'Escape') {
+      togglePause();
+    } else if (ev.code === 'KeyM') {
+      toggleMute();
+    } else if (ev.code === 'KeyV') {
+      if (uiRefs.crtOverlay) uiRefs.crtOverlay.classList.toggle('is-hidden');
+    } else if (ev.code === 'BracketLeft') {
+      shiftSelectedLevel(-1);
+    } else if (ev.code === 'BracketRight') {
+      shiftSelectedLevel(1);
+    }
+  });
+
+  document.addEventListener('keyup', (ev) => {
+    if (ev.code === 'ArrowLeft' || ev.code === 'KeyA') {
+      game.keys.left = false;
+    } else if (ev.code === 'ArrowRight' || ev.code === 'KeyD') {
+      game.keys.right = false;
+    } else if (ev.code === 'Space') {
+      ev.preventDefault();
+    }
+  });
+
+  function bindDeckButton(btn, fn) {
+    if (!btn) return;
+    btn.addEventListener('click', (ev) => {
+      ev.currentTarget.blur();
+      fn();
+    });
+  }
+
+  bindDeckButton(uiRefs.btnStart, () => game.launchOrFire());
+  bindDeckButton(uiRefs.btnPrev, () => shiftSelectedLevel(-1));
+  bindDeckButton(uiRefs.btnNext, () => shiftSelectedLevel(1));
+  bindDeckButton(uiRefs.btnPause, () => togglePause());
+  bindDeckButton(uiRefs.btnMute, () => toggleMute());
+  bindDeckButton(uiRefs.btnCrt, () => {
+    if (uiRefs.crtOverlay) uiRefs.crtOverlay.classList.toggle('is-hidden');
+  });
+
+  let lastTimestamp = performance.now();
+  function frameLoop(now) {
+    const dt = Math.min(0.033, Math.max(0.001, (now - lastTimestamp) / 1000));
+    lastTimestamp = now;
+    game.update(dt);
+    game.render();
+    requestAnimationFrame(frameLoop);
+  }
+
+  game.updateCabinetStatus();
+  game.render();
+  requestAnimationFrame(frameLoop);
+
+  if (window.__ARKANOID_TEST_HOOK__) {
+    window.__ARKANOID_DEBUG__ = {
+      EGA_PALETTE,
+      LEVELS,
+      SOUNDTRACKS,
+      game,
+      audio,
+      testPhysicsInvariants
+    };
+  }
+  })();
+  </script>
 </body>
 </html>

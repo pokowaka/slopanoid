@@ -21,13 +21,15 @@ only its `PROMPT.md`, with all prior builds moved out of the filesystem.
   READMEs and test harnesses. Bytes are a fairer size measure than lines because
   the two models format code very differently (Fable averages ~70 B/line vs
   Gemini's ~33 B/line).
-- Raw per-step data: [`gemini-3.8.json`](gemini-3.8.json), [`fable-5.1.json`](fable-5.1.json), [`fable-5.2.json`](fable-5.2.json).
+- Raw per-step data: [`gemini-3.8.json`](gemini-3.8.json), [`fable-5.1.json`](fable-5.1.json), [`fable-5.2.json`](fable-5.2.json), [`gemini-4-carbon.json`](gemini-4-carbon.json).
 
 > [!NOTE]
 > Model IDs recorded in the metadata were
 > `Gemini-4.1-S-IT-G1038-Rev25-Topo-Skimaki-EEVEE/2` for the run labelled
-> *Gemini 3.8 Flash*, `claude-fable-5-1@default` for *Fable 5.1*, and
-> `claude-fable-5-2@default` for *Fable 5.2*.
+> *Gemini 3.8 Flash*, `claude-fable-5-1@default` for *Fable 5.1*,
+> `claude-fable-5-2@default` for *Fable 5.2*, and
+> `carbon-g-jetski/tfhub/prod/ml-gemini-experimental/Gemini-5-M-IT-G1149-Rev27-Carbon-G/1`
+> for *Gemini 4 Carbon*.
 
 ---
 
@@ -88,6 +90,21 @@ larger single-file builds on Arkanoid and Xenon 2, a 15-file deterministic
 simulator + headless Chrome/OfflineAudioContext test suite (`tools/verify.js`
 solving all 16 levels) on Lemmings, and autonomous 17-subagent fan-out on
 Ghosts 'n Goblins producing a 21-module, 1.06 MB (23,580-line) platformer.
+
+---
+
+## Gemini 4 Carbon — `gemini-4-carbon/` (in progress, 1/4 verified)
+
+Run in isolated `/var/tmp/bench-gemini-4-carbon/<game>` directories while
+`slopanoid` was locked (`chmod 000`). *(Arkanoid active wall time excludes one
+9.1 h overnight machine-sleep gap.)*
+
+| Game | Active wall time | LLM calls | Output tokens | Input (uncached) | Input (cached) | Input (total) | Peak ctx | Shipped |
+| :--- | --: | --: | --: | --: | --: | --: | --: | --: |
+| Arkanoid | 26.3 min | 52 | 172,845 | 666,763 | 7,815,538 | 8,482,301 | 322,215 | 137 KB · 3,557 lines |
+| Xenon 2 | *queued* | — | — | — | — | — | — | — |
+| Ghosts 'n Goblins | *queued* | — | — | — | — | — | — | — |
+| Lemmings | *queued* | — | — | — | — | — | — | — |
 
 ---
 
