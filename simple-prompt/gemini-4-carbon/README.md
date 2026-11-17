@@ -1,12 +1,12 @@
 # Slopanoid: Gemini 4 Carbon Benchmark Run
 
-Scaffolding for evaluating Google DeepMind's **Gemini 4 Carbon** on the Slopanoid autonomous retro game dev benchmark.
+Results of evaluating Google DeepMind's **Gemini 4 Carbon** on the Slopanoid autonomous retro game dev benchmark.
 
 ## Benchmark Status
 - **Model:** Gemini 4 Carbon
 - **Execution Mode:** Single Turn (One-Shot), zero human intervention
 - **Constraints:** Zero external assets (100% procedural Web Audio & HTML5 Canvas), zero external libraries
-- **Current Status:** In Progress — 2/4 games generated clean-room and verified (`arkanoid`, `xenon2`; `ghosts-n-goblins`, `lemmings` queued)
+- **Current Status:** Complete — 4/4 games generated clean-room and verified (904 KB · 26,599 shipped runtime lines, see [`../metrics/`](../metrics/README.md))
 
 ---
 

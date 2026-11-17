@@ -93,38 +93,45 @@ Ghosts 'n Goblins producing a 21-module, 1.06 MB (23,580-line) platformer.
 
 ---
 
-## Gemini 4 Carbon — `gemini-4-carbon/` (in progress, 2/4 verified)
+## Gemini 4 Carbon — `gemini-4-carbon/` (complete, 4/4 verified)
 
-Run in isolated `/var/tmp/bench-gemini-4-carbon/<game>` directories while
-`slopanoid` was locked (`chmod 000`). *(Arkanoid active wall time excludes one
-9.1 h overnight machine-sleep gap.)*
+Run across 2026-11-15 – 2026-11-16 PST in isolated
+`/var/tmp/bench-gemini-4-carbon/<game>` directories while `slopanoid` was locked
+(`chmod 000`). *(Arkanoid active wall time excludes one 9.1 h overnight
+machine-sleep gap.)*
 
 | Game | Active wall time | LLM calls | Output tokens | Input (uncached) | Input (cached) | Input (total) | Peak ctx | Shipped |
 | :--- | --: | --: | --: | --: | --: | --: | --: | --: |
 | Arkanoid | 26.3 min | 52 | 172,845 | 666,763 | 7,815,538 | 8,482,301 | 322,215 | 137 KB · 3,557 lines |
 | Xenon 2 | 25.3 min | 26 | 143,803 | 193,518 | 3,012,434 | 3,205,952 | 206,236 | 266 KB · 7,799 lines |
-| Ghosts 'n Goblins | *queued* | — | — | — | — | — | — | — |
-| Lemmings | *queued* | — | — | — | — | — | — | — |
-| **Subtotal (2/4)** | **51.6 min** | **78** | **316,648** | **860,281** | **10,827,972** | **11,688,253** | — | **403 KB · 11,356 lines** |
+| Ghosts 'n Goblins | 37.8 min | 27 | 130,704 | 688,650 | 2,318,740 | 3,007,390 | 195,849 | 234 KB · 7,325 lines |
+| Lemmings | 47.2 min | 47 | 190,338 | 300,819 | 7,346,862 | 7,647,681 | 239,552 | 267 KB · 7,918 lines |
+| **Total** | **136.6 min active**<br>(47.2 min max game) | **152** | **637,690** | **1,849,750** | **20,493,574** | **22,343,324** | — | **904 KB · 26,599 lines** |
+
+**Style:** Few, high-yield calls (~4.2k output tokens/call) with modular file
+decomposition on Xenon 2 (10 files), Ghosts 'n Goblins (9 files), and Lemmings
+(10 files). Achieves the lowest total input token footprint (22.3M) and best
+token efficiency (~705 output tokens per shipped KB) in the benchmark.
 
 ---
 
 ## Head-to-head
 
-| Metric | Gemini 3.8 Flash | Fable 5.1 | Fable 5.2 | Ratio (5.2 / 5.1) |
+| Metric | Gemini 3.8 Flash | Gemini 4 Carbon | Fable 5.1 | Fable 5.2 |
 | :--- | --: | --: | --: | --: |
-| Max single-game wall time | 15.5 min | 57.3 min | 115.4 min | 2.0× |
-| Agent-time (sum) | 43.7 min | 170.1 min | 900.7 min | 5.3× |
-| LLM calls | 286 | 200 | 989 | 4.9× |
-| Output tokens | 560k | 820k | 4.71M | 5.7× |
-| Input tokens (total) | 31.7M | 30.6M | 234.0M | 7.6× |
-| Output tokens / call | ~2.0k | ~4.1k | ~4.8k | 1.2× |
-| Shipped runtime bytes | 690 KB | 647 KB | 1,750 KB | 2.7× |
-| Shipped runtime lines | 21,005 | 8,719 | 35,015 | 4.0× |
-| Output tokens / shipped KB | ~810 | ~1,270 | ~2,690 | 2.1× |
+| Max single-game wall time | 15.5 min | 47.2 min | 57.3 min | 115.4 min |
+| Agent-time (sum) | 43.7 min | 136.6 min | 170.1 min | 900.7 min |
+| LLM calls | 286 | 152 | 200 | 989 |
+| Output tokens | 560k | 638k | 820k | 4.71M |
+| Input tokens (total) | 31.7M | 22.3M | 30.6M | 234.0M |
+| Output tokens / call | ~2.0k | ~4.2k | ~4.1k | ~4.8k |
+| Shipped runtime bytes | 690 KB | 904 KB | 647 KB | 1,750 KB |
+| Shipped runtime lines | 21,005 | 26,599 | 8,719 | 35,015 |
+| Output tokens / shipped KB | ~810 | ~705 | ~1,270 | ~2,690 |
 
-Gemini 3.8 Flash and Fable 5.1 land on nearly identical shipped byte volume
-(~650–690 KB) and ~31M total input tokens, whereas Fable 5.2 pushes into a much
-larger regime (528k peak context, parallel subagent delegation on Ghosts 'n
-Goblins, and headless Chrome/OfflineAudioContext test suites), shipping 2.7× the
-runtime bytes and 4.0× the lines of Fable 5.1.
+Gemini 4 Carbon ships 31% more runtime bytes than Gemini 3.8 Flash (904 KB vs
+690 KB) and 40% more than Fable 5.1 (647 KB) while making the fewest LLM calls
+(152) and using the least total input context (22.3M tokens). Fable 5.2 occupies
+a heavier multi-agent / verification-first tier, spending 7.4× the output tokens
+and 10.5× the total input tokens of Gemini 4 Carbon to ship 1.9× the runtime
+bytes (dominated by its 1.06 MB, 17-subagent Ghosts 'n Goblins build).

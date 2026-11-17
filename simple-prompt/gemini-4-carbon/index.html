@@ -240,13 +240,13 @@
 
   <header>
     <h1 class="logo-title">SLOPANOID ARCADE</h1>
-    <div class="tagline">Gemini 4 Carbon Scaffolding &amp; Evaluation Suite</div>
+    <div class="tagline">Gemini 4 Carbon Evaluation Suite</div>
   </header>
 
-  <div class="status-box" style="border-left-color: var(--gold);">
-    <div class="status-badge" style="background: rgba(245, 158, 11, 0.15); color: var(--gold); border-color: rgba(245, 158, 11, 0.35);">2 / 4 Complete · Arkanoid &amp; Xenon 2 Clean-Room Verified (2 Queued)</div>
+  <div class="status-box" style="border-left-color: #10b981;">
+    <div class="status-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.35);">4 / 4 Complete · All 4 Games Clean-Room Verified &amp; Playable</div>
     <p>
-      <strong>Arkanoid</strong> and <strong>Xenon 2</strong> have been generated clean-room by <strong>Gemini 4 Carbon</strong> in isolated <code>/var/tmp/bench-gemini-4-carbon/&lt;game&gt;</code> directories while the repository was locked (<code>chmod 000</code>). Token and wall-time metrics are recorded in <a href="../metrics/README.md" style="color: var(--cyan);">metrics/</a>.
+      All four games were generated from scratch by <strong>Gemini 4 Carbon</strong> in isolated <code>/var/tmp/bench-gemini-4-carbon/&lt;game&gt;</code> directories while the repository was locked (<code>chmod 000</code>). Zero external assets, zero dependencies, and <strong>26,599 shipped runtime lines (904 KB)</strong> in just 152 total LLM calls (22.3M total input tokens, 638k output tokens). Full metrics and head-to-head comparisons are in <a href="../metrics/README.md" style="color: var(--cyan);">metrics/</a>.
     </p>
   </div>
 
@@ -304,18 +304,20 @@
         <div class="card-top">
           <div class="game-icon">⚔️</div>
           <div>
-            <h2 class="game-title">Ghosts 'n Goblins</h2>
+            <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Verified Playable</span>
+            <h2 class="game-title" style="margin-top: 4px;">Ghosts 'n Goblins</h2>
             <div class="game-sub">The Cursed PC Gaming Museum</div>
           </div>
         </div>
         <p class="game-desc">
-          Hardcore action platformer with tactical armor ejection, Strawberry Boxer Shorts mode (+35% speed &amp; double jump), monster possession, and 5 weapons.
+          9-file CPS-1 320&times;200 software-framebuffer platformer on a Makaivision RGB-15kHz CRT cabinet: tactical armor ejection (anvil crush, pressure plates, springboard), Strawberry Boxer Shorts (+35% speed, double jump, Spectral Vision), 8s monster possession, 5 weapons, OPL3/YM2151 FM synth, and 6 haunted PC-museum stages. (7,325 lines / 234 KB, 37.8 min.)
         </p>
       </div>
       <div class="button-group">
-        <a class="btn btn-primary" href="ghosts-n-goblins/PROMPT.md">📜 Read Prompt</a>
-        <a class="btn btn-secondary" href="ghosts-n-goblins/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-primary" href="ghosts-n-goblins/index.html">▶ Play Ghosts 'n Goblins</a>
+        <a class="btn btn-secondary" href="ghosts-n-goblins/PROMPT.md">📜 Read Prompt</a>
         <a class="btn btn-outline" href="../fable-5.2/ghosts-n-goblins/index.html" target="_blank">Compare Fable 5.2 ↗</a>
+        <a class="btn btn-outline" href="../gemini-3.8/ghosts-n-goblins/index.html" target="_blank">Compare Gemini 3.8 ↗</a>
       </div>
     </article>
 
@@ -325,17 +327,19 @@
         <div class="card-top">
           <div class="game-icon">🎵</div>
           <div>
-            <h2 class="game-title">Lemmings</h2>
+            <span style="font-size: 10px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Verified Playable</span>
+            <h2 class="game-title" style="margin-top: 4px;">Lemmings</h2>
             <div class="game-sub">Beat Tribe · Playing Is Composing</div>
           </div>
         </div>
         <p class="game-desc">
-          Psygnosis puzzle tribute where every level is an interactive step sequencer: terrain is score, lemmings are playheads, and saving the tribe unlocks audio stems.
+          10-file Amiga OCS-1084S musical puzzle engine: scale-coded destructible terrain, quantized crowd footsteps, 8 skill instruments, 5 stem buses, creeping Silence pushback, piano-roll song replay, and 16 deterministic levels with solution demos across 5 genre worlds. (7,918 lines / 267 KB, 47.2 min.)
         </p>
       </div>
       <div class="button-group">
-        <a class="btn btn-primary" href="lemmings/PROMPT.md">📜 Read Prompt</a>
-        <a class="btn btn-secondary" href="lemmings/index.html">🎮 Scaffolding Page</a>
+        <a class="btn btn-primary" href="lemmings/index.html">▶ Play Lemmings</a>
+        <a class="btn btn-secondary" href="lemmings/PROMPT.md">📜 Read Prompt</a>
+        <a class="btn btn-outline" href="lemmings/README.md">📖 Architecture Doc</a>
         <a class="btn btn-outline" href="../fable-5.2/lemmings/index.html" target="_blank">Compare Fable 5.2 ↗</a>
       </div>
     </article>
@@ -343,7 +347,7 @@
   </main>
 
   <footer>
-    <p>Hotkeys: Press <kbd>1</kbd>–<kbd>4</kbd> to jump to game scaffolding &middot; Return to <a href="../index.html">Simple-Prompt Hub</a> &middot; <a href="../../index.html">Master Portal</a></p>
+    <p>Hotkeys: Press <kbd>1</kbd>–<kbd>4</kbd> to launch a game &middot; Return to <a href="../index.html">Simple-Prompt Hub</a> &middot; <a href="../../index.html">Master Portal</a></p>
   </footer>
 </div>
 

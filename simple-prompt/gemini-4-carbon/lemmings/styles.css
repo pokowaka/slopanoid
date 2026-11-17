@@ -1,0 +1,184 @@
+/* Lemmings: Beat Tribe — Amiga OCS 320x200 Viewport & Toggleable CRT Scanline Bezel */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 38%, #181c2e 0%, #090b12 78%, #040509 100%);
+  color: #dce6ff;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.stage {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+}
+
+.bezel-topbar {
+  width: min(94vw, calc((100vh - 86px) * 1.6));
+  max-width: 1120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 12px;
+  background: linear-gradient(180deg, #252b40 0%, #171b2b 100%);
+  border: 1px solid #3c486e;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #b8cdf8;
+  white-space: nowrap;
+}
+
+.power-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3cf281;
+  box-shadow: 0 0 8px #3cf281;
+}
+
+.quick-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-bar button {
+  background: #1d243b;
+  color: #d6e4ff;
+  border: 1px solid #485888;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.quick-bar button:hover {
+  background: #2b385e;
+  border-color: #79b8ff;
+  color: #ffffff;
+}
+
+.quick-bar button.active {
+  background: #284b44;
+  border-color: #5effa3;
+  color: #a8ffcf;
+}
+
+/* Monitor Outer Bezel (toggled by body.crt-on) */
+.monitor-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  background: #10131e;
+  border: 2px solid #2b334d;
+  transition: padding 0.18s ease, border-radius 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.crt-on .monitor-shell {
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #2d3244 0%, #1a1e2b 52%, #11141e 100%);
+  border: 2px solid #454e6b;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.12),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.7),
+    0 18px 48px rgba(0, 0, 0, 0.82);
+}
+
+.crt-screen {
+  position: relative;
+  width: min(92vw, calc((100vh - 118px) * 1.6));
+  max-width: 1088px; /* up to 3.4x integer-friendly crisp display */
+  aspect-ratio: 320 / 200;
+  background: #080a12;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+body.crt-on .crt-screen {
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 3px #0a0c14,
+    0 0 28px rgba(72, 168, 255, 0.16);
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  cursor: none;
+}
+
+.crt-scanlines,
+.crt-vignette {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+body.crt-on .crt-scanlines {
+  display: block;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.24) 3px,
+    rgba(0, 0, 0, 0.24) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+body.crt-on .crt-vignette {
+  display: block;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 64%, rgba(0, 0, 0, 0.44) 100%),
+    linear-gradient(125deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 32%);
+}
+
+.hotkey-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  font-size: 11px;
+  color: #8fa4d4;
+}
+
+.hotkey-strip b {
+  color: #e4eeff;
+}

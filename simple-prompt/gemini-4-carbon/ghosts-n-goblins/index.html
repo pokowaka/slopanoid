@@ -1,139 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ghosts 'n Goblins · Gemini 4 Carbon Run (Scaffolding)</title>
-<style>
-  :root {
-    --bg: #07090e;
-    --card: #111726;
-    --border: #1f2a3e;
-    --amber: #f59e0b;
-    --cyan: #38bdf8;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 30%, #151f33 0%, #07090e 100%);
-  }
-  .scaffold-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    max-width: 680px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-    position: relative;
-    overflow: hidden;
-  }
-  .scaffold-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--amber), var(--cyan));
-  }
-  .badge-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-  }
-  h1 {
-    font-size: 24px;
-    margin-bottom: 4px;
-    color: #fff;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--cyan);
-    margin-bottom: 20px;
-  }
-  .info-box {
-    background: #090d16;
-    border: 1px solid #1a2436;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    color: #cbd5e1;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .btn {
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid transparent;
-  }
-  .btn-primary {
-    background: var(--amber);
-    color: #090d16;
-  }
-  .btn-secondary {
-    background: #1e293b;
-    color: #fff;
-    border-color: #334155;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--cyan);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- TODO(security): Configure HTTP response headers X-Frame-Options: DENY, X-Content-Type-Options: nosniff, and CSP frame-ancestors 'none' at the HTTP server layer in production -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>Ghosts 'n Goblins — The Cursed PC Gaming Museum</title>
+  <meta name="description" content="A 60 FPS 320x200 software-framebuffer retro arcade action-platformer inspired by Ghosts 'n Goblins and Ghouls 'n Ghosts across 6 haunted classic PC gaming stages.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23090a0c'/%3E%3Cpath fill='%23efe6d2' d='M4 2h8v2h2v5h-2v3h-2v2H6v-2H4V9H2V4h2V2z'/%3E%3Cpath fill='%23cc3729' d='M5 6h2v2H5V6zm4 0h2v2H9V6z'/%3E%3Cpath fill='%23090a0c' d='M7 9h2v2H7V9zm-1 3h1v2H6v-2zm3 0h1v2H9v-2z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="scaffold-card">
-  <div class="badge-row">
-    <span class="badge">Gemini 4 Carbon Run</span>
-    <span class="badge" style="color: var(--cyan); border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1);">Scaffolding Initialized</span>
-  </div>
-  <h1>Ghosts 'n Goblins: The Cursed Museum</h1>
-  <div class="subtitle">Benchmark Challenge 3 · Arcade Platformer &amp; Armor Ejection</div>
+  <div class="arcade-shell">
+    <header class="cabinet-marquee" role="banner">
+      <div class="marquee-brand">
+        <h1 class="marquee-title">Ghosts 'n Goblins</h1>
+        <span class="marquee-subtitle">The Cursed PC Gaming Museum &middot; CPS-1 320&times;200</span>
+      </div>
 
-  <div class="info-box">
-    <p><strong>Status:</strong> Ready for Gemini 4 Carbon clean-room generation.</p>
-    <p style="margin-top: 8px;">
-      Feed <code>/var/tmp/bench-gemini-4-carbon/ghosts-n-goblins/PROMPT.md</code> in an isolated context window to Gemini 4 Carbon, then import the result with <code>cleanroom_harness.py collect gemini-4-carbon</code>.
-    </p>
+      <nav class="cabinet-toolbar" aria-label="Stage Warp and Cabinet Controls">
+        <div class="warp-deck" role="group" aria-label="Stage Warp Selector">
+          <span class="warp-label">Stage Warp:</span>
+          <button type="button" id="btn-warp-1" class="hw-btn active" data-stage="0" title="Stage 1: LeChuck's Ghost Ship &amp; Melee Graveyard">1</button>
+          <button type="button" id="btn-warp-2" class="hw-btn" data-stage="1" title="Stage 2: The Haunted Moat of Daventry">2</button>
+          <button type="button" id="btn-warp-3" class="hw-btn" data-stage="2" title="Stage 3: The Jaffar Spike Catacombs">3</button>
+          <button type="button" id="btn-warp-4" class="hw-btn" data-stage="3" title="Stage 4: The Lemmings Crusher Foundry">4</button>
+          <button type="button" id="btn-warp-5" class="hw-btn" data-stage="4" title="Stage 5: Phobos E1M1 Necropolis">5</button>
+          <button type="button" id="btn-warp-6" class="hw-btn" data-stage="5" title="Stage 6: Throne of Astaroth-LeChuck-9000">6</button>
+        </div>
+
+        <button type="button" id="btn-map" class="hw-btn" title="View Cursed Museum World Map">Map</button>
+        <button type="button" id="btn-crt" class="hw-btn hw-btn-toggle" aria-pressed="true" title="Toggle CRT Scanline Monitor Bezel (T)">CRT: ON</button>
+        <button type="button" id="btn-audio" class="hw-btn hw-btn-toggle" aria-pressed="true" title="Toggle OPL3/YM2151 FM Audio (M)">FM: ON</button>
+      </nav>
+    </header>
+
+    <main class="monitor-stage">
+      <div id="crt-bezel" class="crt-bezel">
+        <div class="crt-tube">
+          <canvas id="game-canvas" width="320" height="200" aria-label="Ghosts 'n Goblins 320x200 Arcade Display"></canvas>
+          <div id="crt-overlay" class="crt-overlay" aria-hidden="true"></div>
+          <div id="crt-glare" class="crt-glare" aria-hidden="true"></div>
+        </div>
+        <div class="bezel-badge" aria-hidden="true">
+          <span class="power-led"></span>
+          <span>Makaivision RGB-15kHz</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="control-deck">
+      <div class="controls-group">
+        <span class="ctrl-item"><kbd>A</kbd><kbd>D</kbd> / <kbd>&larr;</kbd><kbd>&rarr;</kbd> Move</span>
+        <span class="ctrl-item"><kbd>W</kbd><kbd>S</kbd> / <kbd>&uarr;</kbd><kbd>&darr;</kbd> Aim/Crouch/Climb</span>
+        <span class="ctrl-item"><kbd>Space</kbd>/<kbd>Z</kbd> Jump</span>
+        <span class="ctrl-item"><kbd>J</kbd>/<kbd>X</kbd>/<kbd>L-Click</kbd> Attack</span>
+        <span class="ctrl-item"><kbd>E</kbd>/<kbd>C</kbd>/<kbd>R-Click</kbd> Eject Armor &middot; Possess &middot; Magic</span>
+      </div>
+      <span id="cabinet-status" class="live-status-pill">60 FPS LOCKED &middot; INSERT COIN / PRESS JUMP</span>
+    </footer>
   </div>
 
-  <div class="actions">
-    <a href="PROMPT.md" class="btn btn-primary">📜 View One-Shot Prompt</a>
-    <a href="../../fable-5.2/ghosts-n-goblins/index.html" class="btn btn-secondary">🕹️ Compare with Fable 5.2 Run</a>
-    <a href="../index.html" class="btn btn-outline">&larr; Gemini 4 Carbon Hub</a>
-  </div>
-</div>
+  <script src="js/framebuffer.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/game.js"></script>
 </body>
 </html>
