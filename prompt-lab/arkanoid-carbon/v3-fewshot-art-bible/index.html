@@ -1,0 +1,4606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAUS OF MONKEY ISLAND — 1990 EGA Arcade Anthology</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: radial-gradient(ellipse at center, #1b1626 0%, #0b0910 70%, #040307 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: "Courier New", Courier, monospace; color: #d4c49c;
+  }
+  #cabinet {
+    position: relative;
+    background: linear-gradient(165deg, #3c332a 0%, #26201a 48%, #181410 100%);
+    border: 4px solid #57493a;
+    border-right-color: #14100c;
+    border-bottom-color: #100c09;
+    border-radius: 14px;
+    padding: 14px 18px 12px 18px;
+    box-shadow:
+      0 24px 60px rgba(0,0,0,0.92),
+      inset 0 2px 0 rgba(255,230,180,0.16),
+      inset 0 -3px 8px rgba(0,0,0,0.75);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  #bezel-top {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4px 2px 4px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #b8a47e; text-shadow: 0 1px 0 #000;
+  }
+  .badge-brand {
+    display: flex; align-items: center; gap: 8px; font-weight: bold; color: #f5d76e;
+  }
+  .badge-sub { color: #8f7e60; font-weight: normal; font-size: 10px; }
+  #screen-well {
+    position: relative;
+    background: #050507;
+    padding: 8px;
+    border-radius: 8px;
+    border: 3px solid #0d0b09;
+    box-shadow:
+      inset 0 4px 14px rgba(0,0,0,0.98),
+      0 1px 0 rgba(255,220,160,0.12);
+    line-height: 0;
+  }
+  #game {
+    display: block;
+    width: 960px; height: 600px;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    cursor: none;
+    background: #000;
+  }
+  #scanlines {
+    pointer-events: none;
+    position: absolute; inset: 8px;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.0) 0px,
+        rgba(0, 0, 0, 0.0) 2px,
+        rgba(0, 0, 0, 0.28) 2px,
+        rgba(0, 0, 0, 0.28) 3px
+      );
+    mix-blend-mode: multiply;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+  }
+  #scanlines.off { opacity: 0; }
+  #crt-vignette {
+    pointer-events: none;
+    position: absolute; inset: 8px;
+    box-shadow: inset 0 0 28px rgba(0,0,0,0.55);
+  }
+  #bezel-bottom {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 4px 0 4px; gap: 10px; flex-wrap: wrap;
+  }
+  .controls-hint {
+    font-size: 11px; color: #9c8c70; letter-spacing: 0.5px;
+  }
+  .controls-hint b { color: #e8cfa0; font-weight: bold; }
+  .bezel-btns { display: flex; align-items: center; gap: 8px; }
+  .bezel-btn {
+    background: linear-gradient(to bottom, #352d24, #221c16);
+    color: #d8c398;
+    border: 1px solid #5c4e3e;
+    border-bottom-color: #120e0a;
+    border-right-color: #120e0a;
+    border-radius: 3px;
+    padding: 3px 8px;
+    font-family: inherit; font-size: 10px; font-weight: bold; letter-spacing: 1px;
+    cursor: pointer; text-transform: uppercase;
+  }
+  .bezel-btn:hover { background: linear-gradient(to bottom, #463b2f, #2c251d); color: #fff4d2; }
+  .bezel-btn:active { transform: translateY(1px); }
+  .bezel-btn.active { border-color: #55ff55; color: #55ff55; }
+  .led-group { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #8f7e60; }
+  .led {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #2a552a; border: 1px solid #000;
+  }
+  .led.on { background: #55ff55; box-shadow: 0 0 6px #55ff55; }
+  .led.amber.on { background: #ffaa00; box-shadow: 0 0 6px #ffaa00; }
+</style>
+</head>
+<body>
+<div id="cabinet">
+  <div id="bezel-top">
+    <div class="badge-brand">
+      <span>★ SCUMM-VAUS EGA-64</span>
+      <span class="badge-sub">320×200 IBM ENHANCED GRAPHICS • ADLIB OPL2 FM</span>
+    </div>
+    <div class="led-group">
+      <span>PWR</span><span class="led on" id="led-pwr"></span>
+      <span>OPL2</span><span class="led amber" id="led-opl"></span>
+    </div>
+  </div>
+  <div id="screen-well">
+    <canvas id="game" width="320" height="200"></canvas>
+    <div id="scanlines"></div>
+    <div id="crt-vignette"></div>
+  </div>
+  <div id="bezel-bottom">
+    <div class="controls-hint">
+      <b>MOUSE / A-D / ◄►</b> MOVE &amp; STAGE SELECT &nbsp;•&nbsp;
+      <b>SPACE / CLICK</b> LAUNCH &amp; FIRE &nbsp;•&nbsp;
+      <b>P</b> PAUSE &nbsp;•&nbsp; <b>M</b> MUTE
+    </div>
+    <div class="bezel-btns">
+      <button class="bezel-btn active" id="btn-crt" type="button">CRT: ON</button>
+      <button class="bezel-btn active" id="btn-sfx" type="button">SOUND: ON</button>
+      <button class="bezel-btn" id="btn-pause" type="button">PAUSE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ============================================================================
+// 1. EXACT 64-COLOR IBM EGA HARDWARE PALETTE & 4x4 BAYER DITHERING ENGINE
+// ============================================================================
+const EGA = new Array(64);
+const EGA_RGB = new Array(64);
+for (let i = 0; i < 64; i++) {
+  const r = (((i >> 2) & 1) * 0xAA) + (((i >> 5) & 1) * 0x55);
+  const g = (((i >> 1) & 1) * 0xAA) + (((i >> 4) & 1) * 0x55);
+  const b = (((i >> 0) & 1) * 0xAA) + (((i >> 3) & 1) * 0x55);
+  EGA[i] = "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1).toUpperCase();
+  EGA_RGB[i] = [r, g, b];
+}
+
+function egaRGB(r2, g2, b2) {
+  const r = r2 < 0 ? 0 : (r2 > 3 ? 3 : r2 | 0);
+  const g = g2 < 0 ? 0 : (g2 > 3 ? 3 : g2 | 0);
+  const b = b2 < 0 ? 0 : (b2 > 3 ? 3 : b2 | 0);
+  return (((r & 1) << 5) | ((g & 1) << 4) | ((b & 1) << 3) |
+          (((r >> 1) & 1) << 2) | (((g >> 1) & 1) << 1) | ((b >> 1) & 1));
+}
+
+function egaDecode(reg) {
+  return [
+    (((reg >> 2) & 1) << 1) | ((reg >> 5) & 1),
+    (((reg >> 1) & 1) << 1) | ((reg >> 4) & 1),
+    (((reg >> 0) & 1) << 1) | ((reg >> 3) & 1)
+  ];
+}
+
+function egaShade(reg, delta) {
+  const [r, g, b] = egaDecode(reg);
+  return egaRGB(r + delta, g + delta, b + delta);
+}
+
+// Named canonical EGA registers for quick pixel-art palette reference
+const C_BLACK   = 0;                 // #000000
+const C_BLUE    = 1;                 // #0000AA
+const C_GREEN   = 2;                 // #00AA00
+const C_CYAN    = 3;                 // #00AAAA
+const C_RED     = 4;                 // #AA0000
+const C_MAGENTA = 5;                 // #AA00AA
+const C_BROWN   = 20;                // #AA5500 (authentic CGA/EGA brown)
+const C_LGRAY   = 7;                 // #AAAAAA
+const C_DGRAY   = 56;                // #555555
+const C_BBLUE   = 57;                // #5555FF
+const C_BGREEN  = 58;                // #55FF55
+const C_BCYAN   = 59;                // #55FFFF
+const C_BRED    = 60;                // #FF5555
+const C_BMAG    = 61;                // #FF55FF
+const C_BYELLOW = 62;                // #FFFF55
+const C_WHITE   = 63;                // #FFFFFF
+const C_NAVY    = egaRGB(0, 0, 1);   // #000055
+const C_DARKRED = egaRGB(1, 0, 0);   // #550000
+const C_DGREEN  = egaRGB(0, 1, 0);   // #005500
+const C_DTEAL   = egaRGB(0, 1, 1);   // #005555
+const C_DPURPLE = egaRGB(1, 0, 1);   // #550055
+const C_GOLD    = egaRGB(3, 2, 0);   // #FFAA00
+const C_ORANGE  = egaRGB(3, 1, 0);   // #FF5500
+const C_TAN     = egaRGB(3, 2, 1);   // #FFAA55
+const C_CREAM   = egaRGB(3, 3, 2);   // #FFFFAA
+const C_AZURE   = egaRGB(1, 2, 3);   // #55AAFF
+const C_SKY     = egaRGB(0, 1, 2);   // #0055AA
+const C_VIOLET  = egaRGB(2, 1, 3);   // #AA55FF
+const C_INDIGO  = egaRGB(1, 0, 2);   // #5500AA
+const C_COPPER  = egaRGB(2, 1, 1);   // #AA5555
+const C_CORAL   = egaRGB(3, 1, 1);   // #FF5555
+const C_LIME    = egaRGB(2, 3, 1);   // #AAFF55
+const C_MINT    = egaRGB(2, 3, 3);   // #AAFFFF
+
+const BAYER4 = [0,8,2,10, 12,4,14,6, 3,11,1,9, 15,7,13,5];
+
+function makeCanvas(w, h) {
+  const c = document.createElement("canvas");
+  c.width = w | 0;
+  c.height = h | 0;
+  const g = c.getContext("2d");
+  g.imageSmoothingEnabled = false;
+  return [c, g];
+}
+
+function dither(g, x, y, w, h, regA, regB, level) {
+  x |= 0; y |= 0; w |= 0; h |= 0;
+  if (w <= 0 || h <= 0) return;
+  g.fillStyle = EGA[regA];
+  g.fillRect(x, y, w, h);
+  if (level <= 0) return;
+  g.fillStyle = EGA[regB];
+  if (level >= 16) { g.fillRect(x, y, w, h); return; }
+  for (let j = 0; j < h; j++) {
+    const rowOff = ((y + j) & 3) * 4;
+    for (let i = 0; i < w; i++) {
+      if (BAYER4[rowOff + ((x + i) & 3)] < level) g.fillRect(x + i, y + j, 1, 1);
+    }
+  }
+}
+
+function ditherPixel(g, x, y, regA, regB, level) {
+  x |= 0; y |= 0;
+  const useB = level >= 16 || (level > 0 && BAYER4[(y & 3) * 4 + (x & 3)] < level);
+  g.fillStyle = EGA[useB ? regB : regA];
+  g.fillRect(x, y, 1, 1);
+}
+
+// Smooth multi-stop vertical Bayer-dithered sky/water gradient
+function ditherGradV(g, x, y, w, h, regs) {
+  const segs = regs.length - 1;
+  for (let j = 0; j < h; j++) {
+    const t = (j / Math.max(1, h - 1)) * segs;
+    const idx = Math.min(segs - 1, t | 0);
+    const frac = t - idx;
+    const lvl = Math.round(frac * 16);
+    dither(g, x, y + j, w, 1, regs[idx], regs[idx + 1], lvl);
+  }
+}
+
+// Scanline circular planet/moon with directional Bayer shading & 1px silhouette option
+function ditherPlanet(g, cx, cy, r, regHi, regMid, regDark, lightX, lightY, outline) {
+  cx |= 0; cy |= 0; r |= 0;
+  const len = Math.hypot(lightX, lightY) || 1;
+  const lx = lightX / len, ly = lightY / len;
+  for (let dy = -r - 1; dy <= r + 1; dy++) {
+    const py = cy + dy;
+    const spanSq = r * r - dy * dy;
+    if (spanSq < 0) continue;
+    const halfW = Math.floor(Math.sqrt(spanSq));
+    if (outline) {
+      g.fillStyle = EGA[C_BLACK];
+      g.fillRect(cx - halfW - 1, py, 1, 1);
+      g.fillRect(cx + halfW + 1, py, 1, 1);
+    }
+    for (let dx = -halfW; dx <= halfW; dx++) {
+      const px = cx + dx;
+      const nz = Math.sqrt(Math.max(0, 1 - (dx * dx + dy * dy) / (r * r + 0.5)));
+      const dot = (dx / r) * lx + (dy / r) * ly + nz * 0.55;
+      if (dot > 0.52) {
+        const lvl = Math.min(16, Math.max(0, Math.round((dot - 0.52) * 28)));
+        ditherPixel(g, px, py, regMid, regHi, lvl);
+      } else {
+        const lvl = Math.min(16, Math.max(0, Math.round((dot + 0.35) * 18)));
+        ditherPixel(g, px, py, regDark, regMid, lvl);
+      }
+    }
+  }
+}
+
+// ============================================================================
+// 2. PRE-RENDERED 5x7 PROPORTIONAL OUTLINED BITMAP FONT (ZERO VECTOR FONTS)
+// ============================================================================
+const RAW_FONT_5X7 = {
+  " ": ["...","...","...","...","...","...","..."],
+  "!": ["X","X","X","X","X",".","X"],
+  "\"":["X.X","X.X","...","...","...","...","..."],
+  "#": [".X.X.","XXXXX",".X.X.","XXXXX",".X.X.",".....","....."],
+  "$": [".XXX.","X.X..",".XXX.","..X.X",".XXX.","..X..","....."],
+  "%": ["XX..X","XX.X.","..X..",".X.XX","X..XX",".....","....."],
+  "&": [".XX..","X..X.",".XX..","X..X.","X..X.",".XX.X","....."],
+  "'": ["X","X",".",".",".",".","."],
+  "(": [".X","X.","X.","X.","X.",".X",".."],
+  ")": ["X.",".X",".X",".X",".X","X.",".."],
+  "*": [".X.X.","..X..","XXXXX","..X..",".X.X.",".....","....."],
+  "+": [".....","..X..","..X..","XXXXX","..X..","..X..","....."],
+  ",": ["..","..","..","..","..",".X","X."],
+  "-": ["....","....","....","XXXX","....","....","...."],
+  ".": [".",".",".",".",".",".","X"],
+  "/": ["...X","..X.","..X.",".X..",".X..","X...","...."],
+  "0": [".XXX.","X..XX","X.X.X","XX..X","X...X","X...X",".XXX."],
+  "1": [".X.","XX.",".X.",".X.",".X.",".X.","XXX"],
+  "2": [".XXX.","X...X","....X","..XX.",".X...","X....","XXXXX"],
+  "3": ["XXXX.","....X","..XX.","....X","....X","X...X",".XXX."],
+  "4": ["...X.","..XX.",".X.X.","X..X.","XXXXX","...X.","...X."],
+  "5": ["XXXXX","X....","XXXX.","....X","....X","X...X",".XXX."],
+  "6": [".XXX.","X....","XXXX.","X...X","X...X","X...X",".XXX."],
+  "7": ["XXXXX","....X","...X.","..X..",".X...",".X...",".X..."],
+  "8": [".XXX.","X...X","X...X",".XXX.","X...X","X...X",".XXX."],
+  "9": [".XXX.","X...X","X...X",".XXXX","....X","...X.",".XX.."],
+  ":": [".",".","X",".",".","X","."],
+  ";": ["..","..",".X","..","..",".X","X."],
+  "<": ["..X",".X.","X..",".X.","..X","...","..."],
+  "=": ["....","....","XXXX","....","XXXX","....","...."],
+  ">": ["X..",".X.","..X",".X.","X..","...","..."],
+  "?": [".XXX.","X...X","...X.","..X..","..X..",".....","..X.."],
+  "@": [".XXX.","X...X","X.XXX","X.X.X","X.XXX","X....",".XXX."],
+  "A": [".XXX.","X...X","X...X","XXXXX","X...X","X...X","X...X"],
+  "B": ["XXXX.","X...X","X...X","XXXX.","X...X","X...X","XXXX."],
+  "C": [".XXX.","X...X","X....","X....","X....","X...X",".XXX."],
+  "D": ["XXXX.","X...X","X...X","X...X","X...X","X...X","XXXX."],
+  "E": ["XXXXX","X....","X....","XXXX.","X....","X....","XXXXX"],
+  "F": ["XXXXX","X....","X....","XXXX.","X....","X....","X...."],
+  "G": [".XXX.","X...X","X....","X.XXX","X...X","X...X",".XXXX"],
+  "H": ["X...X","X...X","X...X","XXXXX","X...X","X...X","X...X"],
+  "I": ["XXX",".X.",".X.",".X.",".X.",".X.","XXX"],
+  "J": ["..XXX","...X.","...X.","...X.","X..X.","X..X.",".XX.."],
+  "K": ["X...X","X..X.","X.X..","XX...","X.X..","X..X.","X...X"],
+  "L": ["X....","X....","X....","X....","X....","X....","XXXXX"],
+  "M": ["X...X","XX.XX","X.X.X","X.X.X","X...X","X...X","X...X"],
+  "N": ["X...X","XX..X","X.X.X","X..XX","X...X","X...X","X...X"],
+  "O": [".XXX.","X...X","X...X","X...X","X...X","X...X",".XXX."],
+  "P": ["XXXX.","X...X","X...X","XXXX.","X....","X....","X...."],
+  "Q": [".XXX.","X...X","X...X","X...X","X.X.X","X..X.",".XX.X"],
+  "R": ["XXXX.","X...X","X...X","XXXX.","X.X..","X..X.","X...X"],
+  "S": [".XXXX","X....","X....",".XXX.","....X","....X","XXXX."],
+  "T": ["XXXXX","..X..","..X..","..X..","..X..","..X..","..X.."],
+  "U": ["X...X","X...X","X...X","X...X","X...X","X...X",".XXX."],
+  "V": ["X...X","X...X","X...X","X...X","X...X",".X.X.","..X.."],
+  "W": ["X...X","X...X","X...X","X.X.X","X.X.X","XX.XX","X...X"],
+  "X": ["X...X","X...X",".X.X.","..X..",".X.X.","X...X","X...X"],
+  "Y": ["X...X","X...X",".X.X.","..X..","..X..","..X..","..X.."],
+  "Z": ["XXXXX","....X","...X.","..X..",".X...","X....","XXXXX"],
+  "[": ["XX","X.","X.","X.","X.","X.","XX"],
+  "]": ["XX",".X",".X",".X",".X",".X","XX"],
+  "~": [".XX.X","X..X.",".....",".....",".....",".....","....."],
+  "♪": ["..XXX","..X.X","..X.X","..X..","XXX..","XXX..",".X..."],
+  "♥": [".X.X.","XXXXX","XXXXX","XXXXX",".XXX.","..X..","....."],
+  "★": ["..X..",".XXX.","XXXXX",".XXX.",".X.X.","X...X","....."],
+  "◄": ["...X.","..XX.",".XXX.","XXXX.",".XXX.","..XX.","...X."],
+  "►": [".X...",".XX..",".XXX.",".XXXX",".XXX.",".XX..",".X..."]
+};
+
+const glyphCache = new Map();
+
+function getGlyphSprite(ch, regMain, scale, bevel) {
+  const up = RAW_FONT_5X7[ch] ? ch : ch.toUpperCase();
+  const bmp = RAW_FONT_5X7[up] || RAW_FONT_5X7["?"];
+  const key = up + "|" + regMain + "|" + scale + "|" + (bevel ? 1 : 0);
+  let cached = glyphCache.get(key);
+  if (cached) return cached;
+
+  const gw = bmp[0].length;
+  const gh = bmp.length;
+  const cw = gw * scale + 2;
+  const chPx = gh * scale + 2;
+  const [c, g] = makeCanvas(cw, chPx);
+
+  // 1px 8-neighbor black outline around scaled pixel blocks
+  g.fillStyle = EGA[C_BLACK];
+  for (let ry = 0; ry < gh; ry++) {
+    const row = bmp[ry];
+    for (let rx = 0; rx < gw; rx++) {
+      if (row[rx] !== "X") continue;
+      const px = 1 + rx * scale;
+      const py = 1 + ry * scale;
+      g.fillRect(px - 1, py - 1, scale + 2, scale + 2);
+    }
+  }
+
+  const regHi = bevel ? egaShade(regMain, 1) : regMain;
+  const regLo = bevel ? egaShade(regMain, -1) : regMain;
+  for (let ry = 0; ry < gh; ry++) {
+    const row = bmp[ry];
+    const rowReg = bevel ? (ry < 2 ? regHi : (ry > 4 ? regLo : regMain)) : regMain;
+    g.fillStyle = EGA[rowReg];
+    for (let rx = 0; rx < gw; rx++) {
+      if (row[rx] !== "X") continue;
+      g.fillRect(1 + rx * scale, 1 + ry * scale, scale, scale);
+    }
+  }
+
+  cached = { canvas: c, adv: (gw + 1) * scale };
+  glyphCache.set(key, cached);
+  return cached;
+}
+
+function measureTextPx(str, scale) {
+  let w = 0;
+  for (let i = 0; i < str.length; i++) {
+    const up = RAW_FONT_5X7[str[i]] ? str[i] : str[i].toUpperCase();
+    const bmp = RAW_FONT_5X7[up] || RAW_FONT_5X7["?"];
+    w += (bmp[0].length + 1) * scale;
+  }
+  return w > 0 ? w - scale : 0;
+}
+
+function drawTextPx(g, str, x, y, regMain, scale = 1, bevel = false) {
+  let cx = x | 0;
+  const cy = y | 0;
+  for (let i = 0; i < str.length; i++) {
+    const gl = getGlyphSprite(str[i], regMain, scale, bevel);
+    g.drawImage(gl.canvas, cx - 1, cy - 1);
+    cx += gl.adv;
+  }
+  return cx;
+}
+
+function drawTextCentered(g, str, centerX, y, regMain, scale = 1, bevel = false) {
+  const w = measureTextPx(str, scale);
+  drawTextPx(g, str, (centerX - (w >> 1)) | 0, y | 0, regMain, scale, bevel);
+}
+
+function drawWrappedCentered(g, str, centerX, y, maxW, lineStep, regMain) {
+  if (measureTextPx(str, 1) <= maxW) {
+    drawTextCentered(g, str, centerX, y, regMain, 1, false);
+    return 1;
+  }
+  const words = str.split(" ");
+  let line1 = "";
+  let idx = 0;
+  while (idx < words.length) {
+    const cand = line1 ? (line1 + " " + words[idx]) : words[idx];
+    if (measureTextPx(cand, 1) <= maxW || !line1) {
+      line1 = cand;
+      idx++;
+    } else {
+      break;
+    }
+  }
+  const line2 = words.slice(idx).join(" ");
+  drawTextCentered(g, line1, centerX, y, regMain, 1, false);
+  if (line2) drawTextCentered(g, line2, centerX, y + lineStep, regMain, 1, false);
+  return line2 ? 2 : 1;
+}
+
+// ============================================================================
+// 3. MULTI-TONE OUTLINED ASCII SPRITE COMPILER (`makeSprite`) & SPRITE BANK
+// ============================================================================
+const DEFAULT_INK = {
+  "k": C_BLACK,
+  "D": C_DGRAY,
+  "s": C_LGRAY,
+  "w": egaRGB(2, 2, 2),
+  "W": C_WHITE,
+  "a": egaRGB(1, 1, 1),
+  "r": C_DARKRED,
+  "R": C_RED,
+  "o": C_BRED,
+  "O": C_ORANGE,
+  "n": C_BROWN,
+  "t": C_TAN,
+  "y": egaRGB(2, 2, 0),
+  "Y": C_BYELLOW,
+  "g": C_BROWN,
+  "G": C_GOLD,
+  "e": C_DGREEN,
+  "E": C_GREEN,
+  "l": C_BGREEN,
+  "L": C_LIME,
+  "c": C_DTEAL,
+  "C": C_CYAN,
+  "q": C_BCYAN,
+  "Q": C_MINT,
+  "b": C_NAVY,
+  "B": C_BLUE,
+  "u": C_BBLUE,
+  "U": C_AZURE,
+  "p": C_DPURPLE,
+  "P": C_MAGENTA,
+  "m": C_BMAG,
+  "v": C_VIOLET
+};
+
+function makeSprite(rows, customMap) {
+  const h = rows.length;
+  const w = rows[0].length;
+  const [c, g] = makeCanvas(w, h);
+  for (let y = 0; y < h; y++) {
+    const r = rows[y];
+    for (let x = 0; x < w; x++) {
+      const ch = r[x];
+      if (ch === "." || ch === " ") continue;
+      const reg = (customMap && customMap[ch] !== undefined) ? customMap[ch] : DEFAULT_INK[ch];
+      if (reg !== undefined) {
+        g.fillStyle = EGA[reg];
+        g.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+  return c;
+}
+
+// Exemplar Voodoo Skull projectile (2 animation frames: closed & chattering jaw!)
+const VOODOO_SKULL_FRAMES = [
+  makeSprite([
+    "...kkkkkk...",
+    "..kWWwwwwk..",
+    ".kWwwwwwwwk.",
+    ".kwkRRwwkRwk",
+    ".kwkRRwwkRwk",
+    ".kwwwwsswwwk",
+    "..kwwksskwwk",
+    "..kskwkakwsk",
+    "...kkkkkkkk.",
+    "....k.kk.k.."
+  ]),
+  makeSprite([
+    "..lkkkkkkl..",
+    ".lkWWwwwwkl.",
+    ".kWwwwwwwwk.",
+    ".kwkYYwwkYwk",
+    ".kwkRRwwkRwk",
+    ".kwwwwsswwwk",
+    "..kkkkkkkkk.",
+    "..ksk.kk.ksk",
+    "...kk.kk.kk.",
+    "....kkkkkk.."
+  ])
+];
+
+// 5x5 Specular-shaded EGA Balls (Standard Steel, Chronal Cyan, Spectral Swan)
+const BALL_STEEL = makeSprite([
+  ".kkk.",
+  "kWWsk",
+  "kWssk",
+  "kssDk",
+  ".kkk."
+]);
+const BALL_CHRONO = makeSprite([
+  ".kkk.",
+  "kWWqk",
+  "kqqCk",
+  "kCCbk",
+  ".kkk."
+]);
+const BALL_SWAN = makeSprite([
+  ".kkk.",
+  "kWWQk",
+  "kWWqk",
+  "kqqvk",
+  ".kkk."
+]);
+
+// 9x9 Golden Cutlass sprites (4 rotation frames) for World 1 Insult-Duel Pierce Mode
+const CUTLASS_FRAMES = [
+  makeSprite([
+    "......kkk",
+    ".....kWWk",
+    "....kWssk",
+    ".kkkWssk.",
+    "kGGkssk..",
+    ".kYGk....",
+    "kGGk.....",
+    "kkk......",
+    "........."
+  ]),
+  makeSprite([
+    "..kkk....",
+    ".kGGk....",
+    "..kYGk...",
+    ".kkkWssk.",
+    "....kWssk",
+    ".....kWWk",
+    "......kkk",
+    ".........",
+    "........."
+  ]),
+  makeSprite([
+    ".........",
+    "......kkk",
+    ".....kGGk",
+    "....kGYk.",
+    "..kssWkkk",
+    ".kssWk...",
+    "kWWk.....",
+    "kkk......",
+    "........."
+  ]),
+  makeSprite([
+    "kkk......",
+    "kWWk.....",
+    ".kssWk...",
+    "..kssWkkk",
+    "...kGYk..",
+    "....kGGk.",
+    "....kkk..",
+    ".........",
+    "........."
+  ])
+];
+
+// Sculpted Vaus Paddles (Standard 34x8, Laser 34x10, Expand Rubber Chicken 48x10, Compass 34x10, Mini HUD 14x5)
+const PADDLE_STD = makeSprite([
+  "..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkk..",
+  ".kRRkWWWWWWWWWWUUUUWWWWWWWWWWkRRk.",
+  "kRoRkWsssssssssuuuusssssssssWkRoRk",
+  "kRRRkssDDDDDDDDbbbbDDDDDDDDsskRRRk",
+  "krrrkDDDDDDDDDDkkkkDDDDDDDDDDkrrrk",
+  ".krrkGGGGkkkkkkkkkkkkkkkkGGGGkrrk.",
+  "..kkkkkk..................kkkkkk..",
+  ".................................."
+]);
+
+const PADDLE_LASER = makeSprite([
+  "...kkk......................kkk...",
+  "..kqqk......................kqqk..",
+  "..kRRkkkkkkkkkkkkkkkkkkkkkkkkRRk..",
+  ".kRoRkWWWWWWWWWRRRRWWWWWWWWWkRoRk.",
+  "kRRRRkWssssssssRRRRssssssssWkRRRRk",
+  "krrrrkssDDDDDDDrrrrDDDDDDDsskrrrrk",
+  ".krrrkDDDDDDDDDkkkkDDDDDDDDDkrrrk.",
+  "..krrkYYYkkkkkkkkkkkkkkkkYYYkrrk..",
+  "...kkkkkk................kkkkkk...",
+  ".................................."
+]);
+
+// Unmistakable 48x10 LucasArts Rubber Chicken with a Pulley in the Middle!
+const PADDLE_CHICKEN = makeSprite([
+  "....kkkk.................kkkkkk............kkkk.",
+  "..kkRRRRkk..............kWWssssk.........kkYYYYk",
+  ".kRRoWWoRRk..kkkkkkkkkkkWsDDDDsWkkkkkkkkkYYYYYYk",
+  "kOOOYWWYkkkkkkkkWWWWWWWWkDsGGsDkWWWWWWWWkkkkYYYk",
+  "kOOOYYYYYYYYYYYYYYYYYYYYkDsYGskYYYYYYYYYYYYkOOk.",
+  ".kkkYYYYyyyyyyyyyyyyyyyyksDDDDskyyyyyyyyYYkOOOk.",
+  "....kkkkggggggggggggggggksssssskkkkkkkkkkkkkkk..",
+  "........kkkkkkkkkkkkkkkk.kkkkkk.................",
+  "................................................",
+  "................................................"
+]);
+
+// Nautical Brass Compass Vaus Paddle (34x10)
+const PADDLE_COMPASS = makeSprite([
+  "..............kkkkkk..............",
+  ".............kGYYYYGk.............",
+  "..kkkkkkkkkkkkYllRRYkkkkkkkkkkkk..",
+  ".kCCqkWWWWWWWWklkRrkWWWWWWWWkqCCk.",
+  "kqCCCkWsssssssklWkRrsssssssWkCCCqk",
+  "kCCCCkssDDDDDDkGGGGGDDDDDDsskCCCCk",
+  ".kccckGGGGGGGGkkkkkkkkGGGGGGkccck.",
+  "..kkkkkkkkkkkk........kkkkkkkkkk..",
+  "..................................",
+  ".................................."
+]);
+
+const PADDLE_MINI = makeSprite([
+  ".kkkkkkkkkkkk.",
+  "kRkWWWWWWWWkRk",
+  "krksssssssskrk",
+  ".kkkkkkkkkkkk.",
+  ".............."
+]);
+
+const LASER_BOLT_SPRITE = makeSprite([
+  ".k.",
+  "kWk",
+  "kqk",
+  "kYk",
+  "kRk",
+  ".k."
+]);
+
+// 18x9 Beveled Power-Up Capsules (L, E, C, S, P) — 2 shimmer frames each!
+// Left side: crisp pixel letter; Right side: dedicated 7x7 pixel-art icon!
+function buildCapsulePair(rowsA, rowsB) {
+  return [makeSprite(rowsA), makeSprite(rowsB)];
+}
+
+const CAPSULE_SPRITES = {
+  // L: Crimson/Ruby Pill + Space-Ranger Blaster Icon on right
+  L: buildCapsulePair([
+    "..kkkkkkkkkkkkkk..",
+    ".kWWWWWWWWksssssk.",
+    "kWRWkRRRRkskqkWWsk",
+    "kWRWkRRRRksqqqqqsk",
+    "kWRWkRRRRkssRRsssk",
+    "kWRWWWRRRkssRksssk",
+    "krrrrrrrrksDDkDDsk",
+    ".krrrrrrrkDDDDDDk.",
+    "..kkkkkkkkkkkkkk.."
+  ], [
+    "..kkkkkkkkkkkkkk..",
+    ".kooooooooWsssssk.",
+    "koWokRRRRkskqkWWsk",
+    "koWokRRRRksqqqqqsk",
+    "koWokRRRRkssRRsssk",
+    "koWWWooooWssRksssk",
+    "krrrrrrrrksDDkDDsk",
+    ".krrrrrrrkDDDDDDk.",
+    "..kkkkkkkkkkkkkk.."
+  ]),
+  // E: Cobalt/Azure Pill + 7x7 Rubber Chicken w/ Pulley Icon on right
+  E: buildCapsulePair([
+    "..kkkkkkkkkkkkkk..",
+    ".kUUUUUUUUksssssk.",
+    "kUWWWBBUUkskRkYYsk",
+    "kUWBBBUUUksOYYYYsk",
+    "kUWWBBUUUkssYkkYsk",
+    "kUWBBBUUUkssYGGYsk",
+    "kUWWWBBUUkssDDDDsk",
+    ".kbbbbbbbkDDDDDDk.",
+    "..kkkkkkkkkkkkkk.."
+  ], [
+    "..kkkkkkkkkkkkkk..",
+    ".kWWWWUUUUWsssssk.",
+    "kUWWWBBUUkskRkYYsk",
+    "kUWBBBUUUksOYYYYsk",
+    "kUWWBBUUUkssYkkYsk",
+    "kUWBBBUUUkssYGGYsk",
+    "kUWWWBBUUkssDDDDsk",
+    ".kbbbbbbbkDDDDDDk.",
+    "..kkkkkkkkkkkkkk.."
+  ]),
+  // C: Emerald/Teal Pill + 7x7 Nautical Compass Icon on right
+  C: buildCapsulePair([
+    "..kkkkkkkkkkkkkk..",
+    ".kllllllllkGGGGgk.",
+    "klWWWElllkGsWWsGgk",
+    "klWEEElllksWllWsgk",
+    "klWEEElllksWlRWsgk",
+    "klWEEElllksWssWsgk",
+    "klWWWElllkGssssGgk",
+    ".keeeeeeeekgggggk.",
+    "..kkkkkkkkkkkkkk.."
+  ], [
+    "..kkkkkkkkkkkkkk..",
+    ".kWWWWllllWGGGGgk.",
+    "klWWWElllkGsWWsGgk",
+    "klWEEElllksWRRWsgk",
+    "klWEEElllksWRlWsgk",
+    "klWEEElllksWssWsgk",
+    "klWWWElllkGssssGgk",
+    ".keeeeeeeekgggggk.",
+    "..kkkkkkkkkkkkkk.."
+  ]),
+  // S: Violet/Amethyst Pill + 7x7 Sand Hourglass Icon on right
+  S: buildCapsulePair([
+    "..kkkkkkkkkkkkkk..",
+    ".kmmmmmmmmkGGGGgk.",
+    "kmWWWPmmmkGYYYYGgk",
+    "kmWPPPmmmkskYYksk.",
+    "kmWWWPmmmksskYksgk",
+    "kmPPPWmmmkskqYksk.",
+    "kmWWWPmmmkGYYYYGgk",
+    ".kppppppppkgggggk.",
+    "..kkkkkkkkkkkkkk.."
+  ], [
+    "..kkkkkkkkkkkkkk..",
+    ".kWWWWmmmmWGGGGgk.",
+    "kmWWWPmmmkGqqqqGgk",
+    "kmWPPPmmmkskYqksk.",
+    "kmWWWPmmmksskYksgk",
+    "kmPPPWmmmkskYYksk.",
+    "kmWWWPmmmkGYYYYGgk",
+    ".kppppppppkgggggk.",
+    "..kkkkkkkkkkkkkk.."
+  ]),
+  // P: Royal Gold Pill + 7x7 LucasArts "Gold Guy" Raised-Arms Icon on right
+  P: buildCapsulePair([
+    "..kkkkkkkkkkkkkk..",
+    ".kYYYYYYYYkbbbbbk.",
+    "kYWWWGYYYkbYbbYbbk",
+    "kYWGYGYYYkbYYYYbbk",
+    "kYWWWGYYYkbbYYbbbk",
+    "kYWGGGYYYkbbYYbbbk",
+    "kYWGGGYYYkbYbbYbbk",
+    ".kggggggggkbbbbbk.",
+    "..kkkkkkkkkkkkkk.."
+  ], [
+    "..kkkkkkkkkkkkkk..",
+    ".kWWWWYYYYWbbbbbk.",
+    "kYWWWGYYYkbWbbWbbk",
+    "kYWGYGYYYkbWWWWbbk",
+    "kYWWWGYYYkbbYYbbbk",
+    "kYWGGGYYYkbbYYbbbk",
+    "kYWGGGYYYkbYbbYbbk",
+    ".kggggggggkbbbbbk.",
+    "..kkkkkkkkkkkkkk.."
+  ])
+};
+
+// World Hazard & Mechanic Sprites
+const ATLANTEAN_DART_SPRITE = makeSprite([
+  "..k..",
+  ".kYk.",
+  ".kGk.",
+  ".ksk.",
+  ".ksk.",
+  "kRORk",
+  "kR.Rk",
+  ".kOk.",
+  "..k.."
+]);
+
+const GRAVITY_ORB_FRAMES = [
+  makeSprite([
+    "....kkkkk....",
+    "..kkqqqqqkk..",
+    ".kqWWvvvqqqk.",
+    ".kqvpppppvvqk",
+    "kqvppWWWppvqk",
+    "kqvpWWkWWpvqk",
+    "kqvpWkukWpvqk",
+    "kqvpWWkWWpvqk",
+    "kqvppWWWppvqk",
+    ".kqvpppppvvqk",
+    ".kqqvvvqqWWqk",
+    "..kkqqqqqkk..",
+    "....kkkkk...."
+  ]),
+  makeSprite([
+    "....kkkkk....",
+    "..kkvvvvvkk..",
+    ".kvqqWWqqvvvk",
+    ".kvqpppppqvvk",
+    "kvqppuuuupqvk",
+    "kvqpuWkWupqvk",
+    "kvqpuWYWupqvk",
+    "kvqpuWkWupqvk",
+    "kvqppuuuupqvk",
+    ".kvqpppppqvvk",
+    ".kvvqqWWqqvvk",
+    "..kkvvvvvkk..",
+    "....kkkkk...."
+  ]),
+  makeSprite([
+    "....kkkkk....",
+    "..kkmmmmmkk..",
+    ".kmvvqqqvvmmk",
+    ".kmvpppppvmmk",
+    "kmvppqqqppvmk",
+    "kmvpqWkWqpvqk",
+    "kmvpqWmWqpvqk",
+    "kmvpqWkWqpvqk",
+    "kmvppqqqppvmk",
+    ".kmvpppppvmmk",
+    ".kmmvvqqqvvvk",
+    "..kkmmmmmkk..",
+    "....kkkkk...."
+  ])
+];
+
+const HIGHWAY_BARRICADE_SPRITE = makeSprite([
+  ".kkkkkkkkkkkkkkkkkk.",
+  "kOOOWWWOOOWWWOOOWWWk",
+  "kOOOWWWOOOWWWOOOWWWk",
+  "krrrDDDrrrDDDrrrDDDk",
+  ".kkk...kkkkkk...kkk.",
+  "....................",
+]);
+
+// Animated Ghost Pirate LeChuck Boss (44x32 pixels >= 36x28) — 3 flickering ghost-fire beard frames!
+function buildLeChuckFrame(beardRows) {
+  const topRows = [
+    "................kkkkkk......................",
+    "..............kkRRRRRRkk....kkkk............",
+    "............kkRRoOOOOoRRkkkkbbbbkk..........",
+    "...........kRRooOYYYYkkkkbbbbbbbbbk.........",
+    ".........kkbbbbbbbbbbbbbUUUUbbbbbbbk........",
+    ".......kkbbUUUUbbbbbbbkWWssWWkbbbbbbk.......",
+    "......kbbUUbbbbbbbbbbkWsskkssWkbbbbbbk......",
+    ".....kbbbbbbbbbbbbbbbkWskRRksWkbbbbbbbk.....",
+    "....kbbGGGGGGGGGGGGGGkWsskkssWkGGGGbbbbk....",
+    "...kGGGGYYYYYYYYYYYYYYkkkkkkkkYYYYYYGGGGk...",
+    "..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk..",
+    "....keeeeeLLLLllllllllllllllllLLLLeeeeek....",
+    "....kellllWWWWllllkkkkkkkllllWWWWlllllek....",
+    "....kelWWkkkkkkkkllklllklkkkkkkkkWWlllek....",
+    ".....kekkkRRRRYYkllklWlklkYYRRRRkkkllek.....",
+    ".....kellkRRWWYYkllklllklkYYWWRRkllllek.....",
+    ".....kellkkkkkkkklllkkklllkkkkkkkklllek.....",
+    "......kelllllllssWWWWWWWWWsslllllllllek.....",
+    "......kekkllllskWkGkWkWkGkWkllllllllkk......",
+    ".....kRRkkkkllskkkkkkkkkkkkkllllkkkkRRk.....",
+    "...kkRRoORRkklllllllllllllllllllkkRRoORRkk..",
+    "..kRRoGGGoRRkllLLLLlllllLLLLlllkRRoGGGoRRk.."
+  ];
+  return makeSprite(topRows.concat(beardRows));
+}
+
+const LECHUCK_FRAMES = [
+  buildLeChuckFrame([
+    ".kRRkGGGGkRRklWWLLLLlllLLLLWWlkRRkGGGGkRRk..",
+    ".krrkbbbbkrrklLLLLWWlllWWLLLLlkrrkbbbbkrrk..",
+    "..kkkkbbkkkk.kllLLLLlllLLLLllk.kkkkbbkkkk...",
+    ".............klllLLklllkLLlllk..............",
+    "..............kllLk.klk.kLllk...............",
+    "..............klLk..klk..kLlk...............",
+    "...............kk...kLk...kk................",
+    "....................klk.....................",
+    "....................kYk.....................",
+    ".....................k......................"
+  ]),
+  buildLeChuckFrame([
+    ".kRRkGGGGkRRklLLLLWWlllWWLLLLlkRRkGGGGkRRk..",
+    ".krrkbbbbkrrkllWWLLLLlLLLLWWllkrrkbbbbkrrk..",
+    "..kkkkbbkkkk.klLLLLllYllLLLLlk.kkkkbbkkkk...",
+    "............kkllLLkklllkLLllkk..............",
+    "............klLk.kk.kLk.kk.kLlk.............",
+    ".............kk.....kYk.....kk..............",
+    "...................klllk....................",
+    "...................kL.Lk....................",
+    "....................k.k.....................",
+    "............................................"
+  ]),
+  buildLeChuckFrame([
+    ".kRRkGGGGkRRkllWWLLLLlLLLLWWllkRRkGGGGkRRk..",
+    ".krrkbbbbkrrklLLLLllWWWllLLLLlkrrkbbbbkrrk..",
+    "..kkkkbbkkkk.kllLLllLYLllLLllk.kkkkbbkkkk...",
+    ".............klllLkklllkLllllk..............",
+    ".............klLlk..kLk..klLlk..............",
+    "..............kYk..klLlk..kYk...............",
+    "...............k...kL.Lk...k................",
+    "...................k...k....................",
+    "............................................",
+    "............................................"
+  ])
+];
+
+// Spectral white-cyan hit-flash frame for LeChuck damage feedback
+const LECHUCK_FLASH = (function() {
+  const src = LECHUCK_FRAMES[0];
+  const [c, g] = makeCanvas(src.width, src.height);
+  g.drawImage(src, 0, 0);
+  const img = g.getImageData(0, 0, src.width, src.height);
+  const d = img.data;
+  const [wr, wg, wb] = EGA_RGB[C_BCYAN];
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] > 0 && (d[i] > 0 || d[i + 1] > 0 || d[i + 2] > 0)) {
+      d[i] = wr; d[i + 1] = wg; d[i + 2] = wb;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  return c;
+})();
+
+// Mini HUD SCUMM-VAUS Emblem (56x15)
+const HUD_LOGO_SPRITE = makeSprite([
+  "..kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk..",
+  ".kGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGk.",
+  "kGYYYYYYYYYYYYYYYYYYYYkWWWWkYYYYYYYYYYYYYYYYYYYYYYYYYYGk",
+  "kGYbbbbbbbbbbbbbbbbbbbkWsskWbbbbbbbbbbbbbbbbbbbbbbbbYYGk",
+  "kGYbbYYYbbYYYbYbYbbYbbkWkRkWbbYbbbYbbYYbbYbbYbbYYYbbYYGk",
+  "kGYbbYbbbbYbbbYbYbbYbbkWssWkbbYbbbYbbYbbYbbYbbYbbbbbYYGk",
+  "kGYbbYYYbbYbbbYbYbbYbbkWkkkWbbYbYbYbbYYYYbbYbbYbbYYYbYGk",
+  "kGYbbbbYbbYbbbYbYbbYbbkkGGGkkbYbYbYbbYbbYbbYbbYbbbbYbYGk",
+  "kGYbbYYYbbYYYbYYYbbYbbkGGGGkbbbYbbYbbYbbYbbYYYYbYYYbbYGk",
+  "kGYbbbbbbbbbbbbbbbbbbbbkkkkbbbbbbbbbbbbbbbbbbbbbbbbbYYGk",
+  "kGggggggggggggggggggggggggggggggggggggggggggggggggggggGk",
+  ".kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk."
+]);
+
+// ============================================================================
+// 4. PRE-RENDERED 8x6 BEVELED PIXEL BRICK ATLAS (21 COLORS + MECHANIC BRICKS)
+// ============================================================================
+// At least 18 distinct EGA color characters (we provide 21 lowercase normal + 21 uppercase armored!)
+const BRICK_PALETTE_DEFS = {
+  "w": [C_WHITE,   C_WHITE,   C_LGRAY,   C_DGRAY],   // Pure Ivory / Bone Highlight
+  "s": [C_WHITE,   C_LGRAY,   C_DGRAY,   C_BLACK],   // Stone / Silver
+  "d": [C_LGRAY,   C_DGRAY,   C_NAVY,    C_BLACK],   // Dark Slate / Gunmetal
+  "k": [C_DGRAY,   egaRGB(1,0,1), C_BLACK, C_BLACK], // Destructible Dark Silhouette Ink
+  "r": [C_BRED,    C_RED,     C_DARKRED, C_BLACK],   // Crimson Red
+  "o": [C_BYELLOW, C_ORANGE,  C_RED,     C_DARKRED], // Flame Orange
+  "g": [C_BYELLOW, C_GOLD,    C_BROWN,   C_DARKRED], // Pirate Gold / Brass
+  "y": [C_WHITE,   C_BYELLOW, C_GOLD,    C_BROWN],   // Sunburst Yellow
+  "n": [C_TAN,     C_BROWN,   C_DARKRED, C_BLACK],   // Tavern Wood Brown
+  "t": [C_CREAM,   C_TAN,     C_BROWN,   C_DARKRED], // Warm Flesh / Sand Tan
+  "i": [C_CORAL,   C_COPPER,  C_BROWN,   C_DARKRED], // Orichalcum Terracotta
+  "l": [C_WHITE,   C_BGREEN,  C_GREEN,   C_DGREEN],  // Ghost-Fire Lime
+  "e": [C_BGREEN,  C_GREEN,   C_DGREEN,  C_BLACK],   // Emerald Jungle Green
+  "f": [C_GREEN,   C_DGREEN,  C_DTEAL,   C_BLACK],   // Deep Seaweed Moss
+  "q": [C_WHITE,   C_BCYAN,   C_CYAN,    C_DTEAL],   // Ice Cyan
+  "c": [C_BCYAN,   C_CYAN,    C_DTEAL,   C_BLACK],   // Caribbean Teal
+  "u": [C_MINT,    C_AZURE,   C_SKY,     C_NAVY],    // Sky / DeSoto Azure
+  "b": [C_BBLUE,   C_BLUE,    C_NAVY,    C_BLACK],   // Royal Cobalt Blue
+  "p": [C_BMAG,    C_MAGENTA, C_DPURPLE, C_BLACK],   // Tentacle Purple
+  "m": [C_WHITE,   C_BMAG,    C_MAGENTA, C_DPURPLE], // Voodoo Neon Magenta
+  "v": [C_BMAG,    C_VIOLET,  C_INDIGO,  C_NAVY]     // Mystic Violet
+};
+
+const BRICK_SPRITES = {};
+
+function renderBeveledBrick(hi, mid, lo, rim, armored, cracked) {
+  const [c, g] = makeCanvas(8, 6);
+  // Outer dark rim on bottom/right for crisp mosaic separation
+  g.fillStyle = EGA[rim];
+  g.fillRect(0, 0, 8, 6);
+  // Top & left specular highlight bevel
+  g.fillStyle = EGA[hi];
+  g.fillRect(0, 0, 7, 1);
+  g.fillRect(0, 1, 1, 4);
+  // Bottom-inner & right-inner shadow bevel
+  g.fillStyle = EGA[lo];
+  g.fillRect(1, 4, 6, 1);
+  g.fillRect(6, 1, 1, 4);
+  // Bayer-textured inner enamel face (5x3)
+  dither(g, 1, 1, 5, 3, mid, hi, 3);
+  // Specular glint pixel at top-left
+  g.fillStyle = EGA[C_WHITE];
+  g.fillRect(1, 1, 1, 1);
+
+  if (armored) {
+    // Metallic corner rivets + reinforced inner trim
+    g.fillStyle = EGA[C_BLACK];
+    g.fillRect(1, 1, 1, 1);
+    g.fillRect(5, 1, 1, 1);
+    g.fillStyle = EGA[C_WHITE];
+    g.fillRect(1, 2, 1, 1);
+    g.fillRect(5, 2, 1, 1);
+  }
+  if (cracked) {
+    // Jagged dark pixel crack across the face
+    g.fillStyle = EGA[C_BLACK];
+    g.fillRect(2, 0, 1, 2);
+    g.fillRect(3, 2, 2, 1);
+    g.fillRect(4, 3, 1, 2);
+    g.fillRect(2, 4, 1, 1);
+    g.fillStyle = EGA[lo];
+    g.fillRect(3, 1, 1, 1);
+  }
+  return c;
+}
+
+for (const ch of Object.keys(BRICK_PALETTE_DEFS)) {
+  const [hi, mid, lo, rim] = BRICK_PALETTE_DEFS[ch];
+  BRICK_SPRITES[ch] = renderBeveledBrick(hi, mid, lo, rim, false, false);
+  const up = ch.toUpperCase();
+  BRICK_SPRITES[up] = renderBeveledBrick(hi, mid, lo, rim, true, false);
+  BRICK_SPRITES[up + "_CRACK"] = renderBeveledBrick(hi, mid, lo, rim, true, true);
+}
+
+// '#' Indestructible Bayer-dithered riveted steel brick (with 3 sheen frames)
+const STEEL_SPRITES = [0, 1, 2].map((frame) => {
+  const [c, g] = makeCanvas(8, 6);
+  g.fillStyle = EGA[C_BLACK];
+  g.fillRect(0, 0, 8, 6);
+  dither(g, 0, 0, 7, 5, C_DGRAY, C_LGRAY, 8);
+  g.fillStyle = EGA[C_WHITE];
+  g.fillRect(0, 0, 7, 1);
+  g.fillRect(0, 0, 1, 5);
+  // 4 dark/light rivets
+  g.fillStyle = EGA[C_BLACK];
+  g.fillRect(1, 1, 1, 1); g.fillRect(5, 1, 1, 1);
+  g.fillRect(1, 3, 1, 1); g.fillRect(5, 3, 1, 1);
+  if (frame > 0) {
+    const sx = frame === 1 ? 2 : 4;
+    g.fillStyle = EGA[C_WHITE];
+    g.fillRect(sx, 1, 1, 1);
+    g.fillRect(sx + 1, 2, 1, 1);
+    g.fillRect(sx + 2, 3, 1, 1);
+  }
+  return c;
+});
+
+// '*' Animated Bubbling SCUMM Bar Grog brick (3 corrosive bubbling frames!)
+const GROG_SPRITES = [
+  makeSprite([
+    "kllllllk",
+    "lEWWWWEl",
+    "lElYYlEl",
+    "lEEllEEl",
+    "eeeeeeee",
+    "kkkkkkkk"
+  ]),
+  makeSprite([
+    "klYllYlk",
+    "lElWWlEl",
+    "lEYllYEl",
+    "lElWWlEl",
+    "eeeeeeee",
+    "kkkkkkkk"
+  ]),
+  makeSprite([
+    "kllYYllk",
+    "lEYllYEl",
+    "lEWWWWEl",
+    "lEEllEEl",
+    "eeeeeeee",
+    "kkkkkkkk"
+  ])
+];
+
+// '!' Atlantean Dart-Spitting Idol Brick (idle, glowing warning, cracked)
+const IDOL_SPRITES = {
+  idle: makeSprite([
+    "kGGGGGGk",
+    "GkRkkRGg",
+    "Gggggggk",
+    "Ggkkkkgg",
+    "gggggggg",
+    "kkkkkkkk"
+  ]),
+  warn: makeSprite([
+    "kYYYYYYk",
+    "YkYooYGY",
+    "YGggggGY",
+    "YGkRRkGg",
+    "gggggggg",
+    "kkkkkkkk"
+  ]),
+  crack: makeSprite([
+    "kGGkGGGk",
+    "GkRkkRGg",
+    "Gggkkggk",
+    "Ggkkkkgg",
+    "ggkggggg",
+    "kkkkkkkk"
+  ])
+};
+
+// '~' Loom Musical Crystal Note Brick (2 shimmering harmonic frames)
+const LOOM_BRICK_SPRITES = [
+  makeSprite([
+    "kWWWWWWk",
+    "WqqYYqqC",
+    "WqkvvkqC",
+    "WqqYYqqC",
+    "CCCCCCCC",
+    "kkkkkkkk"
+  ]),
+  makeSprite([
+    "kqqWWqqk",
+    "qWWmmWWC",
+    "qWkYYkqC",
+    "qWWmmWWC",
+    "CCCCCCCC",
+    "kkkkkkkk"
+  ])
+];
+
+// '1' (Colonial Gold/Cyan) & '2' (Future Tentacle Purple/Green) Chron-o-John Temporal Bricks
+const TEMPO_SPRITES = {
+  "1_solid": renderBeveledBrick(C_BCYAN, C_AZURE, C_BLUE, C_BLACK, false, false),
+  "2_solid": renderBeveledBrick(C_BMAG, C_VIOLET, C_DPURPLE, C_BLACK, false, false),
+  "1_ghost": makeSprite([
+    "q.q..q.q",
+    "........",
+    "q......q",
+    "........",
+    ".q.qq.q.",
+    "........"
+  ]),
+  "2_ghost": makeSprite([
+    "m.m..m.m",
+    "........",
+    "m......m",
+    "........",
+    ".m.mm.m.",
+    "........"
+  ])
+};
+
+// ============================================================================
+// 5. FRAMED 256x200 PLAYFIELD BORDER PIPES & 64x200 BAYER-DITHERED HUD PANEL
+// ============================================================================
+const BORDER_CANVAS = (function() {
+  const [c, g] = makeCanvas(256, 200);
+  // Left pipe (x=0..7) & Right pipe (x=248..255)
+  for (const px of [0, 248]) {
+    g.fillStyle = EGA[C_BLACK];
+    g.fillRect(px, 0, 8, 200);
+    g.fillStyle = EGA[C_DGRAY];
+    g.fillRect(px + 1, 0, 6, 200);
+    g.fillStyle = EGA[C_LGRAY];
+    g.fillRect(px + 2, 0, 3, 200);
+    g.fillStyle = EGA[C_WHITE];
+    g.fillRect(px + 2, 0, 1, 200);
+    // Horizontal pipe joints & brass rivets every 24px
+    for (let y = 16; y < 200; y += 24) {
+      g.fillStyle = EGA[C_BLACK];
+      g.fillRect(px, y, 8, 1);
+      g.fillStyle = EGA[C_GOLD];
+      g.fillRect(px + 2, y + 2, 2, 2);
+      g.fillStyle = EGA[C_BROWN];
+      g.fillRect(px + 5, y + 2, 1, 2);
+    }
+  }
+  // Top pipe (x=0..255, y=0..7)
+  g.fillStyle = EGA[C_BLACK];
+  g.fillRect(0, 0, 256, 8);
+  g.fillStyle = EGA[C_DGRAY];
+  g.fillRect(1, 1, 254, 6);
+  g.fillStyle = EGA[C_LGRAY];
+  g.fillRect(2, 2, 252, 3);
+  g.fillStyle = EGA[C_WHITE];
+  g.fillRect(2, 2, 252, 1);
+  for (let x = 24; x < 244; x += 28) {
+    g.fillStyle = EGA[C_BLACK];
+    g.fillRect(x, 0, 1, 8);
+    g.fillStyle = EGA[C_GOLD];
+    g.fillRect(x + 2, 2, 2, 2);
+  }
+  // Twin Arkanoid entry hatches on top pipe
+  for (const hx of [62, 174]) {
+    dither(g, hx, 1, 20, 6, C_DARKRED, C_GOLD, 6);
+    g.fillStyle = EGA[C_BLACK];
+    g.fillRect(hx, 0, 20, 1);
+    g.fillRect(hx, 7, 20, 1);
+    g.fillRect(hx, 0, 1, 8);
+    g.fillRect(hx + 19, 0, 1, 8);
+  }
+  // Corner brass elbow caps
+  for (const cx of [0, 248]) {
+    g.fillStyle = EGA[C_BLACK];
+    g.fillRect(cx, 0, 8, 8);
+    dither(g, cx + 1, 1, 6, 6, C_BROWN, C_GOLD, 10);
+    g.fillStyle = EGA[C_BYELLOW];
+    g.fillRect(cx + 2, 2, 2, 2);
+  }
+  return c;
+})();
+
+const HUD_BG_CANVAS = (function() {
+  const [c, g] = makeCanvas(64, 200);
+  // Rich Bayer-dithered SCUMM tavern mahogany & dark iron panel
+  dither(g, 0, 0, 64, 200, C_BLACK, C_DARKRED, 7);
+  dither(g, 2, 2, 60, 196, C_DARKRED, C_BROWN, 6);
+  // Outer carved brass bevel
+  g.fillStyle = EGA[C_BLACK];
+  g.fillRect(0, 0, 64, 200);
+  dither(g, 1, 1, 62, 198, C_DARKRED, C_BROWN, 5);
+  g.fillStyle = EGA[C_GOLD];
+  g.fillRect(1, 1, 62, 1);
+  g.fillRect(1, 1, 1, 198);
+  g.fillStyle = EGA[C_BROWN];
+  g.fillRect(62, 1, 1, 198);
+  g.fillRect(1, 198, 62, 1);
+
+  // Recessed inset LCD / Slate boxes for Score, Stage, Lives, Mechanic, Capsules, Marquee
+  const boxes = [
+    [3, 18, 58, 22],  // HI-SCORE
+    [3, 42, 58, 22],  // SCORE
+    [3, 66, 58, 24],  // STAGE & WORLD
+    [3, 92, 58, 17],  // LIVES
+    [3, 111, 58, 38], // ACTIVE WORLD MECHANIC
+    [3, 151, 58, 23], // CAPSULES
+    [3, 176, 58, 20]  // ADLIB SONG MARQUEE
+  ];
+  for (const [bx, by, bw, bh] of boxes) {
+    g.fillStyle = EGA[C_BLACK];
+    g.fillRect(bx, by, bw, bh);
+    dither(g, bx + 1, by + 1, bw - 2, bh - 2, C_BLACK, C_NAVY, 4);
+    g.fillStyle = EGA[C_BROWN];
+    g.fillRect(bx, by + bh - 1, bw, 1);
+    g.fillRect(bx + bw - 1, by, 1, bh);
+  }
+  return c;
+})();
+
+// ============================================================================
+// 6. SEVEN MULTI-LAYER BAYER-DITHERED PARALLAX BACKDROPS (`far`, `mid`, `near`)
+// ============================================================================
+// Each layer is 280x192 (wider than 240px inner playfield for smooth integer horizontal wrap!)
+const BG_W = 280;
+const BG_H = 192;
+
+// Deterministic PRNG for reproducible hand-placed starfields, windows, foliage & craters
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return function() {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+function drawStarfield(g, seed, count, maxY, cols) {
+  const rnd = makeRng(seed);
+  const stars = [];
+  for (let i = 0; i < count; i++) {
+    const sx = (rnd() * BG_W) | 0;
+    const sy = (rnd() * maxY) | 0;
+    const col = cols[(rnd() * cols.length) | 0];
+    g.fillStyle = EGA[col];
+    g.fillRect(sx, sy, 1, 1);
+    if (i % 5 === 0) stars.push({ x: sx, y: sy, phase: (rnd() * 16) | 0 });
+  }
+  return stars;
+}
+
+// Helper: pixel-stepped jagged ridge/mountain silhouette with 2-tone Bayer slope shading
+function drawRidge(g, heights, baseY, regLit, regMid, regDark) {
+  for (let x = 0; x < BG_W; x++) {
+    const topY = heights[x] | 0;
+    const nextY = heights[(x + 1) % BG_W] | 0;
+    const litSlope = nextY >= topY; // Left-facing or flat slope catches moonlight
+    g.fillStyle = EGA[C_BLACK];
+    if (topY < baseY) g.fillRect(x, topY - 1, 1, 1);
+    for (let y = topY; y < baseY; y++) {
+      const depth = y - topY;
+      if (litSlope && depth < 10) {
+        ditherPixel(g, x, y, regMid, regLit, Math.max(2, 14 - depth));
+      } else {
+        ditherPixel(g, x, y, regDark, regMid, depth < 18 ? 8 : 3);
+      }
+    }
+  }
+}
+
+function buildWorldBackdrops() {
+  const worlds = [];
+
+  // --------------------------------------------------------------------------
+  // WORLD 1: MONKEY ISLAND — Mêlée Island Moonlit Harbor & Lookout Point
+  // --------------------------------------------------------------------------
+  {
+    const [farC, farG] = makeCanvas(BG_W, BG_H);
+    ditherGradV(farG, 0, 0, BG_W, 132, [C_BLACK, C_NAVY, C_BLUE, C_INDIGO, C_DPURPLE]);
+    const stars = drawStarfield(farG, 19901, 75, 96, [C_WHITE, C_BCYAN, C_LGRAY, C_BBLUE]);
+    // Giant golden-ivory Caribbean Moon with craters
+    ditherPlanet(farG, 202, 34, 19, C_WHITE, C_BYELLOW, C_TAN, -0.7, -0.5, false);
+    dither(farG, 207, 29, 5, 4, C_BYELLOW, C_TAN, 10);
+    dither(farG, 196, 38, 4, 3, C_TAN, C_BROWN, 8);
+    // Dithered wispy night clouds across moon
+    dither(farG, 178, 41, 44, 3, C_NAVY, C_AZURE, 9);
+    dither(farG, 50, 26, 52, 4, C_NAVY, C_BLUE, 10);
+
+    const [midC, midG] = makeCanvas(BG_W, BG_H);
+    const ridge = new Array(BG_W);
+    for (let x = 0; x < BG_W; x++) {
+      // Jagged Mêlée Island volcanic peak + Lookout cliff on left
+      const peak1 = 98 - Math.max(0, 42 - Math.abs(x - 68) * 0.95);
+      const peak2 = 104 - Math.max(0, 28 - Math.abs(x - 145) * 0.8);
+      const wave = Math.sin(x * 0.09) * 5 + Math.cos(x * 0.23) * 2;
+      ridge[x] = Math.round(Math.min(peak1, peak2) + wave);
+    }
+    drawRidge(midG, ridge, 134, C_AZURE, C_NAVY, C_BLACK);
+    // Tiny warm Scumm Bar / Governor's Mansion lantern lights on cliffside
+    const lanterns = [[64, 72], [71, 78], [56, 86], [140, 92], [148, 95]];
+    for (const [lx, ly] of lanterns) {
+      midG.fillStyle = EGA[C_GOLD]; midG.fillRect(lx, ly, 2, 2);
+      midG.fillStyle = EGA[C_BYELLOW]; midG.fillRect(lx, ly, 1, 1);
+    }
+    // Distant Bayer-dithered Caribbean sea + shimmering moon reflection column
+    ditherGradV(midG, 0, 132, BG_W, 60, [C_NAVY, C_BLUE, C_NAVY, C_BLACK]);
+    for (let y = 133; y < 185; y += 2) {
+      const rw = Math.max(2, 22 - ((y - 133) >> 2));
+      dither(midG, 202 - (rw >> 1) + ((y * 3) % 3 - 1), y, rw, 1, C_AZURE, C_BYELLOW, 9);
+    }
+
+    const [nearC, nearG] = makeCanvas(BG_W, BG_H);
+    // Foreground silhouettes: Caribbean palm trees on left headland & wooden SCUMM Bar dock pilings!
+    const palms = [22, 112, 248];
+    for (const px of palms) {
+      for (let t = 0; t < 38; t++) {
+        const tx = px + ((t * t) / 140) | 0;
+        const ty = 191 - t;
+        nearG.fillStyle = EGA[C_BLACK]; nearG.fillRect(tx - 1, ty, 4, 1);
+        nearG.fillStyle = EGA[C_BROWN]; nearG.fillRect(tx, ty, 2, 1);
+      }
+      const cx = px + 10, cy = 153;
+      for (const [dx, dy] of [[-14, 4], [-10, -5], [0, -8], [11, -4], [14, 5], [-6, 8], [8, 8]]) {
+        for (let s = 0; s <= 10; s++) {
+          const fx = Math.round(cx + (dx * s) / 10);
+          const fy = Math.round(cy + (dy * s) / 10 + (s * s) * 0.06);
+          nearG.fillStyle = EGA[C_BLACK]; nearG.fillRect(fx, fy + 1, 2, 2);
+          nearG.fillStyle = EGA[C_DGREEN]; nearG.fillRect(fx, fy, 2, 1);
+        }
+      }
+    }
+    // Wooden dock pier & lantern at bottom foreground
+    dither(nearG, 150, 174, 72, 4, C_BLACK, C_BROWN, 9);
+    for (let x = 156; x <= 216; x += 15) {
+      dither(nearG, x, 172, 4, 20, C_BLACK, C_BROWN, 6);
+    }
+    nearG.fillStyle = EGA[C_BYELLOW]; nearG.fillRect(156, 169, 2, 3);
+    worlds.push({ name: "MELEE IS.", far: farC, mid: midC, near: nearC, stars });
+  }
+
+  // --------------------------------------------------------------------------
+  // WORLD 2: MANIAC MANSION / DOTT — Crooked Victorian Edison Mansion
+  // --------------------------------------------------------------------------
+  {
+    const [farC, farG] = makeCanvas(BG_W, BG_H);
+    ditherGradV(farG, 0, 0, BG_W, 145, [C_BLACK, C_DPURPLE, C_INDIGO, C_MAGENTA, C_DTEAL]);
+    const stars = drawStarfield(farG, 19932, 60, 90, [C_WHITE, C_BMAG, C_BGREEN]);
+    // Eerie green/yellow radioactive comet moon
+    ditherPlanet(farG, 62, 32, 15, C_WHITE, C_BGREEN, C_DTEAL, 0.6, -0.5, false);
+
+    const [midC, midG] = makeCanvas(BG_W, BG_H);
+    // Rolling purple cemetery hills
+    const hills = new Array(BG_W);
+    for (let x = 0; x < BG_W; x++) {
+      hills[x] = Math.round(126 + Math.sin(x * 0.05) * 10 + Math.cos(x * 0.11) * 4);
+    }
+    drawRidge(midG, hills, 192, C_DPURPLE, C_NAVY, C_BLACK);
+    // Crooked Victorian Mansion silhouette with tilted turrets & glowing yellow windows!
+    const towers = [
+      { x: 118, w: 26, top: 68, roofH: 18 },
+      { x: 140, w: 38, top: 56, roofH: 22 },
+      { x: 174, w: 24, top: 74, roofH: 16 }
+    ];
+    for (const tw of towers) {
+      // Pointed crooked mansard spire
+      for (let j = 0; j < tw.roofH; j++) {
+        const span = Math.ceil(((j + 1) / tw.roofH) * (tw.w + 6));
+        const tilt = ((tw.roofH - j) >> 2);
+        const rx = tw.x + (tw.w >> 1) - (span >> 1) + tilt;
+        dither(midG, rx, tw.top - tw.roofH + j, span, 1, C_BLACK, C_INDIGO, 8);
+      }
+      // Tower body
+      dither(midG, tw.x, tw.top, tw.w, 140 - tw.top, C_BLACK, C_DPURPLE, 6);
+      // Glowing crooked Mansion windows
+      for (let wy = tw.top + 6; wy < 118; wy += 14) {
+        for (let wx = tw.x + 5; wx < tw.x + tw.w - 6; wx += 10) {
+          midG.fillStyle = EGA[C_GOLD];
+          midG.fillRect(wx, wy, 4, 6);
+          midG.fillStyle = EGA[C_BYELLOW];
+          midG.fillRect(wx + 1, wy + 1, 2, 4);
+          midG.fillStyle = EGA[C_BLACK];
+          midG.fillRect(wx + 1, wy + 3, 3, 1);
+        }
+      }
+    }
+
+    const [nearC, nearG] = makeCanvas(BG_W, BG_H);
+    // Wrought-iron cemetery fence spears & gnarled dead trees
+    dither(nearG, 0, 178, BG_W, 14, C_BLACK, C_DGREEN, 4);
+    for (let x = 2; x < BG_W; x += 8) {
+      nearG.fillStyle = EGA[C_BLACK];
+      nearG.fillRect(x, 164, 2, 28);
+      nearG.fillStyle = EGA[C_DGRAY];
+      nearG.fillRect(x, 162, 1, 3);
+    }
+    nearG.fillStyle = EGA[C_BLACK];
+    nearG.fillRect(0, 170, BG_W, 2);
+    worlds.push({ name: "MANSION", far: farC, mid: midC, near: nearC, stars });
+  }
+
+  // --------------------------------------------------------------------------
+  // WORLD 3: FATE OF ATLANTIS — Subterranean Orichalcum Temple & Magma Sea
+  // --------------------------------------------------------------------------
+  {
+    const [farC, farG] = makeCanvas(BG_W, BG_H);
+    ditherGradV(farG, 0, 0, BG_W, 150, [C_BLACK, C_DARKRED, C_BROWN, C_RED, C_ORANGE]);
+    const stars = drawStarfield(farG, 19923, 45, 80, [C_BYELLOW, C_GOLD, C_ORANGE]);
+    // Hanging cavern stalactites along ceiling
+    const rnd = makeRng(3303);
+    for (let x = 0; x < BG_W; x += 4) {
+      const sh = 8 + ((rnd() * 26) | 0);
+      for (let j = 0; j < sh; j++) {
+        const w = Math.max(1, 4 - ((j * 4 / sh) | 0));
+        dither(farG, x, j, w, 1, C_BLACK, C_BROWN, 8);
+      }
+    }
+    // Giant Carved Sun-Disc Emblem glowing in cavern wall
+    ditherPlanet(farG, 140, 56, 24, C_BYELLOW, C_GOLD, C_DARKRED, 0, -0.8, true);
+
+    const [midC, midG] = makeCanvas(BG_W, BG_H);
+    // Stepped Atlantean Ziggurats & broken fluted columns
+    const zigs = [{ cx: 64, top: 82, steps: 6 }, { cx: 212, top: 76, steps: 7 }];
+    for (const z of zigs) {
+      for (let s = 0; s < z.steps; s++) {
+        const sw = 16 + s * 12;
+        const sy = z.top + s * 9;
+        dither(midG, z.cx - (sw >> 1), sy, sw, 9, C_DARKRED, C_COPPER, 10 - s);
+        midG.fillStyle = EGA[C_GOLD];
+        midG.fillRect(z.cx - (sw >> 1), sy, sw, 1);
+      }
+    }
+
+    const [nearC, nearG] = makeCanvas(BG_W, BG_H);
+    // Bubbling subterranean magma river at bottom + stone aqueduct pillars
+    ditherGradV(nearG, 0, 162, BG_W, 30, [C_RED, C_ORANGE, C_GOLD, C_BYELLOW]);
+    for (let x = 18; x < BG_W; x += 68) {
+      dither(nearG, x, 136, 12, 56, C_BLACK, C_BROWN, 9);
+      nearG.fillStyle = EGA[C_GOLD];
+      nearG.fillRect(x, 136, 12, 2);
+    }
+    worlds.push({ name: "ATLANTIS", far: farC, mid: midC, near: nearC, stars });
+  }
+
+  // --------------------------------------------------------------------------
+  // WORLD 4: SPACE COMBAT — Rebel Nebula, Death Star Moon & Cruiser Trench
+  // --------------------------------------------------------------------------
+  {
+    const [farC, farG] = makeCanvas(BG_W, BG_H);
+    ditherGradV(farG, 0, 0, BG_W, BG_H, [C_BLACK, C_BLACK, C_NAVY, C_INDIGO, C_BLACK]);
+    const stars = drawStarfield(farG, 19934, 110, 180, [C_WHITE, C_BCYAN, C_BBLUE, C_LGRAY]);
+    // Diagonal cosmic cyan/violet Bayer nebula ribbon
+    for (let x = 0; x < BG_W; x++) {
+      const cy = Math.round(64 + Math.sin(x * 0.03) * 22);
+      dither(farG, x, cy - 12, 1, 24, C_NAVY, C_INDIGO, 8);
+      dither(farG, x, cy - 5, 1, 10, C_INDIGO, C_DTEAL, 9);
+    }
+    // Battle-station moon with equatorial trench & superlaser dish
+    ditherPlanet(farG, 210, 44, 21, C_WHITE, C_LGRAY, C_DGRAY, -0.7, -0.5, true);
+    farG.fillStyle = EGA[C_BLACK];
+    farG.fillRect(190, 44, 41, 1);
+    ditherPlanet(farG, 202, 36, 5, C_DGRAY, C_LGRAY, C_BLACK, 0.5, 0.5, false);
+
+    const [midC, midG] = makeCanvas(BG_W, BG_H);
+    // Distant wedge-shaped Star Destroyer silhouettes cruising across sector
+    const ships = [{ x: 26, y: 84, w: 58 }, { x: 132, y: 102, w: 44 }];
+    for (const sh of ships) {
+      for (let i = 0; i < sh.w; i++) {
+        const hh = Math.max(1, ((sh.w - i) / 7) | 0);
+        dither(midG, sh.x + i, sh.y - hh, 1, hh * 2, C_DGRAY, C_LGRAY, 7);
+      }
+      midG.fillStyle = EGA[C_BCYAN];
+      midG.fillRect(sh.x - 2, sh.y - 2, 2, 4);
+    }
+
+    const [nearC, nearG] = makeCanvas(BG_W, BG_H);
+    // Death-Star surface trench battlement & turbolaser towers along bottom
+    const batt = new Array(BG_W);
+    for (let x = 0; x < BG_W; x++) {
+      batt[x] = (x % 36 < 10) ? 156 : ((x % 18 < 8) ? 168 : 175);
+    }
+    drawRidge(nearG, batt, 192, C_LGRAY, C_DGRAY, C_BLACK);
+    worlds.push({ name: "SECTOR X", far: farC, mid: midC, near: nearC, stars });
+  }
+
+  // --------------------------------------------------------------------------
+  // WORLD 5: LOOM OF FATE — Crystalglass Spires & Shimmering Swan Lake
+  // --------------------------------------------------------------------------
+  {
+    const [farC, farG] = makeCanvas(BG_W, BG_H);
+    ditherGradV(farG, 0, 0, BG_W, 134, [C_NAVY, C_INDIGO, C_BLUE, C_DTEAL, C_CYAN]);
+    const stars = drawStarfield(farG, 19905, 85, 95, [C_WHITE, C_BCYAN, C_BMAG, C_MINT]);
+    // Twin mystical Loom Moons (Silver & Violet)
+    ditherPlanet(farG, 82, 34, 16, C_WHITE, C_MINT, C_CYAN, -0.6, -0.6, false);
+    ditherPlanet(farG, 108, 48, 9, C_BMAG, C_VIOLET, C_DPURPLE, -0.6, -0.6, false);
+
+    const [midC, midG] = makeCanvas(BG_W, BG_H);
+    // Faceted Crystalglass Cathedral spires rising from Island of Loom
+    const spires = [38, 52, 164, 178, 192, 206];
+    for (let i = 0; i < spires.length; i++) {
+      const sx = spires[i];
+      const top = (i === 3) ? 48 : (66 + (i % 2) * 14);
+      for (let y = top; y < 136; y++) {
+        const hw = Math.min(9, 1 + ((y - top) >> 3));
+        dither(midG, sx - hw, y, hw, 1, C_BCYAN, C_WHITE, 8);
+        dither(midG, sx, y, hw, 1, C_DTEAL, C_CYAN, 10);
+      }
+    }
+    // Mirror-still Swan Lake water
+    ditherGradV(midG, 0, 134, BG_W, 58, [C_CYAN, C_DTEAL, C_BLUE, C_NAVY]);
+
+    const [nearC, nearG] = makeCanvas(BG_W, BG_H);
+    // Graceful white silhouettes of Swans & reeds on lake foreground
+    for (const sx of [70, 224]) {
+      nearG.fillStyle = EGA[C_WHITE];
+      nearG.fillRect(sx, 166, 9, 4);
+      nearG.fillRect(sx + 7, 160, 2, 7);
+      nearG.fillRect(sx + 8, 159, 3, 2);
+      nearG.fillStyle = EGA[C_GOLD];
+      nearG.fillRect(sx + 11, 160, 2, 1);
+      // Shimmer reflection below swan
+      dither(nearG, sx, 171, 10, 3, C_BLUE, C_BCYAN, 9);
+    }
+    worlds.push({ name: "LOOM IS.", far: farC, mid: midC, near: nearC, stars });
+  }
+
+  // --------------------------------------------------------------------------
+  // WORLD 6: SAM & MAX HIT THE ROAD — Twilight Highway & Crooked Skyline
+  // --------------------------------------------------------------------------
+  {
+    const [farC, farG] = makeCanvas(BG_W, BG_H);
+    ditherGradV(farG, 0, 0, BG_W, 132, [C_NAVY, C_DPURPLE, C_RED, C_ORANGE, C_GOLD]);
+    const stars = drawStarfield(farG, 19936, 40, 56, [C_WHITE, C_BYELLOW]);
+    // Blazing desert sunset sun on horizon
+    ditherPlanet(farG, 140, 118, 22, C_WHITE, C_BYELLOW, C_ORANGE, 0, -1, false);
+
+    const [midC, midG] = makeCanvas(BG_W, BG_H);
+    // Desert buttes / mesas & crooked comic-noir city skyline
+    const mesa = new Array(BG_W);
+    for (let x = 0; x < BG_W; x++) {
+      if (x > 30 && x < 95) mesa[x] = 90 + ((x % 19 === 0) ? 14 : 0);
+      else if (x > 185 && x < 245) mesa[x] = 96;
+      else mesa[x] = 126;
+    }
+    drawRidge(midG, mesa, 140, C_ORANGE, C_DARKRED, C_BLACK);
+
+    const [nearC, nearG] = makeCanvas(BG_W, BG_H);
+    // Open American asphalt highway with golden center dashes & desert saguaro cacti
+    ditherGradV(nearG, 0, 140, BG_W, 52, [C_BROWN, C_DGRAY, C_BLACK]);
+    for (let x = 0; x < BG_W; x += 24) {
+      nearG.fillStyle = EGA[C_BYELLOW];
+      nearG.fillRect(x, 168, 12, 2);
+    }
+    for (const cx of [18, 126, 252]) {
+      nearG.fillStyle = EGA[C_DGREEN];
+      nearG.fillRect(cx, 134, 4, 24);
+      nearG.fillRect(cx - 4, 140, 4, 3);
+      nearG.fillRect(cx - 4, 136, 2, 6);
+      nearG.fillRect(cx + 4, 143, 4, 3);
+      nearG.fillRect(cx + 6, 138, 2, 7);
+    }
+    worlds.push({ name: "HIGHWAY", far: farC, mid: midC, near: nearC, stars });
+  }
+
+  // --------------------------------------------------------------------------
+  // WORLD 7 (LEVEL 33): LECHUCK'S HELLFIRE CAVERN — Ghost-Fire & Brimstone
+  // --------------------------------------------------------------------------
+  {
+    const [farC, farG] = makeCanvas(BG_W, BG_H);
+    ditherGradV(farG, 0, 0, BG_W, 150, [C_BLACK, C_DARKRED, C_DPURPLE, C_DGREEN, C_GREEN]);
+    const stars = drawStarfield(farG, 19917, 55, 120, [C_BGREEN, C_BYELLOW, C_BRED]);
+    // Giant Voodoo Ghost Vortex swirling in cavern vault
+    ditherPlanet(farG, 140, 58, 28, C_BGREEN, C_GREEN, C_DTEAL, 0, 0, false);
+    ditherPlanet(farG, 140, 58, 14, C_BYELLOW, C_BGREEN, C_DGREEN, 0, 0, false);
+
+    const [midC, midG] = makeCanvas(BG_W, BG_H);
+    const crags = new Array(BG_W);
+    for (let x = 0; x < BG_W; x++) {
+      crags[x] = Math.round(118 + Math.sin(x * 0.14) * 16 + Math.cos(x * 0.31) * 6);
+    }
+    drawRidge(midG, crags, 168, C_BGREEN, C_DGREEN, C_BLACK);
+
+    const [nearC, nearG] = makeCanvas(BG_W, BG_H);
+    // Boiling spectral green/yellow Voodoo Root-Beer & Lava abyss
+    ditherGradV(nearG, 0, 164, BG_W, 28, [C_DGREEN, C_GREEN, C_BGREEN, C_BYELLOW]);
+    for (let x = 8; x < BG_W; x += 46) {
+      for (let j = 0; j < 28; j++) {
+        const w = Math.max(1, 9 - (j >> 1));
+        dither(nearG, x - (w >> 1), 191 - j, w, 1, C_BLACK, C_DARKRED, 8);
+      }
+    }
+    worlds.push({ name: "HELLFIRE", far: farC, mid: midC, near: nearC, stars });
+  }
+
+  return worlds;
+}
+
+const WORLD_BACKDROPS = buildWorldBackdrops();
+
+// ============================================================================
+// 7. ALL 33 HIGH-DENSITY 30-COLUMN × 17-ROW (8x6 BRICK) LUCASARTS MOSAICS
+// ============================================================================
+// Every string row is normalized/verified to 30 columns (x = 8..247, 240px inner playfield).
+// Legend:
+//   a-z: 1-HP shaded EGA enamel bricks | A-Z: 2-HP riveted cracking armor bricks
+//   #: Indestructible riveted steel    | *: Animated bubbling Grog (3x3 recursive blast!)
+//   !: Atlantean dart-spitting idol    | ~: Loom musical draft crystal note
+//   1,2: Chron-o-John Colonial/Future temporal phase bricks
+// Ruler: 012345678901234567890123456789 (30 cols)
+const LEVEL_DEFS = [
+  // ---- WORLD 1: THE SECRET OF MONKEY ISLAND (Levels 1-6) ----
+  { world: 0, title: "JOLLY ROGER OF MELEE", rows: [
+    "....rrrrrrrrRRRRRRrrrrrrrr....",
+    "...rRRRRRooooooooooooRRRRRr...",
+    "..rRRooWWWWWWWWWWWWWWWWooRRrr.",
+    "..rRoWWwwwwwwwwwwwwwwwwWWoRRrk",
+    "...kWWwwwwwwwwwwwwwwwwwwWWk.rk",
+    "...kWwwkkkkkwwwwwwkkkkkwwWk..k",
+    "...kWwk**kkkwwwwwwkkk**kwWk...",
+    "...kWwk**kkkwwwwwwkkk**kwWk...",
+    "....kwwkkkkkwwkkwwkkkkkwwk....",
+    "..WWkwwwwwwwwkkkkwwwwwwwwkWW..",
+    ".WWWWsswwwwwwwwwwwwwwwwssWWWW.",
+    "..ssWWsskwwkwkwwkwkwwkssWWss..",
+    ".....ssWWkkkkkkkkkkkkWWss.....",
+    "...ssWWss..kWkWkWkWk..ssWWss..",
+    ".WWWWss....kkkkkkkkk....ssWWWW",
+    "..WW......................WW.."
+  ]},
+  { world: 0, title: "SCUMM BAR GROG MUG", rows: [
+    ".....WWWWWW..WWWWWWW..WWWW....",
+    "...WWWWWWWWWWWWWWWWWWWWWWWWW..",
+    "..WWWWqqWWWWWWWWWWWWWWqqWWWWW.",
+    "..WWWqqqqWWWWWWWWWWWWqqqqWWWW.",
+    "...WWwwwwwwwwwwwwwwwwwwwwWWW..",
+    "...GGGGGYYYYYYYYYYYYGGGGGGGG..",
+    "...Gnnntttt*ll**ll*ttttnnnGG#.",
+    "...Gnntttllll*ll*lllltttnnG.#.",
+    "...Gnnttll*llllllll*llttnnG..#",
+    "...Gnnttllll*llll*llllttnnG..#",
+    "...Gnnttll*lll**lll*llttnnG..#",
+    "...Gnnttllllll**llllllttnnG.#.",
+    "...GnnntttlllllllllltttnnnGG#.",
+    "...GGGGGGGGYYYYYYYYGGGGGGGGG..",
+    "..#GGGGGGGGGGGGGGGGGGGGGGGG#..",
+    "..##########################.."
+  ]},
+  { world: 0, title: "LOOK! A 3-HEADED MONKEY!", rows: [
+    "..nnnn....nnnnnnnn....nnnn....",
+    ".nttttn..nttttttttn..nttttn...",
+    "tntWWtnttntWWttWWtnttntWWtnt..",
+    "tntkktnttntkkttkkttntntkktnt..",
+    ".ntootn..nttoooottn..ntootn...",
+    "..nnnn....nnnnnnnn....nnnn....",
+    "....nn......nnnn......nn......",
+    "...nnnnnnnnnnnnnnnnnnnnnn.....",
+    "..nnttttttttttttttttttttnn....",
+    "..ntttnnnn*nnnnnn*nnnntttn.YY.",
+    "..nttnnnn*nnnnnnnn*nnnnttnYYY.",
+    "...nnnnnnnnttttttnnnnnnnn.YYy.",
+    "....nnnnnnttttttttnnnnnn..yy..",
+    "....nnnttt..nnnn..tttnnn......",
+    "...nnntt....nnnn....ttnnn.....",
+    "..GGGG......GGGG......GGGG...."
+  ]},
+  { world: 0, title: "RUBBER CHICKEN & PULLEY", rows: [
+    "#############GG###############",
+    ".............GG...............",
+    "...........#GGGG#.............",
+    " RR........#GYYG#..........YYYY",
+    "RRoR.......#GGGG#........YYYYYY",
+    ".RoORRRRR..######......YYYYyyy.",
+    ".kOOOYYYYYYYYkkYYYYYYYYYYyyyy..",
+    "..kkkYYYYYYYYssYYYYYYYYyyyyy...",
+    ".....kkkkYYYYGGYYYYyyyyykkk....",
+    ".........kkYY*G*Yyyyykkk.......",
+    "...........kYYYYyyykk..........",
+    "............yyyyyy.............",
+    "...........OO....OO............",
+    "..........OO......OO...........",
+    ".........OOO......OOO..........",
+    "........OOOO......OOOO........."
+  ]},
+  { world: 0, title: "STAN'S USED COFFINS!", rows: [
+    "..RRWWBBWWmmWWYYWWqqWWRRWWBB..",
+    ".RRRWWWBBBWWWmmmWWWYYYWWWqqqW.",
+    "RRRRWWWWBBBBWWWWmmmmWWWWYYYYWW",
+    "..............................",
+    "....nnnnnn..........YYYY......",
+    "...nGGGGGGn........YttttY.....",
+    "..nGnnnnnnGn......YtkttktY....",
+    "..nGn*GG*nGn.......ttooott....",
+    "..nGnGGGGnGn....uuBpBmmBpBuu..",
+    "..nGn*nn*nGn...uuBBpmBBmpBBuu.",
+    "...nGnnnnGn...uu..BpBmmBpB..uu",
+    "...nGnnnnGn.......mmBBBBmm....",
+    "....nGGGGn........BBBBBBBB....",
+    "....nnnnnn........BBB..BBB....",
+    "..................nn....nn....",
+    ".................nnn....nnn..."
+  ]},
+  { world: 0, title: "THE SEA MONKEY GALLEON", rows: [
+    ".......WW.......WW.......WW...",
+    ".....WWWWWW...WWWWWW...WWWWWW.",
+    "....WWWWWWWW.WWWWWWWW.WWWWWWWW",
+    "...WWWWrrWWWWWWWrrWWWWWWWrrWWW",
+    "...WWWWrrWWWWWWWrrWWWWWWWrrWWW",
+    "....WWWWWWWW.WWWWWWWW.WWWWWWWW",
+    ".......nn.......nn.......nn...",
+    "..GGnnnnnnnnnnnnnnnnnnnnnnnnGG",
+    ".GGGnnnn*nnnGnn*nnGnnn*nnnnGGG",
+    "..NNNNNNNNNNNNNNNNNNNNNNNNNNN.",
+    "...NNNNNGGGGNNNNNNGGGGNNNNNN..",
+    "....nnnnnnnnnnnnnnnnnnnnnnn...",
+    ".qqcqqcqqcqqcqqcqqcqqcqqcqqcqq",
+    "qqccqqccqqccqqccqqccqqccqqccqq",
+    "ccbbccbbccbbccbbccbbccbbccbbcc",
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  ]},
+
+  // ---- WORLD 2: MANIAC MANSION & DAY OF THE TENTACLE (Levels 7-12) ----
+  { world: 1, title: "PURPLE TENTACLE LIVES!", rows: [
+    "............pppppp............",
+    "..........ppPPPPPPpp..........",
+    ".........pPPmmmmmmPPp.........",
+    "..11....pPPmkWWWWkmPPp....22..",
+    ".1111...pPmkWWkkWWkmPp...2222.",
+    "..11...llPmkRRkkRRkmPll...22..",
+    ".......llPPkkkkkkkkPPll.......",
+    "........pPPPmmmmmmPPPp........",
+    ".......ppPPPPppppPPPPpp.......",
+    ".....llpPPPPPppppPPPPPpll.....",
+    ".....llpPPPPP*pp*PPPPPpll.....",
+    "......ppPPPPppppppPPPPpp......",
+    "....llpPPPPPppppppPPPPPpll....",
+    "....llpPPPPppppppppPPPPpll....",
+    ".....ppPPPPPPPPPPPPPPPPpp.....",
+    "...#PPPPPPPPPPPPPPPPPPPPPP#..."
+  ]},
+  { world: 1, title: "CHRON-O-JOHN PORTA-POTTY", rows: [
+    "....GGGGGG..........GGGGGG....",
+    "..GGYYYYYYGG......GGYYYYYYGG..",
+    "..ccccccccccc....ccccccccccc..",
+    "..cqqqqqqqqqc....cqqqqqqqqqc..",
+    "..cq111Y111qc....cq222Y222qc..",
+    "..cq11YYY11qc....cq22YYY22qc..",
+    "..cq111Y111qc.**.cq222Y222qc..",
+    "..cq1111111qc*GG*cq2222222qc..",
+    "..cq1111111qc.**.cq2222222qc..",
+    "..cq1111111qc....cq2222222qc..",
+    "..cq1111111qc....cq2222222qc..",
+    "..cqqqqqqqqqc....cqqqqqqqqqc..",
+    "..BBBBBBBBBBB....BBBBBBBBBBB..",
+    ".#BBBBBBBBBBB#..#BBBBBBBBBBB#.",
+    ".#ddddddddddd#..#ddddddddddd#.",
+    ".............................."
+  ]},
+  { world: 1, title: "METEOR MESS AT EDISON'S!", rows: [
+    "......................ll.lL...",
+    "...................lllLLllL...",
+    "................lllLLLLll.....",
+    ".............lllLLLmmmmll.....",
+    "..........11lLLLmmmMMMMmm.....",
+    ".........111lLmmMMM*MM*MMm....",
+    "........pppMMmMMMM*MMMM*MMm...",
+    ".......ppPMMMMMMMmMMMMMMmMm...",
+    "......ppPMMM*MMMMMM*MMMMMmm...",
+    ".......ppPMMMMMMMMMMMMMMMm....",
+    "........pppMMMMM*MMMMMMmm.22..",
+    "..........ppppMMMMMMMMpp..222.",
+    "..ddddd......pppppppp....ddddd",
+    ".dDDDDDd.......dddd.....dDDDDd",
+    "dDDYYDDDd.....dDDDDd...dDDYYDd",
+    "dDDYYDDDd....dDDYYDDd..dDDYYDd"
+  ]},
+  { world: 1, title: "WEIRD ED'S HAMSTER", rows: [
+    "...oooo........oooo...........",
+    "..otttto..11..otttto..SSSSSSSS",
+    "..otttttonnnnottttto..SWWWWWWS",
+    "...ottttttttttttttto..SWqqqqWS",
+    "...nttWWttttttWWttn...SWq**qWS",
+    "..ntttkkttttttkktttn..SWqqqqWS",
+    ".nttttttttoottttttttn.SWWWWWWS",
+    ".nWWtttttoRRottWWtttn.SSSSSSYS",
+    ".nWWtttttttttttWWtttn.SSSSSSSS",
+    "..nttttttttttttttttn..########",
+    "...nttttttttttttttn.....2222..",
+    "...ntttWWWWWWWWtttn....222222.",
+    "....nttWWWWWWWWttn......2222..",
+    "....nnttttttttttnn............",
+    "...ooonttttttttnnooo..........",
+    "...ooo..........ooo..........."
+  ]},
+  { world: 1, title: "HOAGIE'S KITE & KEY", rows: [
+    "ddddddd....RR....ddddddddddddd",
+    "ddbbbbbdd.RRRR.ddbbbbbbbbbbbdd",
+    ".ddbbbbb.RRYYRR.bbbbbbWWbbbdd.",
+    "........RROOOORR.....WWq......",
+    ".......RROO**OORR...WWq.......",
+    "..11..RRYYYYYYYYRR.WWq....22..",
+    ".1111..RROO**OORR.WWq....2222.",
+    "..11....RROOOORR.WWq......22..",
+    ".........RRYYRR.WWq...........",
+    "..........RRRR.*Wq*...........",
+    "...........RR..GGG............",
+    "............q.GYYYG...........",
+    ".............q.GGG............",
+    "..............qGG.............",
+    "..............GGG.............",
+    "..............GGY............."
+  ]},
+  { world: 1, title: "DR. FRED'S SLUDGE LAB", rows: [
+    "....qqqqq............qqqqq....",
+    "....qWWWq............qWWWq....",
+    ".....qWq.....####.....qWq.....",
+    ".....qWq....#GGGG#....qWq.....",
+    "....qWWWq..#G****G#..qWWWq....",
+    "...qWW1WWq.#G*ll*G#.qWW2WWq...",
+    "..qWW111WWq.#GGGG#.qWW222WWq..",
+    ".qWWll*llWWq..##..qWWmm*mmWWq.",
+    ".qWlllllllWq..GG..qWmmmmmmmWq.",
+    "qWWll*l*llWWqGGGGqWWmm*m*mmWWq",
+    "qWlllllllllWqqqqqqWmmmmmmmmmWq",
+    "qqqqqqqqqqqqq....qqqqqqqqqqqqq",
+    "#SSSSSSSSSSS#....#SSSSSSSSSSS#",
+    ".............1122.............",
+    "............111222............",
+    ".............................."
+  ]},
+
+  // ---- WORLD 3: INDIANA JONES & THE FATE OF ATLANTIS (Levels 13-18) ----
+  { world: 2, title: "FEDORA & BULLWHIP", rows: [
+    "..........nnnnnnnnnn..........",
+    "........nnNNNNNNNNNNnn........",
+    ".......nNNNNttttttNNNNn.......",
+    "......nNNNNNNNNNNNNNNNNn......",
+    ".....nGGGGGGGGGGGGGGGGGGn.....",
+    "..nnnnnnnnnnnnnnnnnnnnnnnnnn..",
+    ".nttttttttttttttttttttttttttn.",
+    "..nnnnnnnnnnnnnnnnnnnnnnnnnn..",
+    "....!....................!....",
+    "........gggggggggggggg........",
+    "......ggYYYYYYYYYYYYYYgg......",
+    ".....gYYgg..........ggYYg.....",
+    ".....gYg....gggggg....gYg.....",
+    "......gg...gYY**YYg...gg......",
+    ".......gg...gggggg...gg.!.....",
+    "........gggggggggggggg........"
+  ]},
+  { world: 2, title: "THE THREE SUNSTONES", rows: [
+    ".........GGGGGGGGGGGG.........",
+    "......GGGYYYYYYYYYYYYGGG......",
+    "....GGYYYiiiiiiiiiiiiYYYGG....",
+    "...GYYiiiGGGGGGGGGGGGiiiYYG...",
+    "..GYiiGGGY!YYYYYYYY!YGGGiiYG..",
+    ".GYiiGYYbbbbbbbbbbbbbbYYGiiYG.",
+    ".GYiGYbbqqqqqYYYYqqqqqbbYGiYG.",
+    "GYiGYbbqqqYYY****YYYqqqbbYGiYG",
+    "GYiGYbbqqqYYY****YYYqqqbbYGiYG",
+    ".GYiGYbbqqqqqYYYYqqqqqbbYGiYG.",
+    ".GYiiGYYbbbbbbbbbbbbbbYYGiiYG.",
+    "..GYiiGGGY!YYYYYYYY!YGGGiiYG..",
+    "...GYYiiiGGGGGGGGGGGGiiiYYG...",
+    "....GGYYYiiiiiiiiiiiiYYYGG....",
+    "......GGGYYYYYYYYYYYYGGG......",
+    ".........GGGGGGGGGGGG........."
+  ]},
+  { world: 2, title: "ORICHALCUM IDOL", rows: [
+    "...GG....................GG...",
+    "..GYYG......GGGGGG......GYYG..",
+    "..GYiG....GGYYYYYYGG....GiYG..",
+    "...GiGG..GYYiiiiiiYYG..GGiG...",
+    "....GiiGGYii!iiii!iiYGGiiG....",
+    ".....GGGGYiiRRRRRRiiYGGGG.....",
+    "........GYiiR*OO*RiiYG........",
+    "......GGGYiiRRRRRRiiYGGG......",
+    "....GGiiGGYYYYYYYYYYGGiiGG....",
+    "...GiiGG.GiiGGGGGGiiG.GGiiG...",
+    "...GiG...GiiG****GiiG...GiG...",
+    "...#G#...GiiGGGGGGiiG...#G#...",
+    ".........GiiiiiiiiiiG.........",
+    "........GG!iiiiiiii!GG........",
+    ".......GYYYYYYYYYYYYYYG.......",
+    "......##################......"
+  ]},
+  { world: 2, title: "CRETE MINOTAUR LABYRINTH", rows: [
+    "..WW......................WW..",
+    ".WWWW....................WWWW.",
+    ".WWtt....................ttWW.",
+    "..tttGGGG..nnnnnnnn..GGGGttt..",
+    "...ttGiiGnnNNNNNNNNnnGiiGtt...",
+    "....GGGGnNNiiiiiiiiNNnGGGG....",
+    "##....nnNNii!iiii!iiNNnn....##",
+    "#i#...nNNiiiRRRRRRiiiNNn...#i#",
+    "#i#....nNNiiiiiiiiiiNNn....#i#",
+    "#i#.....nNNiiGGGGiiNNn.....#i#",
+    "###...#..nNNG*..*GNNn..#...###",
+    "......#...nnGGGGGGnn...#......",
+    "..#####....nGG..GGn....#####..",
+    "..!.........GGGGGG.........!..",
+    "......####..........####......",
+    ".............................."
+  ]},
+  { world: 2, title: "NUR-AB-SAL TALISMAN", rows: [
+    ".cc........................cc.",
+    ".cqc..GG..............GG..cqc.",
+    "..cqcGYYG...GGGGGG...GYYGcqc..",
+    "...cqGYiGG.GYYYYYYG.GGiYGqc...",
+    "....cGGiiGGYccccccYGGiiGGc....",
+    ".....GGiiGYcc!cc!ccYGiiGG.....",
+    "......GGGGYcRRRRRRcYGGGG......",
+    "........GGYcR*YY*RcYGG........",
+    ".......GiiGYccccccYGiiG.......",
+    "......GiiGGYYYYYYYYGGiiG......",
+    ".....GiiG..GGGGGGGG..GiiG.....",
+    "......GG....G*GG*G....GG......",
+    ".......!.....GGGG.....!.......",
+    "..............GG..............",
+    ".............GYYG.............",
+    "..............GG.............."
+  ]},
+  { world: 2, title: "COLOSSUS OF ATLANTIS", rows: [
+    "............GGGGGG............",
+    "...........GYYYYYYG...........",
+    "..........GY!iiii!YG..........",
+    "........GGiiiiiiiiiiGG........",
+    ".......GYYYYYYYYYYYYYYG.......",
+    ".....GGiiiGGGGGGGGGGiiiGG.....",
+    "....GYYYYYG**OOOO**GYYYYYG....",
+    "..GGiiiiiiGOORRRRROOGiiiiiiGG.",
+    ".GYYYYYYYY!OOR*YR*OO!YYYYYYYYG",
+    ".GiiiiiiiiiiiiiiiiiiiiiiiiiiiG",
+    "###GYYYYYYYYYYYYYYYYYYYYYYYYG#",
+    "...Giii!iiiiiiiiiiiiiiii!iiiG.",
+    "..GGYYYYYYYYYYYYYYYYYYYYYYYYGG",
+    ".GiiiiiiiiiiiiiiiiiiiiiiiiiiiG",
+    "RRRRRROOOOOOYYYYYYOOOOOORRRRRR",
+    "OOOOOOYYYYYY******YYYYYYOOOOOO"
+  ]},
+
+  // ---- WORLD 4: X-WING / TIE FIGHTER SPACE COMBAT (Levels 19-24) ----
+  { world: 3, title: "RED FIVE X-WING", rows: [
+    "..............WW..............",
+    ".............WWWW.............",
+    ".............WRRW.............",
+    ".............WssW.............",
+    "R...........WWssWW...........R",
+    "R..........WWssssWW..........R",
+    "W.........WWssqqssWW.........W",
+    "W...RRRRWWWWssqqssWWWWWRRRR..W",
+    "W.WWWWWWWWWWssssssWWWWWWWWWW.W",
+    "WWWWssssssWWsDDDDsWWssssssWWWW",
+    "W..RRRRR..WW*OOOO*WW..RRRRR..W",
+    "..........#W*OOOO*W#..........",
+    "...........########...........",
+    "..............................",
+    "....qq..................qq....",
+    "....qq..................qq...."
+  ]},
+  { world: 3, title: "IMPERIAL TIE INTERCEPTOR", rows: [
+    "..#D#....................#D#..",
+    ".#DbD#..................#DbD#.",
+    "#DbbbD#................#DbbbD#",
+    "DbbbbD........ss........DbbbbD",
+    "DbbbbD......ssWWss......DbbbbD",
+    "DbbbD......sWWddWWs......DbbbD",
+    "DbbbDssssssWdqqqqdWssssssDbbbD",
+    "DbbDDSSSSSSWdq**qdWSSSSSSDbbDD",
+    "DbbbDssssssWdqqqqdWssssssDbbbD",
+    "DbbbD......sWWddWWs......DbbbD",
+    "DbbbbD......ssRRss......DbbbbD",
+    "DbbbbD........ss........DbbbbD",
+    "#DbbbD#................#DbbbD#",
+    ".#DbD#..................#DbD#.",
+    "..#D#....................#D#..",
+    ".............................."
+  ]},
+  { world: 3, title: "REBEL ALLIANCE STARBIRD", rows: [
+    "..............RR..............",
+    "....RR.......RRRR.......RR....",
+    "...RRRR......ROOR......RRRR...",
+    "..RROORR.....ROOR.....RROORR..",
+    ".RROOOO......RYYR......OOOORR.",
+    ".ROOO..RR....RYYR....RR..OOOR.",
+    "ROOO..ROOR...R**R...ROOR..OOOR",
+    "ROOO..ROOOR..RYYR..ROOOR..OOOR",
+    "ROOO...ROOORRRYYRRROOOR...OOOR",
+    ".ROOO...ROOOOYYYYOOOOR...OOOR.",
+    ".RROOO...ROOOOOOOOOOR...OOORR.",
+    "..RROOOO..RROOOOOORR..OOOORR..",
+    "...RRROOOOOORRRRRROOOOOORRR...",
+    ".....RRRROOOOOOOOOOOORRRR.....",
+    "........RRRRRRRRRRRRRR........",
+    "............RRRRRR............"
+  ]},
+  { world: 3, title: "THAT'S NO MOON!", rows: [
+    ".........SSSSSSSSSSSS.........",
+    "......SSSWWWWWsssssssSSS......",
+    "....SSWWWsssssllllsssssSSS....",
+    "...SWWssssssllLLLLllsssssSS...",
+    "..SWWsssssslLL****LLlsssssSS..",
+    ".SWWssssssslLL*WW*LLlssssssSS.",
+    ".SWssssssssllLLLLLLllssssddSS.",
+    "SWsssssssssssllllllsssssddddSS",
+    "##############################",
+    "SsssssssssssssssssssssssddddSS",
+    ".SsssssssssssssssssssssddddSS.",
+    ".SSsssssssssDDDDDDssssdddddSS.",
+    "..SSssssssssDDDDDDsssdddddSS..",
+    "...SSssssssssssssssssddddSS...",
+    "....SSSssssssssssssssdddSSS...",
+    "......SSSSssssssssssSSSS......"
+  ]},
+  { world: 3, title: "MILLENNIUM FALCON", rows: [
+    "..........WWWW..WWWW..........",
+    ".........WWWWs..sWWWW.........",
+    "........WWWWss..ssWWWW........",
+    ".......WWWWsss..sssWWWW...qq..",
+    ".....WWWWWssss..ssssWWWW.qWWq.",
+    "....WWWWWsssssDDsssssWWWWqWWq.",
+    "...WWWWWssssDRRRRDssssWWWWqq..",
+    "...WWWWsssssDRRRRDsssssWWW....",
+    "...WWWWssssssDDDDssssssWWW....",
+    "...WWWWWssssssssssssssWWWW....",
+    "....WWWWWssss*ss*ssssWWWWW....",
+    ".....WWWWWWssssssssWWWWWW.....",
+    "......WWWWWWWWWWWWWWWWWW......",
+    ".......WWuuuuuuuuuuuuWW.......",
+    "........#qqqqqqqqqqqq#........",
+    ".........############........."
+  ]},
+  { world: 3, title: "EXECUTOR SUPER DREADNOUGHT", rows: [
+    "..............WW..............",
+    ".............WWWW.............",
+    "............WWssWW............",
+    "...........WWssssWW...........",
+    "..........WWssbbssWW..........",
+    ".........WWssbbbbssWW.........",
+    "........WWssbbDDbbssWW........",
+    ".......WWssbbDDDDbbssWW.......",
+    "......WWssbbDD**DDbbssWW......",
+    ".....WWssbbDD####DDbbssWW.....",
+    "...lWWssbbDDD#WW#DDDbbssWWl...",
+    "..llWssbbDDDD####DDDDbbssWll..",
+    "...lWWssssssssssssssssssWWl...",
+    "....#WWWWWWWWWWWWWWWWWWWW#....",
+    "......##RRRR##..##RRRR##......",
+    "........######..######........"
+  ]},
+
+  // ---- WORLD 5: LOOM OF FATE (Levels 25-30) ----
+  { world: 4, title: "THE WHITE SWAN OF LOOM", rows: [
+    ".......WWWW...................",
+    "......WW..WW..................",
+    ".....WW...WWk.............~...",
+    "...GGG....WW..................",
+    "..GG.....WW.......WWWWWW......",
+    "........WW.....WWWWWWWWWWWW...",
+    ".......WW....WWWWWWWWwwwwWWWW.",
+    ".......WW...WWWWWWwwwwwwwwWWWW",
+    "~.......WW.WWWWWwwwwqqwwwwwwwW",
+    "........WWWWWWWwwwwqqqqwwwwwWW",
+    ".........WWWWWWWWwwwwwwwwWWWW.",
+    "..........WWWWWWWWWWWWWWWWWW..",
+    ".~~........WWWWWWWWWWWWWWWW...",
+    "qqcqqcqqcqqcqqcqqcqqcqqcqqcqqc",
+    "ccuccuccuccuccuccuccuccuccuccu",
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  ]},
+  { world: 4, title: "BOBBIN'S WOODEN DISTAFF", rows: [
+    "............~GGGG~............",
+    ".........mm..GYYG..qq.........",
+    ".......mm..vvG**Gqq..qq.......",
+    ".....mm..vv..GYYG..qq..qq.....",
+    "....m..vv..uuNNNNuu..qq..l....",
+    "...~..v..uu..NnnN..uu..l..~...",
+    ".....v..u..llNnnNll..u..l.....",
+    ".......u..l..NnnN..l..u.......",
+    ".........l...NnnN...l.........",
+    "......~......NnnN......~......",
+    "............GNnnNG............",
+    "............GGnnGG............",
+    ".............NnnN.............",
+    ".............NnnN.............",
+    ".............nnnn.............",
+    "............#GGGG#............"
+  ]},
+  { world: 4, title: "CRYSTALGLASS CITADEL", rows: [
+    "..............qq..............",
+    ".............qWWq.............",
+    "......ll....qWqqWq....mm......",
+    ".....lWWl...qWqqWq...mWWm.....",
+    "....lWllWl.qWW~~WWq.mWmmWm....",
+    "....lWllWl.qWqqqqWq.mWmmWm....",
+    "..~.lWllWlqWWqqqqWWqmWmmWm.~..",
+    "..ccleeeelqWqq**qqWqmppppmc...",
+    ".cWWceeeelqWqq**qqWqmppppmWWc.",
+    ".cWccceeeeqWWqqqqWWqppppcccWc.",
+    "cWWccceeeeqWqq~~qqWqppppcccWWc",
+    "cWcccceeeeqWqqqqqqWqppppccccWc",
+    "cccccccccccccccccccccccccccccc",
+    "#CCCCCCCCCCCCCCCCCCCCCCCCCCCC#",
+    "..~........~......~........~..",
+    ".............................."
+  ]},
+  { world: 4, title: "THE GREAT LOOM TAPESTRY", rows: [
+    "##GGGGGGGGGGGGGGGGGGGGGGGGGG##",
+    "#GnnnnnnnnnnnnnnnnnnnnnnnnnnG#",
+    ".Gn~mmvvuuqqllYYoorrmmvvuu~nG.",
+    ".GnmmvvuuqqllYYYYoorrmmvvuunG.",
+    ".GnvvuqqllYYoo**oorrmmvvuuqnG.",
+    ".GnuuqqllYYoorrrrrmmvvuuqqlnG.",
+    ".Gn~qqllYYoorrmmmmvvuuqqll~nG.",
+    ".GnllYYoorrmmvvvvuuqqllYYoonG.",
+    ".GnYYYoorrmmvvu*uuqqllYYoornG.",
+    ".GnoorrmmvvuuqqqqllYYoorrmmnG.",
+    ".Gn~rrmmvvuuqqllYYoorrmmvv~nG.",
+    "#GnnnnnnnnnnnnnnnnnnnnnnnnnnG#",
+    "##GGGGGGGGGGGGGGGGGGGGGGGGGG##",
+    "....#nn#..............#nn#....",
+    "...#nnnn#............#nnnn#...",
+    "..########..........########.."
+  ]},
+  { world: 4, title: "DRAGON OF FIRE MOUNTAIN", rows: [
+    ".......RRRR........RR.........",
+    ".....RRROOORR....RROOR........",
+    "....RROOYYOORRRRROOYOOR...~...",
+    "...RROOYWWYOORRRROOYYOOR......",
+    "....RROOOOOOORRRRROOOOOR.**...",
+    "~........RRRRRooRRRRRR..*OO*..",
+    ".......RRROOOooooRRRR...*YY*..",
+    ".....RRROOOYYYYoooRRR....OO...",
+    "....RROOOYY*GG*YYooRRR........",
+    "....RROOYYGGGGGGYYooRR....~...",
+    ".....RROOOYYYYYYoooRRR........",
+    "......RRROOOOOOOORRRR.........",
+    "..~.....RRRRRRRRRRR........~..",
+    "...dddd....RRRRR....dddddd....",
+    ".ddDDDDdd#########ddDDDDDDdd..",
+    "dDDDDDDDD#OOOOOOO#DDDDDDDDDDd."
+  ]},
+  { world: 4, title: "RIFT IN THE PATTERN", rows: [
+    "bbbbvvvvmmmmqqqqqqmmmmvvvvbbbb",
+    "bbbvvvmmmqqqWWWWWWqqqmmmvvvbbb",
+    "bbvvmmmqqWWW~WWWW~WWWqqmmmvvbb",
+    "bvmmmqqWW............WWqqmmmvb",
+    "vmmqqWW.....mmmmmm.....WWqqmmv",
+    "mmqqW.....mmqqqqqqmm.....Wqqmm",
+    "mqqW....mmqqWWWWWWqqmm....Wqqm",
+    "qqW....mqWW..****..WWqm....Wqq",
+    "qqW....mqWW..*~~*..WWqm....Wqq",
+    "mqqW....mmqqWWWWWWqqmm....Wqqm",
+    "mmqqW.....mmqqqqqqmm.....Wqqmm",
+    "vmmqqWW.....mmmmmm.....WWqqmmv",
+    "bvmmmqqWW............WWqqmmmvb",
+    "bbvvmmmqqWWW~WWWW~WWWqqmmmvvbb",
+    "bbbvvvmmmqqqWWWWWWqqqmmmvvvbbb",
+    "bbbbvvvvmmmmqqqqqqmmmmvvvvbbbb"
+  ]},
+
+  // ---- WORLD 6: SAM & MAX HIT THE ROAD (Levels 31-32) ----
+  { world: 5, title: "MAX: HYPERKINETIC RABBIT!", rows: [
+    "....WWWW..............WWWW....",
+    "...WWmmWW............WWmmWW...",
+    "...WWmmWW............WWmmWW...",
+    "...WWmmWW............WWmmWW...",
+    "....WWmmWW..........WWmmWW....",
+    ".....WWmmWW........WWmmWW.....",
+    "......WWWWWWWWWWWWWWWWWW......",
+    "....WWWWWWWWWWWWWWWWWWWWWW....",
+    "...WWWWkkWWWWWWWWWWWWkkWWWW...",
+    "..WWWWkkkkWWWWRRWWWWkkkkWWWW..",
+    "..WWWWWWWWWWWWWW*WWWWWWWWWWW..",
+    "..WWWkkkkkkkkkkkkkkkkkkkkWWW..",
+    "..WWkWkWkWkWkWkWkWkWkWkWkWWW..",
+    "...WWkWkWkWkWkWkWkWkWkWkWWW...",
+    "....WWkkkkkkkkkkkkkkkkkkWW....",
+    "......WWWWWWWWWWWWWWWWWW......"
+  ]},
+  { world: 5, title: "THE DESOTO ADVENTURE CAR", rows: [
+    ".............RRRR.............",
+    "............RoWWoR............",
+    ".......uuuuuuuuuuuuuuuu.......",
+    ".....uuUUUUUUUUUUUUUUUUuu.....",
+    "....uUUqqqqqqqUUqqqqqqqUUu....",
+    "...uUUqqWWWWqqUUqqWWWWqqUUu...",
+    "WW.uUUUUUUUUUUUUUUUUUUUUUUu.WW",
+    "WWuuUUUUUUUUUUUUUUUUUUUUUUuuWW",
+    ".UUUUUBBBBBBBBBBBBBBBBBBUUUUU.",
+    ".YYYYUBB*BBBBBBBBBBBB*BBUYYYY.",
+    ".YYYYUBBBBBBBBBBBBBBBBBBUYYYY.",
+    ".#SSSSSSSSSSSSSSSSSSSSSSSSSS#.",
+    ".#SSWWWWWWWWWWWWWWWWWWWWWWSS#.",
+    "..####dd##############dd####..",
+    ".....dddd............dddd.....",
+    ".....dddd............dddd....."
+  ]},
+
+  // ---- WORLD 7 (LEVEL 33): LECHUCK'S GHOST GALLEON BOSS FINALE ----
+  // Bricks start lower (yOffset = 42, 16 rows) so 44x32 LeChuck commands the upper cavern!
+  { world: 6, title: "LECHUCK'S GHOST GALLEON", yOffset: 42, rows: [
+    "..ll......ll......ll......ll..",
+    ".llll....llll....llll....llll.",
+    "llWWll..llWWll..llWWll..llWWll",
+    ".llll....llll....llll....llll.",
+    "..ee......ee......ee......ee..",
+    "ppLLppppppppppppppppppppppLLpp",
+    ".pLLLLLLpp*pppWWppp*ppLLLLLLp.",
+    "..PPPPPPPPPPPWWWWPPPPPPPPPPP..",
+    "...eeeeeeeeeeWWWWeeeeeeeeee...",
+    "..#ee*eeeeeeeekkeekeeeee*ee#..",
+    "...eeeeeeeeeeeeeeeeeeeeeeee...",
+    "....cccccccccccccccccccccc....",
+    ".lllqqcqqcqqcqqcqqcqqcqqcqlll.",
+    "llll*cccccccccccccccccccc*llll",
+    "#eeeeeeeeeeeeeeeeeeeeeeeeeeee#",
+    "bbbbccccccccccccccccccccccbbbb"
+  ]}
+];
+
+// Normalize/pad every level row to exact 30 columns at startup
+for (const lvl of LEVEL_DEFS) {
+  lvl.rows = lvl.rows.map((r) => (r.length >= 30 ? r.slice(0, 30) : r + ".".repeat(30 - r.length)));
+}
+
+// ============================================================================
+// 8. ADLIB OPL2 FM SYNTHESIZER, 7 MULTI-BAR COMPOSITIONS & LO-FI SFX ENGINE
+// ============================================================================
+function midiToFreq(m) {
+  return 440 * Math.pow(2, (m - 69) / 12);
+}
+
+// Soft-clipping overdrive curve for Level 33 Heavy Metal FM Guitar
+function makeDriveCurve(amount) {
+  const n = 256;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+  }
+  return curve;
+}
+
+const OPL2 = {
+  ctx: null,
+  master: null,
+  musicBus: null,
+  sfxBus: null,
+  echoIn: null,
+  driveNode: null,
+  noiseBuf: null,
+  muted: false,
+  playing: false,
+  trackIdx: 0,
+  step: 0,
+  nextTime: 0,
+  timerId: null,
+  vu: [0, 0, 0, 0], // Real-time 4-channel VU levels for HUD AdLib visualizer
+
+  init() {
+    if (this.ctx) {
+      if (this.ctx.state === "suspended") this.ctx.resume();
+      return;
+    }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    this.ctx = ctx;
+
+    // Master limiter/compressor prevents clipping across 4 FM voices + SFX
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -10;
+    comp.knee.value = 12;
+    comp.ratio.value = 8;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.15;
+    comp.connect(ctx.destination);
+
+    this.master = ctx.createGain();
+    this.master.gain.value = this.muted ? 0 : 0.82;
+    this.master.connect(comp);
+
+    this.musicBus = ctx.createGain();
+    this.musicBus.gain.value = 0.52;
+    this.musicBus.connect(this.master);
+
+    this.sfxBus = ctx.createGain();
+    this.sfxBus.gain.value = 0.72;
+    this.sfxBus.connect(this.master);
+
+    // Crypt / Loom Echo Delay Bus
+    const delay = ctx.createDelay(0.6);
+    delay.delayTime.value = 0.24;
+    const fb = ctx.createGain();
+    fb.gain.value = 0.34;
+    const damp = ctx.createBiquadFilter();
+    damp.type = "lowpass";
+    damp.frequency.value = 2200;
+    delay.connect(damp);
+    damp.connect(fb);
+    fb.connect(delay);
+    damp.connect(this.musicBus);
+    this.echoIn = delay;
+
+    // Heavy-metal WaveShaper overdrive send
+    const shaper = ctx.createWaveShaper();
+    shaper.curve = makeDriveCurve(16);
+    const postCab = ctx.createBiquadFilter();
+    postCab.type = "lowpass";
+    postCab.frequency.value = 3400;
+    shaper.connect(postCab);
+    postCab.connect(this.musicBus);
+    this.driveNode = shaper;
+
+    // 1.5-second white-noise buffer for AdLib percussion & Grog explosions
+    const len = Math.floor(ctx.sampleRate * 1.5);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let lfsr = 0xACE1;
+    for (let i = 0; i < len; i++) {
+      // Authentic crisp digital/OPL noise texture
+      const bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+      lfsr = (lfsr >> 1) | (bit << 15);
+      data[i] = (Math.random() * 1.4 - 0.7) + (bit ? 0.3 : -0.3);
+    }
+    this.noiseBuf = buf;
+
+    const led = document.getElementById("led-opl");
+    if (led) led.classList.add("on");
+    this.startSequencer();
+  },
+
+  setMuted(m) {
+    this.muted = !!m;
+    if (this.master && this.ctx) {
+      this.master.gain.setTargetAtTime(this.muted ? 0 : 0.82, this.ctx.currentTime, 0.015);
+    }
+    const btn = document.getElementById("btn-sfx");
+    if (btn) {
+      btn.textContent = this.muted ? "SOUND: OFF" : "SOUND: ON";
+      btn.classList.toggle("active", !this.muted);
+    }
+  },
+
+  setTrack(idx) {
+    const clamped = Math.max(0, Math.min(6, idx | 0));
+    if (this.trackIdx !== clamped) {
+      this.trackIdx = clamped;
+      this.step = 0;
+    }
+  },
+
+  // 2-Operator OPL2 FM Voice (Modulator -> ModGain -> Carrier.frequency)
+  playFM(time, midi, dur, opts) {
+    if (!this.ctx || midi <= 0) return;
+    const ctx = this.ctx;
+    const f0 = midiToFreq(midi);
+    const ratio = opts.ratio || 2.0;
+    const index = opts.index !== undefined ? opts.index : 2.2;
+    const vol = opts.vol || 0.18;
+    const atk = opts.atk || 0.006;
+    const dec = opts.dec || dur;
+
+    const car = ctx.createOscillator();
+    const mod = ctx.createOscillator();
+    const modGain = ctx.createGain();
+    const amp = ctx.createGain();
+
+    car.type = opts.carWave || "sine";
+    mod.type = opts.modWave || "sine";
+
+    // Optional blues saxophone / guitar pitch-bend scoop!
+    if (opts.bendSemis) {
+      const fStart = midiToFreq(midi + opts.bendSemis);
+      car.frequency.setValueAtTime(fStart, time);
+      car.frequency.exponentialRampToValueAtTime(f0, time + Math.min(0.09, dur * 0.6));
+      mod.frequency.setValueAtTime(fStart * ratio, time);
+      mod.frequency.exponentialRampToValueAtTime(f0 * ratio, time + Math.min(0.09, dur * 0.6));
+    } else {
+      car.frequency.setValueAtTime(f0, time);
+      mod.frequency.setValueAtTime(f0 * ratio, time);
+    }
+
+    // Optional eerie vibrato (Purple Tentacle / Metal sustain)
+    if (opts.vib) {
+      const lfo = ctx.createOscillator();
+      const lfoG = ctx.createGain();
+      lfo.frequency.value = 6.5;
+      lfoG.gain.value = f0 * 0.016;
+      lfo.connect(lfoG);
+      lfoG.connect(car.frequency);
+      lfo.start(time);
+      lfo.stop(time + dur + 0.05);
+    }
+
+    // FM Modulation Index ADSR (crisp metallic attack decaying into warm body)
+    const peakMod = f0 * index;
+    const susMod = f0 * (opts.modSus !== undefined ? opts.modSus : index * 0.35);
+    modGain.gain.setValueAtTime(0.01, time);
+    modGain.gain.linearRampToValueAtTime(peakMod, time + atk);
+    modGain.gain.exponentialRampToValueAtTime(Math.max(1, susMod), time + Math.max(atk + 0.02, dec * 0.75));
+
+    // Carrier Amplitude Envelope
+    amp.gain.setValueAtTime(0.0001, time);
+    amp.gain.linearRampToValueAtTime(vol, time + atk);
+    amp.gain.exponentialRampToValueAtTime(0.0008, time + dur);
+
+    mod.connect(modGain);
+    modGain.connect(car.frequency);
+    car.connect(amp);
+
+    if (opts.drive && this.driveNode) {
+      amp.connect(this.driveNode);
+    } else {
+      amp.connect(this.musicBus);
+    }
+    if (opts.echo && this.echoIn) {
+      const send = ctx.createGain();
+      send.gain.value = opts.echo;
+      amp.connect(send);
+      send.connect(this.echoIn);
+    }
+
+    mod.start(time);
+    car.start(time);
+    mod.stop(time + dur + 0.03);
+    car.stop(time + dur + 0.03);
+    this.vu[opts.vuCh || 0] = Math.min(1, vol * 4.2);
+  },
+
+  // Fast-Decay Low-Pass Filtered Triangle Bass
+  playBass(time, midi, dur, vol = 0.28, grit = false) {
+    if (!this.ctx || midi <= 0) return;
+    const ctx = this.ctx;
+    const freq = midiToFreq(midi);
+    const osc = ctx.createOscillator();
+    osc.type = grit ? "sawtooth" : "triangle";
+    osc.frequency.setValueAtTime(freq, time);
+
+    const flt = ctx.createBiquadFilter();
+    flt.type = "lowpass";
+    flt.Q.value = 2.2;
+    flt.frequency.setValueAtTime(grit ? 1350 : 920, time);
+    flt.frequency.exponentialRampToValueAtTime(210, time + Math.min(0.16, dur * 0.85));
+
+    const amp = ctx.createGain();
+    amp.gain.setValueAtTime(0.0001, time);
+    amp.gain.linearRampToValueAtTime(vol, time + 0.005);
+    amp.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+    osc.connect(flt);
+    flt.connect(amp);
+    amp.connect(this.musicBus);
+    osc.start(time);
+    osc.stop(time + dur + 0.02);
+    this.vu[2] = Math.min(1, vol * 3.2);
+  },
+
+  // Filtered White-Noise & Pitched Body Percussion ('K'=Kick, 'S'=Snare, 'h'=ClosedHat, 'H'=OpenHat, 'r'=Rim)
+  playDrum(time, code) {
+    if (!this.ctx || !code || code === ".") return;
+    const ctx = this.ctx;
+    if (code === "K") {
+      const osc = ctx.createOscillator();
+      const amp = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(155, time);
+      osc.frequency.exponentialRampToValueAtTime(38, time + 0.085);
+      amp.gain.setValueAtTime(0.34, time);
+      amp.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
+      osc.connect(amp);
+      amp.connect(this.musicBus);
+      osc.start(time);
+      osc.stop(time + 0.12);
+      this.vu[3] = 0.95;
+    } else if (code === "S" || code === "r") {
+      const isRim = code === "r";
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuf;
+      const flt = ctx.createBiquadFilter();
+      flt.type = "bandpass";
+      flt.frequency.value = isRim ? 2400 : 1550;
+      flt.Q.value = isRim ? 3.5 : 1.1;
+      const amp = ctx.createGain();
+      const dur = isRim ? 0.055 : 0.125;
+      amp.gain.setValueAtTime(isRim ? 0.17 : 0.24, time);
+      amp.gain.exponentialRampToValueAtTime(0.001, time + dur);
+      src.connect(flt);
+      flt.connect(amp);
+      amp.connect(this.musicBus);
+      src.start(time);
+      src.stop(time + dur + 0.01);
+      if (!isRim) {
+        const snap = ctx.createOscillator();
+        const sg = ctx.createGain();
+        snap.type = "triangle";
+        snap.frequency.setValueAtTime(210, time);
+        snap.frequency.exponentialRampToValueAtTime(95, time + 0.05);
+        sg.gain.setValueAtTime(0.16, time);
+        sg.gain.exponentialRampToValueAtTime(0.001, time + 0.06);
+        snap.connect(sg);
+        sg.connect(this.musicBus);
+        snap.start(time);
+        snap.stop(time + 0.07);
+      }
+      this.vu[3] = isRim ? 0.65 : 0.9;
+    } else if (code === "h" || code === "H") {
+      const open = code === "H";
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuf;
+      const flt = ctx.createBiquadFilter();
+      flt.type = "highpass";
+      flt.frequency.value = 6400;
+      const amp = ctx.createGain();
+      const dur = open ? 0.13 : 0.032;
+      amp.gain.setValueAtTime(open ? 0.11 : 0.075, time);
+      amp.gain.exponentialRampToValueAtTime(0.001, time + dur);
+      src.connect(flt);
+      flt.connect(amp);
+      amp.connect(this.musicBus);
+      src.start(time);
+      src.stop(time + dur + 0.01);
+      this.vu[3] = Math.max(this.vu[3], open ? 0.6 : 0.35);
+    }
+  },
+
+  startSequencer() {
+    if (this.timerId) return;
+    this.playing = true;
+    this.nextTime = this.ctx.currentTime + 0.05;
+    this.timerId = setInterval(() => {
+      if (!this.ctx || !this.playing || this.ctx.state !== "running") return;
+      const horizon = this.ctx.currentTime + 0.13;
+      while (this.nextTime < horizon) {
+        const tr = TRACKS[this.trackIdx];
+        const stepDur = 60 / tr.bpm / 4;
+        // Swing timing on Track 5 (Sam & Max Blues Shuffle!)
+        const swingOff = (tr.swing && (this.step & 1) === 1) ? stepDur * 0.28 : 0;
+        tr.trigger(this, this.step, this.nextTime + swingOff, stepDur);
+        this.nextTime += stepDur;
+        this.step = (this.step + 1) % tr.len;
+      }
+    }, 25);
+  },
+
+  // Dedicated Non-Clipping Lo-Fi AdLib SFX Channels
+  sfx(kind, param = 0) {
+    if (!this.ctx || this.muted || this.ctx.state !== "running") return;
+    const ctx = this.ctx;
+    const t = ctx.currentTime;
+
+    const quickFM = (fStart, fEnd, dur, ratio, idx, vol, wave = "sine") => {
+      const c = ctx.createOscillator();
+      const m = ctx.createOscillator();
+      const mg = ctx.createGain();
+      const g = ctx.createGain();
+      c.type = wave;
+      c.frequency.setValueAtTime(fStart, t);
+      if (fEnd !== fStart) c.frequency.exponentialRampToValueAtTime(Math.max(20, fEnd), t + dur);
+      m.frequency.setValueAtTime(fStart * ratio, t);
+      if (fEnd !== fStart) m.frequency.exponentialRampToValueAtTime(Math.max(20, fEnd * ratio), t + dur);
+      mg.gain.setValueAtTime(fStart * idx, t);
+      mg.gain.exponentialRampToValueAtTime(1, t + dur);
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      m.connect(mg); mg.connect(c.frequency); c.connect(g); g.connect(this.sfxBus);
+      m.start(t); c.start(t); m.stop(t + dur + 0.01); c.stop(t + dur + 0.01);
+    };
+
+    switch (kind) {
+      case "paddle":
+        quickFM(330, 495, 0.065, 2.0, 1.6, 0.22);
+        break;
+      case "wall":
+        quickFM(220, 185, 0.045, 1.5, 1.2, 0.15);
+        break;
+      case "brick": {
+        const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.5];
+        const f = scale[Math.min(scale.length - 1, param | 0)];
+        quickFM(f, f * 1.12, 0.085, 2.0, 2.4, 0.22);
+        break;
+      }
+      case "armor":
+        quickFM(620, 410, 0.09, 3.4, 3.8, 0.24, "triangle");
+        break;
+      case "steel":
+        quickFM(940, 880, 0.055, 2.73, 4.5, 0.18);
+        break;
+      case "grog": {
+        // Crunchy 3x3 SCUMM Bar Grog explosion + acid fizz!
+        const src = ctx.createBufferSource();
+        src.buffer = this.noiseBuf;
+        const flt = ctx.createBiquadFilter();
+        flt.type = "lowpass";
+        flt.frequency.setValueAtTime(980, t);
+        flt.frequency.exponentialRampToValueAtTime(95, t + 0.34);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.38, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.36);
+        src.connect(flt); flt.connect(g); g.connect(this.sfxBus);
+        src.start(t); src.stop(t + 0.37);
+        quickFM(190, 42, 0.28, 1.5, 4.0, 0.28, "sawtooth");
+        break;
+      }
+      case "laser":
+        quickFM(1350, 260, 0.09, 1.5, 2.2, 0.18, "sawtooth");
+        break;
+      case "powerup": {
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((fn, i) => {
+          const st = t + i * 0.048;
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "triangle";
+          o.frequency.setValueAtTime(fn, st);
+          g.gain.setValueAtTime(0.22, st);
+          g.gain.exponentialRampToValueAtTime(0.001, st + 0.11);
+          o.connect(g); g.connect(this.sfxBus);
+          o.start(st); o.stop(st + 0.12);
+        });
+        break;
+      }
+      case "sword":
+        // Metallic cutlass clash shing!
+        quickFM(1480, 2240, 0.16, 2.41, 4.5, 0.24);
+        break;
+      case "warp":
+        // Chron-o-John temporal phase whoosh
+        quickFM(260, 780, 0.22, 3.0, 3.2, 0.18);
+        break;
+      case "dart":
+        quickFM(820, 310, 0.06, 2.0, 2.0, 0.15);
+        break;
+      case "loom": {
+        // Pure Loom crystal note chime (C D E F G A B C)
+        const loomNotes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.0, 987.77, 1046.5];
+        const fn = loomNotes[param % loomNotes.length];
+        quickFM(fn, fn, 0.26, 3.0, 1.8, 0.24);
+        break;
+      }
+      case "bossHit":
+        quickFM(240, 95, 0.16, 0.5, 5.0, 0.28, "sawtooth");
+        break;
+      case "die": {
+        [392, 349.23, 311.13, 261.63].forEach((fn, i) => {
+          const st = t + i * 0.11;
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "sawtooth";
+          o.frequency.setValueAtTime(fn, st);
+          o.frequency.linearRampToValueAtTime(fn * 0.88, st + 0.1);
+          g.gain.setValueAtTime(0.2, st);
+          g.gain.exponentialRampToValueAtTime(0.001, st + 0.14);
+          o.connect(g); g.connect(this.sfxBus);
+          o.start(st); o.stop(st + 0.15);
+        });
+        break;
+      }
+      case "clear": {
+        [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((fn, i) => {
+          const st = t + i * 0.075;
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "triangle";
+          o.frequency.setValueAtTime(fn, st);
+          g.gain.setValueAtTime(0.24, st);
+          g.gain.exponentialRampToValueAtTime(0.001, st + 0.16);
+          o.connect(g); g.connect(this.sfxBus);
+          o.start(st); o.stop(st + 0.17);
+        });
+        break;
+      }
+    }
+  }
+};
+
+// ============================================================================
+// THE 7 DISTINCT ADLIB OPL2 COMPOSITIONS (64-STEP / 4-BAR FULL ARRANGEMENTS)
+// ============================================================================
+const TRACKS = [
+  // 0: MONKEY ISLAND (Levels 1-6) — Syncopated Caribbean Reggae, Steel-Pan FM Lead, Walking Bass
+  {
+    title: "MONKEY ISLAND REGGAE (OPL2)",
+    bpm: 124, len: 64,
+    lead: [
+      72,0,76,79, 0,81,79,76, 74,0,77,81, 0,79,77,74,
+      72,0,76,79, 84,0,83,79, 81,0,79,0,  77,76,74,0,
+      76,0,79,84, 0,83,81,79, 77,0,81,84, 0,81,79,77,
+      76,79,84,0, 83,79,74,0, 72,0,76,79, 72,0,0,0
+    ],
+    skank: [
+      // Reggae off-beat skank chords on '&' (steps 2, 6, 10, 14...)
+      0,0,64,0, 0,0,64,0, 0,0,65,0, 0,0,62,0,
+      0,0,64,0, 0,0,64,0, 0,0,65,0, 0,0,67,0,
+      0,0,64,0, 0,0,67,0, 0,0,65,0, 0,0,65,0,
+      0,0,64,0, 0,0,67,0, 0,0,64,0, 0,0,60,0
+    ],
+    bass: [
+      48,0,0,52, 55,0,52,0, 41,0,0,45, 48,0,43,0,
+      48,0,0,52, 55,0,48,0, 41,0,43,0,  47,0,43,0,
+      48,0,0,55, 52,0,48,0, 41,0,0,48, 45,0,41,0,
+      48,0,52,0, 43,0,47,0, 48,0,55,0, 48,0,43,0
+    ],
+    drums: "K.h.r.hHK.h.r.hhK.h.r.hHK.h.r.S.K.h.r.hHK.h.r.hhK.h.r.hHK.S.r.S.",
+    trigger(eng, s, t, d) {
+      const m = this.lead[s];
+      if (m) eng.playFM(t, m, d * 1.9, { ratio: 2.0, index: 2.8, modSus: 0.5, vol: 0.19, vuCh: 0 });
+      const sk = this.skank[s];
+      if (sk) {
+        eng.playFM(t, sk, d * 0.75, { ratio: 3.0, index: 1.8, vol: 0.09, vuCh: 1 });
+        eng.playFM(t, sk + 4, d * 0.75, { ratio: 3.0, index: 1.5, vol: 0.08, vuCh: 1 });
+      }
+      const b = this.bass[s];
+      if (b) eng.playBass(t, b, d * 1.8, 0.28);
+      eng.playDrum(t, this.drums[s]);
+    }
+  },
+
+  // 1: PURPLE TENTACLE MARCH (Levels 7-12) — Quirky Chromatic B-Movie Monster March
+  {
+    title: "PURPLE TENTACLE MARCH (OPL2)",
+    bpm: 128, len: 64,
+    lead: [
+      72,0,75,0, 78,0,79,0, 80,79,78,77, 79,0,0,0,
+      72,0,75,0, 78,0,84,0, 83,82,81,80, 79,0,78,0,
+      77,0,80,0, 83,0,84,0, 86,85,84,83, 80,0,77,0,
+      79,78,77,76, 75,0,74,0, 72,0,67,71, 72,0,0,0
+    ],
+    bass: [
+      36,0,43,0, 42,0,41,0, 40,0,39,0, 38,0,43,0,
+      36,0,43,0, 42,0,41,0, 48,0,47,0, 46,0,45,0,
+      41,0,48,0, 47,0,46,0, 44,0,43,0, 42,0,41,0,
+      43,0,42,0, 41,0,38,0, 36,0,43,0, 36,0,0,0
+    ],
+    drums: "K.S.K.SSK.S.K.hHK.S.K.SSK.S.SSSSK.S.K.SSK.S.K.hHK.S.S.S.K.S.K.SS",
+    trigger(eng, s, t, d) {
+      const m = this.lead[s];
+      if (m) eng.playFM(t, m, d * 1.7, { ratio: 3.0, index: 3.1, vol: 0.17, vib: true, vuCh: 0 });
+      if ((s & 3) === 2) {
+        eng.playFM(t, 60 + ((s >> 2) % 4), d * 0.7, { ratio: 1.5, index: 2.4, vol: 0.09, vuCh: 1 });
+      }
+      const b = this.bass[s];
+      if (b) eng.playBass(t, b, d * 1.4, 0.30, true);
+      eng.playDrum(t, this.drums[s]);
+    }
+  },
+
+  // 2: ATLANTIS CRYPT (Levels 13-18) — Sweeping Echoing Pad, Low Bass Hums, Pentatonic Chimes
+  {
+    title: "ATLANTEAN CRYPT CHIMES (OPL2)",
+    bpm: 120, len: 64,
+    chime: [
+      81,0,0,84, 0,0,88,0, 86,0,84,0, 81,0,0,0,
+      76,0,0,81, 0,0,84,0, 88,0,93,0, 88,0,0,0,
+      86,0,0,88, 0,0,93,0, 91,0,88,0, 84,0,81,0,
+      79,0,76,0, 74,0,76,0, 81,0,0,0, 0,0,0,0
+    ],
+    pad: [57, 60, 62, 55],
+    bass: [33, 36, 38, 31],
+    trigger(eng, s, t, d) {
+      // Sweeping 16-step atmospheric echoing FM pad + deep cavern bass hum
+      if (s % 16 === 0) {
+        const bar = (s >> 4) & 3;
+        const p = this.pad[bar];
+        eng.playFM(t, p, d * 15.5, { ratio: 1.002, index: 1.4, atk: 0.35, vol: 0.13, echo: 0.45, vuCh: 1 });
+        eng.playFM(t, p + 7, d * 15.5, { ratio: 2.0, index: 1.1, atk: 0.42, vol: 0.10, echo: 0.45, vuCh: 1 });
+        eng.playBass(t, this.bass[bar], d * 15.0, 0.27, false);
+      }
+      if (s % 8 === 4) {
+        eng.playBass(t, this.bass[(s >> 4) & 3] + 12, d * 3.5, 0.18, false);
+      }
+      const ch = this.chime[s];
+      if (ch) {
+        eng.playFM(t, ch, d * 3.2, { ratio: 3.5, index: 3.2, modSus: 0.2, vol: 0.16, echo: 0.55, vuCh: 0 });
+      }
+      if (s % 16 === 0) eng.playDrum(t, "K");
+      else if (s % 16 === 12) eng.playDrum(t, "r");
+    }
+  },
+
+  // 3: SPACE COMBAT (Levels 19-24) — Driving 16th-Note Bassline, Soaring Lead, Rapid Snares
+  {
+    title: "SECTOR X STARFIGHTER (OPL2)",
+    bpm: 136, len: 64,
+    lead: [
+      74,0,0,74, 77,0,81,0, 86,0,0,84, 81,0,79,0,
+      77,0,79,0, 81,0,74,0, 76,0,0,0,  79,0,81,0,
+      82,0,0,82, 86,0,89,0, 88,0,86,0, 84,0,81,0,
+      86,0,84,81, 79,0,77,0, 74,0,0,0, 0,0,72,73
+    ],
+    bassRoot: [38, 34, 36, 33],
+    drums: "KhhSKhhSKhhSKSSSKhhSKhhSKhSSKSSSKhhSKhhSKhhSKSSSKhSSKhSSKSSSSSSS",
+    trigger(eng, s, t, d) {
+      const bar = (s >> 4) & 3;
+      const root = this.bassRoot[bar];
+      // Driving 16th-note octave synth bassline!
+      const bNote = (s & 1) === 0 ? root : root + 12;
+      eng.playBass(t, bNote, d * 0.92, 0.25, true);
+
+      const m = this.lead[s];
+      if (m) {
+        eng.playFM(t, m, d * 2.6, { ratio: 1.0, index: 2.9, carWave: "sine", vol: 0.19, echo: 0.22, vuCh: 0 });
+      }
+      if ((s & 3) === 0) {
+        eng.playFM(t, root + 24 + ((s >> 2) % 3) * 3, d * 0.85, { ratio: 2.0, index: 1.8, vol: 0.08, vuCh: 1 });
+      }
+      eng.playDrum(t, this.drums[s]);
+    }
+  },
+
+  // 4: LOOM OF FATE (Levels 25-30) — Four-Voice Classical Counterpoint Weaving Chords
+  {
+    title: "LOOM COUNTERPOINT IN E MINOR",
+    bpm: 122, len: 64,
+    // Voice 1: Soprano Flute
+    v1: [
+      76,0,79,0, 83,0,81,0, 79,0,78,0, 76,0,79,0,
+      81,0,84,0, 83,0,79,0, 78,0,76,0, 75,0,0,0,
+      76,0,83,0, 86,0,84,0, 83,0,81,0, 79,0,76,0,
+      78,0,81,0, 79,0,78,0, 76,0,0,0, 0,0,0,0
+    ],
+    // Voice 2: Alto Harpsichord / Harp Arpeggio (running 16ths)
+    v2: [
+      64,67,71,67, 64,67,71,67, 64,69,72,69, 64,67,71,67,
+      64,69,72,69, 62,67,71,67, 60,66,69,66, 59,63,66,63,
+      64,67,71,67, 62,67,71,67, 60,64,69,64, 59,64,67,64,
+      60,66,69,66, 59,63,66,63, 64,67,71,76, 71,67,64,59
+    ],
+    // Voice 3: Tenor Horn Counter-melody
+    v3: [
+      0,0,59,0, 0,0,60,0, 0,0,62,0, 0,0,59,0,
+      0,0,60,0, 0,0,59,0, 0,0,57,0, 0,0,59,0,
+      0,0,59,0, 0,0,62,0, 0,0,60,0, 0,0,59,0,
+      0,0,57,0, 0,0,59,0, 55,0,59,0, 64,0,0,0
+    ],
+    // Voice 4: Contrapuntal Baroque Cello Bass
+    v4: [
+      40,0,0,0, 43,0,0,0, 45,0,0,0, 40,0,0,0,
+      45,0,0,0, 43,0,0,0, 42,0,0,0, 47,0,45,0,
+      40,0,0,0, 38,0,0,0, 36,0,0,0, 40,0,0,0,
+      45,0,0,0, 47,0,0,0, 40,0,0,0, 40,0,0,0
+    ],
+    trigger(eng, s, t, d) {
+      if (this.v1[s]) eng.playFM(t, this.v1[s], d * 2.1, { ratio: 1.0, index: 1.3, atk: 0.02, vol: 0.16, echo: 0.35, vuCh: 0 });
+      if (this.v2[s]) eng.playFM(t, this.v2[s], d * 0.95, { ratio: 3.0, index: 1.7, vol: 0.09, echo: 0.25, vuCh: 1 });
+      if (this.v3[s]) eng.playFM(t, this.v3[s], d * 2.0, { ratio: 2.0, index: 1.1, atk: 0.025, vol: 0.11, vuCh: 3 });
+      if (this.v4[s]) eng.playBass(t, this.v4[s], d * 3.6, 0.26, false);
+    }
+  },
+
+  // 5: SAM & MAX (Levels 31-32) — Swing-Jazz Walking Bass Blues w/ Pitch-Bending FM Saxophone
+  {
+    title: "FREELANCE BLUES SAX (OPL2)",
+    bpm: 126, len: 64, swing: true,
+    sax: [
+      69,0,72,73, 76,0,79,76, 73,0,72,69, 0,0,67,69,
+      74,0,77,78, 81,0,79,77, 74,0,72,69, 0,0,0,0,
+      76,0,79,80, 81,0,79,76, 74,0,77,74, 72,73,69,0,
+      76,75,74,72, 69,0,73,76, 69,0,0,0,  0,0,67,68
+    ],
+    // Classic walking quarter-note jazz bassline (A7 - D7 - E7 - A7)
+    bass: [
+      45,0,49,0, 52,0,55,0, 54,0,52,0, 49,0,45,0,
+      50,0,54,0, 57,0,60,0, 59,0,57,0, 54,0,50,0,
+      52,0,56,0, 59,0,56,0, 50,0,54,0, 57,0,54,0,
+      45,0,49,0, 52,0,53,0, 54,0,52,0, 50,0,52,0
+    ],
+    drums: "K..hS..hK..hS.hhK..hS..hK..hS.hHK..hS..hK..hS.hhK..hS.r.K.S.K.S.",
+    trigger(eng, s, t, d) {
+      const sx = this.sax[s];
+      if (sx) {
+        // Pitch-bend scoop (-1 or -2 semitones) into smoky blues sax notes!
+        const bend = (s % 4 === 0 || sx === 73 || sx === 78 || sx === 80) ? -1.5 : 0;
+        eng.playFM(t, sx, d * 1.95, {
+          ratio: 1.0, index: 3.1, modSus: 1.8, atk: 0.015, vol: 0.20, bendSemis: bend, vib: true, vuCh: 0
+        });
+      }
+      if (s % 8 === 3) {
+        eng.playFM(t, 64, d * 0.9, { ratio: 2.0, index: 1.5, vol: 0.09, vuCh: 1 });
+        eng.playFM(t, 67, d * 0.9, { ratio: 2.0, index: 1.5, vol: 0.08, vuCh: 1 });
+      }
+      if (this.bass[s]) eng.playBass(t, this.bass[s], d * 1.9, 0.29, false);
+      eng.playDrum(t, this.drums[s]);
+    }
+  },
+
+  // 6: LECHUCK'S BATTLE ANTHEM (Level 33) — Double-Time Heavy Metal w/ Distorted FM Guitar
+  {
+    title: "LECHUCK HELLFIRE METAL (OPL2)",
+    bpm: 142, len: 64,
+    lead: [
+      76,79,83,76, 80,83,86,83, 84,83,81,79, 80,0,76,0,
+      76,79,83,88, 86,84,83,81, 80,83,86,89, 88,0,0,0,
+      89,88,86,84, 83,86,84,83, 81,84,83,81, 80,83,80,76,
+      77,80,83,86, 89,88,86,83, 88,0,88,0,  76,0,0,0
+    ],
+    powerRoot: [40, 41, 45, 44], // Phrygian Dominant E - F - Am - G#dim!
+    drums: "KhSKKhSKKhSKKSSSKhSKKhSKKhSSKSSSKhSKKhSKKhSKKSSSKhSKKhSKSSSSSSSS",
+    trigger(eng, s, t, d) {
+      const root = this.powerRoot[(s >> 4) & 3];
+      // Double-time galloping metal bass
+      eng.playBass(t, (s & 3) === 3 ? root + 7 : root, d * 0.9, 0.28, true);
+
+      // Rhythm palm-muted power chord chugs on beat
+      if ((s & 1) === 0) {
+        eng.playFM(t, root + 12, d * 0.85, { ratio: 0.5, index: 3.6, vol: 0.11, drive: true, vuCh: 1 });
+      }
+      // Shredding distorted FM lead guitar!
+      const m = this.lead[s];
+      if (m) {
+        const bend = (s === 12 || s === 28 || s === 56) ? -2 : 0;
+        eng.playFM(t, m, d * 1.4, {
+          ratio: 0.5, index: 4.2, modSus: 2.6, vol: 0.16, drive: true, bendSemis: bend, vib: true, vuCh: 0
+        });
+      }
+      eng.playDrum(t, this.drums[s]);
+    }
+  }
+];
+
+// ============================================================================
+// 9. GAME STATE, WORLD MECHANICS, SUB-STEPPED PHYSICS & RENDERING ENGINE
+// ============================================================================
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+
+// Playfield geometry constants (320x200 split: 256x200 playfield + 64x200 HUD)
+const PF_LEFT   = 8;
+const PF_RIGHT  = 248;  // 248 - 8 = 240px exact inner width = 30 cols * 8px
+const PF_TOP    = 8;
+const PF_BOTTOM = 200;
+const BRICK_W   = 8;
+const BRICK_H   = 6;
+const PADDLE_Y  = 184;
+
+const STATE_TITLE   = 0;
+const STATE_READY   = 1;
+const STATE_PLAYING = 2;
+const STATE_PAUSED  = 3;
+const STATE_CLEAR   = 4;
+const STATE_OVER    = 5;
+const STATE_VICTORY = 6;
+
+const HI_SCORE_KEY = "scumm_vaus_ega_hiscore_v3";
+
+const INSULT_PAIRS = [
+  ["YOU FIGHT LIKE A DAIRY FARMER!", "HOW APPROPRIATE! YOU FIGHT LIKE A COW!"],
+  ["SOON YOU'LL WEAR MY SWORD LIKE A SHISH KEBAB!", "FIRST STOP WAVING IT LIKE A FEATHER DUSTER!"],
+  ["MY HANDKERCHIEF WILL WIPE UP YOUR BLOOD!", "SO YOU GOT THAT JOB AS JANITOR, AFTER ALL?"],
+  ["PEOPLE FALL AT MY FEET WHEN THEY SEE ME!", "EVEN BEFORE THEY SMELL YOUR BREATH?"]
+];
+
+const LOOM_DRAFTS = [
+  { name: "TRANSCENDENCE!", color: C_BCYAN },
+  { name: "SHATTER OPEN!",  color: C_BYELLOW },
+  { name: "SHARPEN BLADE!", color: C_BMAG }
+];
+
+const game = {
+  state: STATE_TITLE,
+  selectedLevel: 0,     // 0..32 previewed on Live Attract Title Screen
+  levelIdx: 0,          // Active level 0..32
+  worldIdx: 0,          // 0..6
+  score: 0,
+  hiScore: 50000,
+  lives: 3,
+  combo: 0,
+  stateTimer: 0,
+  animTick: 0,
+  marqueePx: 0,
+
+  // Screen juice (integer pixel shake + pure EGA Bayer/scanline stipple flash)
+  shakeTime: 0,
+  shakeMag: 0,
+  flashLevel: 0,        // 0..14 Bayer stipple flash intensity
+  flashReg: C_BGREEN,
+
+  // Vaus Paddle state
+  paddle: {
+    x: 128,             // Center X inside [PF_LEFT..PF_RIGHT]
+    w: 34,
+    h: 7,
+    mode: "STD",        // 'STD', 'LASER', 'EXPAND', 'CATCH'
+    laserCd: 0,
+    invuln: 0
+  },
+
+  // Active timed modifiers
+  slowTimer: 0,
+  cutlassTimer: 0,      // World 1 Golden Cutlass Pierce Mode!
+  doubleScoreTimer: 0,  // World 5 Sharpening Draft reward
+
+  // World-specific state
+  duelPips: 0,          // 0..3 parries in World 1
+  insultBanner: "",
+  insultBannerTimer: 0,
+  insultColor: C_BYELLOW,
+
+  chronoEra: 1,         // 0=1789 PAST, 1=1993 PRESENT, 2=2193 FUTURE
+  chronoTimer: 6.0,
+
+  idolShotTimer: 3.0,   // World 3 dart trap timer
+  idolWarn: false,
+
+  gravityWells: [],     // World 4 singularities
+  loomNotes: [],        // World 5 0..4 woven notes
+  loomDraftIdx: 0,
+  roadWalls: [],        // World 6 moving highway barricades
+
+  // Level 33 Ghost Pirate LeChuck Boss
+  boss: {
+    active: false,
+    x: 128,
+    y: 25,
+    vx: 44,
+    hp: 30,
+    maxHp: 30,
+    flash: 0,
+    fireTimer: 2.5,
+    bricksBroken: 0
+  },
+
+  bricks: [],
+  destructibleCount: 0,
+  balls: [],
+  capsules: [],
+  lasers: [],
+  hazards: [],          // Atlantean darts & LeChuck voodoo skulls
+  particles: [],
+  popups: [],
+  fireworks: []
+};
+
+// Load persisted High Score safely
+try {
+  const saved = parseInt(localStorage.getItem(HI_SCORE_KEY) || "50000", 10);
+  if (!Number.isNaN(saved) && saved > game.hiScore) game.hiScore = saved;
+} catch (_) {}
+
+function addScore(pts, popX, popY, popColor = C_BYELLOW, customLabel = null) {
+  const mult = game.doubleScoreTimer > 0 ? 2 : 1;
+  const gain = (pts * mult) | 0;
+  if (game.state !== STATE_TITLE) {
+    game.score = Math.min(9999999, game.score + gain);
+    if (game.score > game.hiScore) {
+      game.hiScore = game.score;
+      try { localStorage.setItem(HI_SCORE_KEY, String(game.hiScore)); } catch (_) {}
+    }
+  }
+  if (popX !== undefined && popY !== undefined) {
+    spawnPopup(popX, popY, customLabel || ("+" + gain), popColor);
+  }
+}
+
+function spawnPopup(x, y, text, reg = C_BYELLOW) {
+  if (game.popups.length > 18) game.popups.shift();
+  game.popups.push({ x: x | 0, y: y | 0, vy: -22, text, reg, life: 0.85 });
+}
+
+function spawnDebris(x, y, regMain, count = 6, speedScale = 1) {
+  const regHi = egaShade(regMain, 1);
+  const regLo = egaShade(regMain, -1);
+  for (let i = 0; i < count; i++) {
+    if (game.particles.length > 160) game.particles.shift();
+    const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
+    const spd = (28 + Math.random() * 62) * speedScale;
+    game.particles.push({
+      x, y,
+      vx: Math.cos(ang) * spd,
+      vy: Math.sin(ang) * spd - 24,
+      reg: (i % 3 === 0) ? regHi : ((i % 3 === 1) ? regMain : regLo),
+      size: (i & 1) === 0 ? 2 : 1,
+      life: 0.35 + Math.random() * 0.35
+    });
+  }
+}
+
+function triggerShake(mag, dur, flashLvl = 0, flashColor = C_BGREEN) {
+  game.shakeMag = Math.max(game.shakeMag, mag);
+  game.shakeTime = Math.max(game.shakeTime, dur);
+  if (flashLvl > game.flashLevel) {
+    game.flashLevel = flashLvl;
+    game.flashReg = flashColor;
+  }
+}
+
+// Build brick list & world mechanics for a stage (0..32)
+function loadLevel(idx, isPreview = false) {
+  const clamped = ((idx % LEVEL_DEFS.length) + LEVEL_DEFS.length) % LEVEL_DEFS.length;
+  const def = LEVEL_DEFS[clamped];
+  game.levelIdx = clamped;
+  game.worldIdx = def.world;
+  OPL2.setTrack(def.world);
+
+  game.bricks = [];
+  game.capsules = [];
+  game.lasers = [];
+  game.hazards = [];
+  game.particles = [];
+  game.popups = [];
+  game.destructibleCount = 0;
+  game.combo = 0;
+
+  // Reset world-specific state
+  game.duelPips = 0;
+  game.cutlassTimer = 0;
+  game.doubleScoreTimer = 0;
+  game.insultBanner = "";
+  game.insultBannerTimer = 0;
+  game.chronoEra = 1;
+  game.chronoTimer = 6.0;
+  game.idolShotTimer = 2.8;
+  game.idolWarn = false;
+  game.loomNotes = [];
+  game.gravityWells = [];
+  game.roadWalls = [];
+
+  const startY = def.yOffset || 15;
+  for (let r = 0; r < def.rows.length; r++) {
+    const rowStr = def.rows[r];
+    for (let c = 0; c < 30; c++) {
+      const ch = rowStr[c];
+      if (!ch || ch === "." || ch === " ") continue;
+      const bx = PF_LEFT + c * BRICK_W;
+      const by = startY + r * BRICK_H;
+      let type = "normal";
+      let hp = 1;
+      let colorReg = C_LGRAY;
+
+      if (ch === "#") {
+        type = "steel";
+        hp = 9999;
+        colorReg = C_LGRAY;
+      } else if (ch === "*") {
+        type = "grog";
+        hp = 1;
+        colorReg = C_BGREEN;
+      } else if (ch === "!") {
+        type = "idol";
+        hp = 2;
+        colorReg = C_GOLD;
+      } else if (ch === "~") {
+        type = "loom";
+        hp = 1;
+        colorReg = C_BCYAN;
+      } else if (ch === "1" || ch === "2") {
+        type = "tempo";
+        hp = 1;
+        colorReg = ch === "1" ? C_BCYAN : C_BMAG;
+      } else {
+        const lower = ch.toLowerCase();
+        const pal = BRICK_PALETTE_DEFS[lower] || BRICK_PALETTE_DEFS["w"];
+        colorReg = pal[1];
+        if (ch !== lower) {
+          type = "armor";
+          hp = 2;
+        }
+      }
+
+      if (type !== "steel") game.destructibleCount++;
+      game.bricks.push({
+        col: c, row: r,
+        x: bx, y: by, w: BRICK_W, h: BRICK_H,
+        ch, type, hp, maxHp: hp, colorReg, alive: true
+      });
+    }
+  }
+
+  // World 4 (worldIdx === 3): Orbital Gravity Wells
+  if (game.worldIdx === 3) {
+    const twoWells = clamped >= 21;
+    if (twoWells) {
+      game.gravityWells.push({ cx: 78, cy: 138, r: 14, phase: 0 });
+      game.gravityWells.push({ cx: 178, cy: 138, r: 14, phase: Math.PI });
+    } else {
+      game.gravityWells.push({ cx: 128, cy: 140, r: 16, phase: 0 });
+    }
+  }
+
+  // World 6 (worldIdx === 5): Sam & Max Moving Highway Barricades
+  if (game.worldIdx === 5) {
+    game.roadWalls.push({ x: 40, y: 136, w: 20, h: 5, vx: 46 });
+    game.roadWalls.push({ x: 186, y: 148, w: 20, h: 5, vx: -52 });
+  }
+
+  // World 7 (Level 33, worldIdx === 6): Ghost Pirate LeChuck Boss!
+  if (game.worldIdx === 6) {
+    game.boss.active = true;
+    game.boss.x = 128;
+    game.boss.y = 24;
+    game.boss.vx = 48;
+    game.boss.hp = 30;
+    game.boss.maxHp = 30;
+    game.boss.flash = 0;
+    game.boss.fireTimer = 2.6;
+    game.boss.bricksBroken = 0;
+  } else {
+    game.boss.active = false;
+  }
+
+  if (!isPreview) {
+    resetPaddleAndBall(true);
+  }
+}
+
+function getBaseBallSpeed() {
+  let spd = 108 + Math.min(44, game.levelIdx * 1.25);
+  if (game.slowTimer > 0) spd *= 0.72;
+  if (game.worldIdx === 1) {
+    // Chron-o-John subtle era speed shift
+    if (game.chronoEra === 0) spd *= 0.92;
+    else if (game.chronoEra === 2) spd *= 1.08;
+  }
+  return spd;
+}
+
+function resetPaddleAndBall(keepMode = false) {
+  if (!keepMode) {
+    game.paddle.mode = "STD";
+    game.paddle.w = 34;
+    game.slowTimer = 0;
+    game.cutlassTimer = 0;
+  } else {
+    game.paddle.w = game.paddle.mode === "EXPAND" ? 48 : 34;
+  }
+  game.paddle.x = 128;
+  game.paddle.laserCd = 0;
+  game.balls = [{
+    x: 128,
+    y: PADDLE_Y - 3,
+    vx: 46,
+    vy: -98,
+    r: 2.4,
+    stuck: true,
+    stuckOff: 0,
+    holdTime: 0,
+    swan: false
+  }];
+}
+
+function isBrickTangible(b) {
+  if (!b.alive) return false;
+  if (b.type !== "tempo" || game.worldIdx !== 1) return true;
+  // Never strand player when <= 6 destructible bricks remain!
+  if (game.destructibleCount <= 6 || game.chronoEra === 1) return true;
+  if (game.chronoEra === 0) return b.ch === "1";
+  return b.ch === "2";
+}
+
+function maybeSpawnCapsule(x, y) {
+  if (game.capsules.length >= 3) return;
+  if (Math.random() > 0.22) return;
+  // Weighted LucasArts capsule pool: L, E, C, S, and rarer P (1UP Gold Guy)
+  const roll = Math.random();
+  let kind = "L";
+  if (roll < 0.25) kind = "L";
+  else if (roll < 0.50) kind = "E";
+  else if (roll < 0.72) kind = "C";
+  else if (roll < 0.91) kind = "S";
+  else kind = "P";
+  game.capsules.push({ x: x - 9, y, w: 18, h: 9, vy: 42, kind });
+}
+
+function applyCapsule(kind) {
+  OPL2.sfx("powerup");
+  addScore(250, game.paddle.x, PADDLE_Y - 8, C_WHITE, kind + " +250");
+  if (kind === "L") {
+    game.paddle.mode = "LASER";
+    game.paddle.w = 34;
+  } else if (kind === "E") {
+    game.paddle.mode = "EXPAND";
+    game.paddle.w = 48;
+  } else if (kind === "C") {
+    game.paddle.mode = "CATCH";
+    game.paddle.w = 34;
+  } else if (kind === "S") {
+    game.slowTimer = 12.0;
+  } else if (kind === "P") {
+    game.lives = Math.min(9, game.lives + 1);
+    spawnPopup(game.paddle.x, PADDLE_Y - 16, "1UP GOLD GUY!", C_BYELLOW);
+  }
+  clampPaddle();
+}
+
+function weaveLoomNote(bx, by) {
+  const noteIdx = game.loomNotes.length;
+  const noteColors = [C_BRED, C_BYELLOW, C_BGREEN, C_BCYAN, C_BBLUE, C_BMAG, C_WHITE];
+  const col = noteColors[(game.loomDraftIdx * 2 + noteIdx) % noteColors.length];
+  OPL2.sfx("loom", game.loomDraftIdx + noteIdx);
+  game.loomNotes.push(col);
+
+  if (game.loomNotes.length >= 4) {
+    const draft = LOOM_DRAFTS[game.loomDraftIdx % LOOM_DRAFTS.length];
+    game.loomDraftIdx++;
+    game.loomNotes = [];
+    triggerShake(2, 0.16, 7, draft.color);
+    spawnPopup(128, 128, draft.name, draft.color);
+
+    const dType = (game.loomDraftIdx - 1) % 3;
+    if (dType === 0 && game.balls.length < 4) {
+      // TRANSCENDENCE: Spawn twin spectral Swan-Ball!
+      const src = game.balls[0];
+      if (src) {
+        const spd = getBaseBallSpeed();
+        game.balls.push({
+          x: src.x, y: src.y,
+          vx: -src.vx || 52,
+          vy: -Math.abs(src.vy || spd * 0.8),
+          r: 2.4, stuck: false, stuckOff: 0, holdTime: 0, swan: true
+        });
+      }
+    } else if (dType === 1) {
+      // OPENING: Shatter up to 4 random destructible bricks!
+      const pool = game.bricks.filter((b) => b.alive && b.type !== "steel");
+      for (let k = 0; k < 4 && pool.length > 0; k++) {
+        const pick = (Math.random() * pool.length) | 0;
+        const tb = pool.splice(pick, 1)[0];
+        damageBrick(tb, 2, true);
+      }
+    } else {
+      // SHARPENING: 8s Double Score + Precision Slow!
+      game.doubleScoreTimer = 8.0;
+      game.slowTimer = Math.max(game.slowTimer, 6.0);
+    }
+  } else {
+    spawnPopup(bx, by, "♪", col);
+  }
+}
+
+// Recursive 3x3 SCUMM Bar Grog Detonation & Brick Damage Handler
+function damageBrick(b, dmg = 1, fromExplosion = false) {
+  if (!b.alive || b.type === "steel") return;
+  b.hp -= dmg;
+  if (b.hp > 0) {
+    OPL2.sfx("armor");
+    spawnDebris(b.x + 4, b.y + 3, b.colorReg, 4, 0.7);
+    addScore(25);
+    return;
+  }
+
+  b.alive = false;
+  game.destructibleCount = Math.max(0, game.destructibleCount - 1);
+  game.combo++;
+  const cx = b.x + 4;
+  const cy = b.y + 3;
+
+  if (b.type === "grog") {
+    // 3x3 Recursive Bubbling Grog Explosion!
+    OPL2.sfx("grog");
+    triggerShake(4, 0.24, 10, C_BGREEN);
+    spawnDebris(cx, cy, C_BGREEN, 14, 1.45);
+    spawnDebris(cx, cy, C_BYELLOW, 8, 1.2);
+    addScore(150, cx, cy, C_BGREEN);
+
+    for (const nb of game.bricks) {
+      if (!nb.alive || nb.type === "steel") continue;
+      if (Math.abs(nb.col - b.col) <= 1 && Math.abs(nb.row - b.row) <= 1) {
+        damageBrick(nb, 2, true);
+      }
+    }
+  } else {
+    if (!fromExplosion) OPL2.sfx("brick", Math.min(7, game.combo - 1));
+    spawnDebris(cx, cy, b.colorReg, 7, 1.0);
+    const comboBonus = Math.min(100, (game.combo >> 2) * 25);
+    const basePts = b.type === "armor" || b.type === "idol" ? 100 : 50;
+    const total = basePts + comboBonus;
+    if (game.combo >= 4 && game.combo % 4 === 0) {
+      addScore(total, cx, cy, C_BCYAN, "+" + total + "!");
+    } else {
+      addScore(total, fromExplosion ? undefined : cx, fromExplosion ? undefined : cy, C_BYELLOW);
+    }
+    maybeSpawnCapsule(cx, cy);
+  }
+
+  // World 5 Loom Crystal Note weaving
+  if (game.worldIdx === 4 && (b.type === "loom" || (!fromExplosion && game.combo % 6 === 0))) {
+    weaveLoomNote(cx, cy);
+  }
+
+  // Level 33 Voodoo Root Beer splash damage on LeChuck every 8 bricks broken!
+  if (game.boss.active && game.boss.hp > 0) {
+    game.boss.bricksBroken++;
+    if (game.boss.bricksBroken % 8 === 0) {
+      damageBoss(2, cx, cy, "ROOT BEER -2!");
+    }
+  }
+}
+
+function damageBoss(dmg, popX, popY, label) {
+  if (!game.boss.active || game.boss.hp <= 0) return;
+  game.boss.hp = Math.max(0, game.boss.hp - dmg);
+  game.boss.flash = 0.14;
+  OPL2.sfx("bossHit");
+  triggerShake(3, 0.16, 7, C_BCYAN);
+  addScore(250 * dmg, popX ?? game.boss.x, popY ?? game.boss.y, C_BGREEN, label || "+250");
+
+  if (game.boss.hp <= 0) {
+    // Grand LeChuck Spectral Defeat Explosion!
+    OPL2.sfx("grog");
+    OPL2.sfx("clear");
+    triggerShake(6, 0.55, 13, C_WHITE);
+    for (let k = 0; k < 5; k++) {
+      spawnDebris(game.boss.x - 16 + k * 8, game.boss.y, k & 1 ? C_BGREEN : C_BYELLOW, 14, 1.7);
+    }
+    // Shatter all remaining cursed bricks on LeChuck's Ghost Galleon
+    for (const br of game.bricks) {
+      if (br.alive && br.type !== "steel") {
+        br.alive = false;
+        spawnDebris(br.x + 4, br.y + 3, br.colorReg, 3, 1.1);
+      }
+    }
+    game.destructibleCount = 0;
+    game.hazards = [];
+    addScore(10000, 128, 60, C_BYELLOW, "LECHUCK BANISHED +10000!");
+    game.state = STATE_VICTORY;
+    game.stateTimer = 0;
+  }
+}
+
+function clampPaddle() {
+  const half = game.paddle.w * 0.5;
+  if (game.paddle.x < PF_LEFT + half) game.paddle.x = PF_LEFT + half;
+  if (game.paddle.x > PF_RIGHT - half) game.paddle.x = PF_RIGHT - half;
+}
+
+function launchOrFire() {
+  OPL2.init();
+  if (game.state === STATE_TITLE) {
+    startNewGame(game.selectedLevel);
+    return;
+  }
+  if (game.state === STATE_OVER || game.state === STATE_VICTORY) {
+    game.state = STATE_TITLE;
+    loadLevel(game.selectedLevel, true);
+    return;
+  }
+  if (game.state === STATE_READY) {
+    game.state = STATE_PLAYING;
+  }
+  if (game.state !== STATE_PLAYING) return;
+
+  // Release any caught/stuck balls
+  let released = false;
+  for (const b of game.balls) {
+    if (b.stuck) {
+      b.stuck = false;
+      const spd = getBaseBallSpeed();
+      const ang = (b.stuckOff / Math.max(1, game.paddle.w * 0.5)) * 0.65 + (Math.random() - 0.5) * 0.12;
+      b.vx = Math.sin(ang) * spd;
+      b.vy = -Math.cos(ang) * spd;
+      released = true;
+    }
+  }
+  if (released) OPL2.sfx("paddle");
+
+  // Fire Space-Ranger Twin Laser Bolts if in LASER mode!
+  if (game.paddle.mode === "LASER" && game.paddle.laserCd <= 0 && game.lasers.length < 6) {
+    game.paddle.laserCd = 0.24;
+    OPL2.sfx("laser");
+    game.lasers.push({ x: Math.round(game.paddle.x - 12), y: PADDLE_Y - 5, vy: -210 });
+    game.lasers.push({ x: Math.round(game.paddle.x + 10), y: PADDLE_Y - 5, vy: -210 });
+  }
+}
+
+function startNewGame(startStage = 0) {
+  game.score = 0;
+  game.lives = 3;
+  game.paddle.mode = "STD";
+  game.paddle.w = 34;
+  loadLevel(startStage, false);
+  game.state = STATE_READY;
+  game.stateTimer = 1.3;
+}
+
+function loseLife() {
+  if (game.paddle.invuln > 0) return;
+  OPL2.sfx("die");
+  triggerShake(4, 0.3, 9, C_BRED);
+  spawnDebris(game.paddle.x, PADDLE_Y + 3, C_BRED, 16, 1.3);
+  game.lives--;
+  game.duelPips = 0;
+  game.cutlassTimer = 0;
+  if (game.lives <= 0) {
+    game.state = STATE_OVER;
+    game.stateTimer = 0;
+  } else {
+    resetPaddleAndBall(false);
+    game.paddle.invuln = 1.5;
+    game.state = STATE_READY;
+    game.stateTimer = 1.0;
+  }
+}
+
+// Enforce minimum vertical component so balls NEVER loop infinitely horizontally
+function normalizeBallVelocity(b, targetSpeed) {
+  let vx = b.vx;
+  let vy = b.vy;
+  const mag = Math.hypot(vx, vy) || 1;
+  vx = (vx / mag) * targetSpeed;
+  vy = (vy / mag) * targetSpeed;
+  const minVy = targetSpeed * 0.24;
+  if (Math.abs(vy) < minVy) {
+    const signY = vy < 0 ? -1 : 1;
+    const signX = vx < 0 ? -1 : 1;
+    vy = signY * minVy;
+    vx = signX * Math.sqrt(Math.max(1, targetSpeed * targetSpeed - vy * vy));
+  }
+  b.vx = vx;
+  b.vy = vy;
+}
+
+// Corner-safe Circle vs AABB overlap test & resolution normal
+function collideCircleAABB(cx, cy, r, rx, ry, rw, rh) {
+  const nx = cx < rx ? rx : (cx > rx + rw ? rx + rw : cx);
+  const ny = cy < ry ? ry : (cy > ry + rh ? ry + rh : cy);
+  const dx = cx - nx;
+  const dy = cy - ny;
+  const distSq = dx * dx + dy * dy;
+  if (distSq >= r * r) return null;
+
+  if (distSq > 1e-6) {
+    const dist = Math.sqrt(distSq);
+    return { nx: dx / dist, ny: dy / dist, pen: r - dist, distSq };
+  }
+  // Center inside AABB fallback: push out along shallowest axis
+  const leftPen = (cx + r) - rx;
+  const rightPen = (rx + rw) - (cx - r);
+  const topPen = (cy + r) - ry;
+  const botPen = (ry + rh) - (cy - r);
+  const minPen = Math.min(leftPen, rightPen, topPen, botPen);
+  if (minPen === topPen) return { nx: 0, ny: -1, pen: topPen, distSq: 0 };
+  if (minPen === botPen) return { nx: 0, ny: 1, pen: botPen, distSq: 0 };
+  if (minPen === leftPen) return { nx: -1, ny: 0, pen: leftPen, distSq: 0 };
+  return { nx: 1, ny: 0, pen: rightPen, distSq: 0 };
+}
+
+// ============================================================================
+// MAIN SIMULATION STEP
+// ============================================================================
+const keys = { left: false, right: false, fire: false };
+
+function update(dt) {
+  game.animTick += dt;
+  game.marqueePx += dt * 26;
+
+  // Decay AdLib VU bars smoothly
+  for (let i = 0; i < 4; i++) OPL2.vu[i] = Math.max(0, OPL2.vu[i] - dt * 2.8);
+
+  // Decay screen shake & EGA Bayer flash
+  if (game.shakeTime > 0) game.shakeTime = Math.max(0, game.shakeTime - dt);
+  if (game.flashLevel > 0) game.flashLevel = Math.max(0, game.flashLevel - dt * 52);
+
+  // Update debris particles & popups across states
+  for (let i = game.particles.length - 1; i >= 0; i--) {
+    const p = game.particles[i];
+    p.life -= dt;
+    if (p.life <= 0) { game.particles.splice(i, 1); continue; }
+    p.vy += 155 * dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+  }
+  for (let i = game.popups.length - 1; i >= 0; i--) {
+    const pp = game.popups[i];
+    pp.life -= dt;
+    if (pp.life <= 0) { game.popups.splice(i, 1); continue; }
+    pp.y += pp.vy * dt;
+  }
+
+  // Victory fireworks animation
+  if (game.state === STATE_VICTORY) {
+    game.stateTimer += dt;
+    if (Math.random() < dt * 3.5) {
+      const fx = 28 + Math.random() * 200;
+      const fy = 26 + Math.random() * 90;
+      const cols = [C_BYELLOW, C_BCYAN, C_BMAG, C_BGREEN, C_BRED, C_WHITE];
+      const col = cols[(Math.random() * cols.length) | 0];
+      spawnDebris(fx, fy, col, 16, 1.3);
+      OPL2.sfx("brick", (Math.random() * 7) | 0);
+    }
+    return;
+  }
+
+  if (game.state === STATE_TITLE || game.state === STATE_PAUSED || game.state === STATE_OVER) {
+    return;
+  }
+
+  if (game.state === STATE_CLEAR) {
+    game.stateTimer -= dt;
+    if (game.stateTimer <= 0) {
+      if (game.levelIdx + 1 >= LEVEL_DEFS.length) {
+        game.state = STATE_VICTORY;
+        game.stateTimer = 0;
+      } else {
+        loadLevel(game.levelIdx + 1, false);
+        game.state = STATE_READY;
+        game.stateTimer = 1.2;
+      }
+    }
+    return;
+  }
+
+  // Keyboard paddle movement
+  const moveSpd = 172;
+  if (keys.left) game.paddle.x -= moveSpd * dt;
+  if (keys.right) game.paddle.x += moveSpd * dt;
+  clampPaddle();
+
+  if (game.paddle.laserCd > 0) game.paddle.laserCd = Math.max(0, game.paddle.laserCd - dt);
+  if (game.paddle.invuln > 0) game.paddle.invuln = Math.max(0, game.paddle.invuln - dt);
+  if (game.slowTimer > 0) game.slowTimer = Math.max(0, game.slowTimer - dt);
+  if (game.cutlassTimer > 0) game.cutlassTimer = Math.max(0, game.cutlassTimer - dt);
+  if (game.doubleScoreTimer > 0) game.doubleScoreTimer = Math.max(0, game.doubleScoreTimer - dt);
+  if (game.insultBannerTimer > 0) game.insultBannerTimer = Math.max(0, game.insultBannerTimer - dt);
+
+  if (game.state === STATE_READY) {
+    for (const b of game.balls) {
+      if (b.stuck) {
+        b.x = game.paddle.x + b.stuckOff;
+        b.y = PADDLE_Y - 3;
+      }
+    }
+    game.stateTimer -= dt;
+    if (game.stateTimer <= 0) game.state = STATE_PLAYING;
+    return;
+  }
+
+  // Continuous auto-fire when holding Space in Space-Ranger LASER mode
+  if (keys.fire && game.paddle.mode === "LASER" && game.paddle.laserCd <= 0) {
+    launchOrFire();
+  }
+
+  // ---- ACTIVE WORLD MECHANIC UPDATES ----
+  // World 2 (worldIdx === 1): Chron-o-John Era Phasing
+  if (game.worldIdx === 1) {
+    if (game.destructibleCount <= 6) {
+      game.chronoEra = 1;
+    } else {
+      game.chronoTimer -= dt;
+      if (game.chronoTimer <= 0) {
+        game.chronoTimer = 6.0;
+        game.chronoEra = (game.chronoEra + 1) % 3;
+        OPL2.sfx("warp");
+        triggerShake(1, 0.1, 5, game.chronoEra === 0 ? C_BCYAN : (game.chronoEra === 2 ? C_BMAG : C_BYELLOW));
+      }
+    }
+  }
+
+  // World 3 (worldIdx === 2): Atlantean Dart-Spitting Idols
+  if (game.worldIdx === 2) {
+    game.idolShotTimer -= dt;
+    game.idolWarn = game.idolShotTimer < 0.75;
+    if (game.idolShotTimer <= 0) {
+      game.idolShotTimer = 3.2;
+      const idols = game.bricks.filter((b) => b.alive && b.type === "idol");
+      if (idols.length > 0 && game.hazards.length < 4) {
+        const count = Math.min(2, idols.length);
+        for (let k = 0; k < count; k++) {
+          const id = idols[(Math.random() * idols.length) | 0];
+          game.hazards.push({
+            kind: "dart",
+            x: id.x + 2, y: id.y + 6, w: 5, h: 9,
+            vx: 0, vy: 76
+          });
+        }
+        OPL2.sfx("dart");
+      }
+    }
+  }
+
+  // World 4 (worldIdx === 3): Orbital Gravity Wells motion
+  if (game.worldIdx === 3) {
+    for (let i = 0; i < game.gravityWells.length; i++) {
+      const gw = game.gravityWells[i];
+      gw.phase += dt * 1.15;
+      const baseCx = game.gravityWells.length === 1 ? 128 : (i === 0 ? 78 : 178);
+      gw.cx = baseCx + Math.cos(gw.phase) * 24;
+      gw.cy = 138 + Math.sin(gw.phase * 1.5) * 9;
+    }
+  }
+
+  // World 6 (worldIdx === 5): Sam & Max Moving Highway Road Walls
+  if (game.worldIdx === 5) {
+    for (const rw of game.roadWalls) {
+      rw.x += rw.vx * dt;
+      if (rw.x <= PF_LEFT + 2) { rw.x = PF_LEFT + 2; rw.vx = Math.abs(rw.vx); }
+      if (rw.x + rw.w >= PF_RIGHT - 2) { rw.x = PF_RIGHT - 2 - rw.w; rw.vx = -Math.abs(rw.vx); }
+    }
+  }
+
+  // World 7 (Level 33, worldIdx === 6): Ghost Pirate LeChuck Boss AI!
+  if (game.boss.active && game.boss.hp > 0) {
+    if (game.boss.flash > 0) game.boss.flash = Math.max(0, game.boss.flash - dt);
+    const enraged = game.boss.hp <= 15;
+    const spdMult = enraged ? 1.45 : 1.0;
+    game.boss.x += game.boss.vx * spdMult * dt;
+    game.boss.y = 24 + Math.sin(game.animTick * (enraged ? 4.2 : 2.4)) * (enraged ? 6 : 3);
+    if (game.boss.x < PF_LEFT + 24) { game.boss.x = PF_LEFT + 24; game.boss.vx = Math.abs(game.boss.vx); }
+    if (game.boss.x > PF_RIGHT - 24) { game.boss.x = PF_RIGHT - 24; game.boss.vx = -Math.abs(game.boss.vx); }
+
+    game.boss.fireTimer -= dt;
+    if (game.boss.fireTimer <= 0) {
+      game.boss.fireTimer = enraged ? 1.9 : 2.8;
+      if (game.hazards.length < 5) {
+        const aimDx = game.paddle.x - game.boss.x;
+        const aimLen = Math.hypot(aimDx, PADDLE_Y - game.boss.y) || 1;
+        const skullSpd = enraged ? 86 : 72;
+        game.hazards.push({
+          kind: "skull",
+          x: game.boss.x - 6, y: game.boss.y + 10, w: 10, h: 9,
+          vx: (aimDx / aimLen) * skullSpd * 0.65,
+          vy: skullSpd
+        });
+        OPL2.sfx("dart");
+      }
+    }
+  }
+
+  // ---- UPDATE LASERS ----
+  for (let i = game.lasers.length - 1; i >= 0; i--) {
+    const lz = game.lasers[i];
+    lz.y += lz.vy * dt;
+    if (lz.y < PF_TOP) { game.lasers.splice(i, 1); continue; }
+
+    let consumed = false;
+    // Laser vs LeChuck Boss
+    if (game.boss.active && game.boss.hp > 0) {
+      if (lz.x + 2 >= game.boss.x - 18 && lz.x <= game.boss.x + 18 &&
+          lz.y <= game.boss.y + 14 && lz.y + 5 >= game.boss.y - 14) {
+        damageBoss(1, lz.x, lz.y, "+250");
+        game.lasers.splice(i, 1);
+        continue;
+      }
+    }
+    // Laser vs Hazards (shoot down Atlantean darts & Voodoo Skulls!)
+    for (let h = game.hazards.length - 1; h >= 0; h--) {
+      const hz = game.hazards[h];
+      if (lz.x + 3 >= hz.x && lz.x <= hz.x + hz.w && lz.y <= hz.y + hz.h && lz.y + 6 >= hz.y) {
+        spawnDebris(hz.x + 4, hz.y + 4, C_BYELLOW, 6, 0.9);
+        addScore(75, hz.x, hz.y, C_BCYAN);
+        game.hazards.splice(h, 1);
+        consumed = true;
+        break;
+      }
+    }
+    if (consumed) { game.lasers.splice(i, 1); continue; }
+
+    // Laser vs Bricks
+    for (const br of game.bricks) {
+      if (!isBrickTangible(br)) continue;
+      if (lz.x + 2 >= br.x && lz.x <= br.x + br.w && lz.y <= br.y + br.h && lz.y + 5 >= br.y) {
+        if (br.type === "steel") {
+          OPL2.sfx("steel");
+          spawnDebris(lz.x, lz.y, C_LGRAY, 3, 0.6);
+        } else {
+          damageBrick(br, 1, false);
+        }
+        consumed = true;
+        break;
+      }
+    }
+    if (consumed) game.lasers.splice(i, 1);
+  }
+
+  // ---- UPDATE CAPSULES ----
+  const pLeft = game.paddle.x - game.paddle.w * 0.5;
+  const pRight = game.paddle.x + game.paddle.w * 0.5;
+  for (let i = game.capsules.length - 1; i >= 0; i--) {
+    const cap = game.capsules[i];
+    cap.y += cap.vy * dt;
+    if (cap.y > PF_BOTTOM + 4) { game.capsules.splice(i, 1); continue; }
+    if (cap.x + cap.w >= pLeft && cap.x <= pRight &&
+        cap.y + cap.h >= PADDLE_Y && cap.y <= PADDLE_Y + 8) {
+      const kind = cap.kind;
+      game.capsules.splice(i, 1);
+      applyCapsule(kind);
+    }
+  }
+
+  // ---- UPDATE HAZARDS (Darts & LeChuck Voodoo Skulls) ----
+  for (let i = game.hazards.length - 1; i >= 0; i--) {
+    const hz = game.hazards[i];
+    hz.x += hz.vx * dt;
+    hz.y += hz.vy * dt;
+    if (hz.x < PF_LEFT) { hz.x = PF_LEFT; hz.vx = Math.abs(hz.vx); }
+    if (hz.x + hz.w > PF_RIGHT) { hz.x = PF_RIGHT - hz.w; hz.vx = -Math.abs(hz.vx); }
+    if (hz.y > PF_BOTTOM + 4) { game.hazards.splice(i, 1); continue; }
+
+    // Hazard vs Paddle
+    if (hz.x + hz.w >= pLeft + 2 && hz.x <= pRight - 2 &&
+        hz.y + hz.h >= PADDLE_Y + 1 && hz.y <= PADDLE_Y + 7) {
+      game.hazards.splice(i, 1);
+      if (game.cutlassTimer > 0) {
+        // Golden Cutlass parries projectiles!
+        OPL2.sfx("sword");
+        addScore(150, game.paddle.x, PADDLE_Y - 8, C_BYELLOW, "PARRY +150!");
+      } else if (game.paddle.mode === "EXPAND") {
+        // Rubber chicken absorbs one hit and shrinks back to standard Vaus!
+        game.paddle.mode = "STD";
+        game.paddle.w = 34;
+        game.paddle.invuln = 1.0;
+        OPL2.sfx("armor");
+        triggerShake(2, 0.15, 6, C_BYELLOW);
+        spawnPopup(game.paddle.x, PADDLE_Y - 10, "SHRUNK!", C_BRED);
+      } else {
+        loseLife();
+        return;
+      }
+    }
+  }
+
+  // ---- SUB-STEPPED CORNER-SAFE BALL PHYSICS ----
+  const targetSpd = getBaseBallSpeed();
+  for (let bi = game.balls.length - 1; bi >= 0; bi--) {
+    const b = game.balls[bi];
+    if (b.stuck) {
+      b.x = game.paddle.x + b.stuckOff;
+      b.y = PADDLE_Y - 3;
+      b.holdTime += dt;
+      if (b.holdTime > 4.5) {
+        b.stuck = false;
+        b.holdTime = 0;
+        b.vx = 42;
+        b.vy = -targetSpd;
+      }
+      continue;
+    }
+
+    // World 4 Orbital Gravity Well pull
+    if (game.worldIdx === 3) {
+      for (const gw of game.gravityWells) {
+        const dx = gw.cx - b.x;
+        const dy = gw.cy - b.y;
+        const dist = Math.max(14, Math.hypot(dx, dy));
+        if (dist < 76) {
+          const pull = (5800 / (dist * dist)) * dt;
+          b.vx += (dx / dist) * pull * 18;
+          b.vy += (dy / dist) * pull * 18;
+        }
+      }
+    }
+
+    // Anti-stall safeguard: prevent infinite bounces in steel corridors
+    b.stallTime = (b.stallTime || 0) + dt;
+    if (b.stallTime > 10.0) {
+      b.stallTime = 0;
+      b.vy += (b.vy >= 0 ? 18 : -18);
+      b.vx += (Math.random() - 0.5) * 24;
+    }
+
+    normalizeBallVelocity(b, targetSpd);
+    const stepDist = targetSpd * dt;
+    const steps = Math.max(1, Math.ceil(stepDist / 1.4));
+    const subDt = dt / steps;
+
+    let dropped = false;
+    for (let s = 0; s < steps; s++) {
+      b.x += b.vx * subDt;
+      b.y += b.vy * subDt;
+
+      // Playfield inner border pipes
+      if (b.x - b.r < PF_LEFT) {
+        b.x = PF_LEFT + b.r;
+        b.vx = Math.abs(b.vx);
+        OPL2.sfx("wall");
+      } else if (b.x + b.r > PF_RIGHT) {
+        b.x = PF_RIGHT - b.r;
+        b.vx = -Math.abs(b.vx);
+        OPL2.sfx("wall");
+      }
+      if (b.y - b.r < PF_TOP) {
+        b.y = PF_TOP + b.r;
+        b.vy = Math.abs(b.vy);
+        OPL2.sfx("wall");
+      }
+      if (b.y - b.r > PF_BOTTOM + 4) {
+        dropped = true;
+        break;
+      }
+
+      // Ball vs Paddle
+      if (b.vy > 0 && b.y + b.r >= PADDLE_Y && b.y - b.r <= PADDLE_Y + 6 &&
+          b.x + b.r >= pLeft && b.x - b.r <= pRight) {
+        const rel = Math.max(-1, Math.min(1, (b.x - game.paddle.x) / (game.paddle.w * 0.5)));
+        const maxAngle = 66 * (Math.PI / 180);
+        const ang = rel * maxAngle;
+        b.vx = Math.sin(ang) * targetSpd;
+        b.vy = -Math.cos(ang) * targetSpd;
+        b.y = PADDLE_Y - b.r - 0.1;
+        game.combo = 0;
+        OPL2.sfx("paddle");
+
+        // Compass Catch Power-Up ('C')
+        if (game.paddle.mode === "CATCH") {
+          b.stuck = true;
+          b.stuckOff = b.x - game.paddle.x;
+          b.holdTime = 0;
+        }
+
+        // World 1: Insult Sword-Fighting Duel Parry Progression!
+        if (game.worldIdx === 0 && game.cutlassTimer <= 0) {
+          game.duelPips++;
+          const pair = INSULT_PAIRS[game.levelIdx % INSULT_PAIRS.length];
+          if (game.duelPips === 1 || game.duelPips === 2) {
+            game.insultBanner = pair[0];
+            game.insultColor = C_BRED;
+            game.insultBannerTimer = 2.6;
+          } else if (game.duelPips >= 3) {
+            game.duelPips = 0;
+            game.cutlassTimer = 7.5;
+            game.insultBanner = pair[1];
+            game.insultColor = C_BGREEN;
+            game.insultBannerTimer = 3.2;
+            OPL2.sfx("sword");
+            triggerShake(2, 0.14, 7, C_BYELLOW);
+            spawnPopup(game.paddle.x, PADDLE_Y - 14, "CUTLASS PIERCE!", C_BYELLOW);
+          }
+        }
+        break;
+      }
+
+      // Ball vs Sam & Max Moving Highway Road Walls (World 6)
+      if (game.worldIdx === 5) {
+        for (const rw of game.roadWalls) {
+          const hitRw = collideCircleAABB(b.x, b.y, b.r, rw.x, rw.y, rw.w, rw.h);
+          if (hitRw) {
+            b.x += hitRw.nx * (hitRw.pen + 0.05);
+            b.y += hitRw.ny * (hitRw.pen + 0.05);
+            const dot = b.vx * hitRw.nx + b.vy * hitRw.ny;
+            if (dot < 0) {
+              b.vx -= 2 * dot * hitRw.nx;
+              b.vy -= 2 * dot * hitRw.ny;
+            }
+            OPL2.sfx("steel");
+            spawnDebris(b.x, b.y, C_ORANGE, 3, 0.6);
+            break;
+          }
+        }
+      }
+
+      // Ball vs Ghost Pirate LeChuck Boss (Level 33)
+      if (game.boss.active && game.boss.hp > 0 && game.boss.flash <= 0.04) {
+        const hitBoss = collideCircleAABB(
+          b.x, b.y, b.r,
+          game.boss.x - 19, game.boss.y - 13, 38, 26
+        );
+        if (hitBoss) {
+          b.x += hitBoss.nx * (hitBoss.pen + 0.3);
+          b.y += hitBoss.ny * (hitBoss.pen + 0.3);
+          const dot = b.vx * hitBoss.nx + b.vy * hitBoss.ny;
+          if (dot < 0) {
+            b.vx -= 2 * dot * hitBoss.nx;
+            b.vy -= 2 * dot * hitBoss.ny;
+          }
+          damageBoss(game.cutlassTimer > 0 ? 3 : 2, b.x, b.y);
+          break;
+        }
+      }
+
+      // Seam-safe Ball vs Bricks: find closest overlapping tangible brick first
+      let bestBrick = null;
+      let bestHit = null;
+      for (let k = 0; k < game.bricks.length; k++) {
+        const br = game.bricks[k];
+        if (!isBrickTangible(br)) continue;
+        // Fast bounding reject
+        if (b.x + b.r < br.x || b.x - b.r > br.x + br.w ||
+            b.y + b.r < br.y || b.y - b.r > br.y + br.h) continue;
+        const hit = collideCircleAABB(b.x, b.y, b.r, br.x, br.y, br.w, br.h);
+        if (hit && (!bestHit || hit.distSq < bestHit.distSq)) {
+          bestHit = hit;
+          bestBrick = br;
+        }
+      }
+
+      if (bestBrick && bestHit) {
+        const canPierce = game.cutlassTimer > 0 && bestBrick.type !== "steel";
+        if (!canPierce) {
+          b.x += bestHit.nx * (bestHit.pen + 0.05);
+          b.y += bestHit.ny * (bestHit.pen + 0.05);
+          const dot = b.vx * bestHit.nx + b.vy * bestHit.ny;
+          if (dot < 0) {
+            b.vx -= 2 * dot * bestHit.nx;
+            b.vy -= 2 * dot * bestHit.ny;
+          }
+          normalizeBallVelocity(b, targetSpd);
+        } else {
+          OPL2.sfx("sword");
+        }
+
+        if (bestBrick.type === "steel") {
+          OPL2.sfx("steel");
+          spawnDebris(b.x, b.y, C_LGRAY, 3, 0.5);
+        } else {
+          b.stallTime = 0;
+          damageBrick(bestBrick, canPierce ? 2 : 1, false);
+        }
+      }
+    }
+
+    if (dropped) {
+      game.balls.splice(bi, 1);
+    }
+  }
+
+  // Check if all balls fell off bottom
+  if (game.balls.length === 0 && game.state === STATE_PLAYING) {
+    loseLife();
+    return;
+  }
+
+  // Check Stage Clear condition (on Level 33, LeChuck must be banished; on 1-32, all non-steel bricks cleared)
+  if (game.state === STATE_PLAYING && !game.boss.active && game.destructibleCount <= 0) {
+    OPL2.sfx("clear");
+    addScore(1000, 128, 96, C_BGREEN, "STAGE CLEAR +1000!");
+    triggerShake(2, 0.2, 8, C_BYELLOW);
+    game.state = STATE_CLEAR;
+    game.stateTimer = 1.65;
+  }
+}
+
+// ============================================================================
+// 10. PURE EGA PIXEL-PERFECT RENDERER (320x200)
+// ============================================================================
+function drawParallaxWorld(worldIdx) {
+  const wb = WORLD_BACKDROPS[worldIdx] || WORLD_BACKDROPS[0];
+  // Compute parallax horizontal offsets from paddle X + subtle ambient drift
+  const pan = game.paddle.x - 128;
+  const drift = game.state === STATE_TITLE ? game.animTick * 8 : 0;
+
+  const drawLayer = (img, factor) => {
+    const rawOff = ((pan * factor + drift * factor) % BG_W + BG_W) % BG_W;
+    const ox = Math.round(rawOff);
+    // Clip to inner playfield [8..248, 8..200]
+    ctx.drawImage(img, PF_LEFT - ox, PF_TOP);
+    if (PF_LEFT - ox + BG_W < PF_RIGHT) {
+      ctx.drawImage(img, PF_LEFT - ox + BG_W, PF_TOP);
+    }
+  };
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(PF_LEFT, PF_TOP, 240, 192);
+  ctx.clip();
+
+  drawLayer(wb.far, 0.14);
+  // Twinkling 4-shade EGA stars on top of far sky!
+  const starRegCycle = [C_DGRAY, C_LGRAY, C_BCYAN, C_WHITE];
+  const tickPhase = (game.animTick * 6) | 0;
+  const farOff = Math.round((((pan * 0.14 + drift * 0.14) % BG_W) + BG_W) % BG_W);
+  for (let i = 0; i < wb.stars.length; i++) {
+    const st = wb.stars[i];
+    const sx = PF_LEFT + ((st.x - farOff + BG_W) % BG_W);
+    if (sx >= PF_LEFT && sx < PF_RIGHT) {
+      ctx.fillStyle = EGA[starRegCycle[(st.phase + tickPhase) & 3]];
+      ctx.fillRect(sx | 0, (PF_TOP + st.y) | 0, 1, 1);
+    }
+  }
+
+  drawLayer(wb.mid, 0.32);
+  drawLayer(wb.near, 0.56);
+  ctx.restore();
+}
+
+function drawBricks() {
+  const grogFrame = ((game.animTick * 7) | 0) % 3;
+  const loomFrame = ((game.animTick * 4) | 0) & 1;
+  const steelCycle = ((game.animTick * 5) | 0) % 24;
+
+  for (let i = 0; i < game.bricks.length; i++) {
+    const b = game.bricks[i];
+    if (!b.alive) continue;
+    let spr = null;
+    if (b.type === "steel") {
+      const glintIdx = ((b.col + b.row + steelCycle) % 24);
+      spr = glintIdx === 0 ? STEEL_SPRITES[1] : (glintIdx === 1 ? STEEL_SPRITES[2] : STEEL_SPRITES[0]);
+    } else if (b.type === "grog") {
+      spr = GROG_SPRITES[(grogFrame + b.col) % 3];
+    } else if (b.type === "idol") {
+      spr = game.idolWarn ? IDOL_SPRITES.warn : (b.hp < b.maxHp ? IDOL_SPRITES.crack : IDOL_SPRITES.idle);
+    } else if (b.type === "loom") {
+      spr = LOOM_BRICK_SPRITES[(loomFrame + b.col) & 1];
+    } else if (b.type === "tempo") {
+      const solid = isBrickTangible(b);
+      spr = TEMPO_SPRITES[b.ch + (solid ? "_solid" : "_ghost")];
+    } else if (b.type === "armor") {
+      spr = BRICK_SPRITES[b.hp < b.maxHp ? (b.ch + "_CRACK") : b.ch];
+    } else {
+      spr = BRICK_SPRITES[b.ch];
+    }
+    if (spr) ctx.drawImage(spr, b.x | 0, b.y | 0);
+  }
+}
+
+function drawWorldEntities() {
+  // World 4 Orbital Gravity Wells
+  if (game.worldIdx === 3) {
+    const gf = ((game.animTick * 9) | 0) % 3;
+    for (const gw of game.gravityWells) {
+      ctx.drawImage(GRAVITY_ORB_FRAMES[gf], (gw.cx - 6) | 0, (gw.cy - 6) | 0);
+    }
+  }
+
+  // World 6 Sam & Max Highway Road Barricades
+  if (game.worldIdx === 5) {
+    for (const rw of game.roadWalls) {
+      ctx.drawImage(HIGHWAY_BARRICADE_SPRITE, rw.x | 0, rw.y | 0);
+    }
+  }
+
+  // Level 33 Animated Ghost Pirate LeChuck Boss!
+  if (game.boss.active && game.boss.hp > 0) {
+    const bf = ((game.animTick * 8) | 0) % 3;
+    const spr = game.boss.flash > 0 ? LECHUCK_FLASH : LECHUCK_FRAMES[bf];
+    ctx.drawImage(spr, (game.boss.x - 22) | 0, (game.boss.y - 16) | 0);
+  }
+
+  // Power-Up Capsules (18x9)
+  const capShimmer = ((game.animTick * 6) | 0) & 1;
+  for (const cap of game.capsules) {
+    const pair = CAPSULE_SPRITES[cap.kind];
+    if (pair) ctx.drawImage(pair[capShimmer], cap.x | 0, cap.y | 0);
+  }
+
+  // Lasers
+  for (const lz of game.lasers) {
+    ctx.drawImage(LASER_BOLT_SPRITE, lz.x | 0, lz.y | 0);
+  }
+
+  // Hazards (Atlantean Poison Darts & LeChuck Voodoo Skulls)
+  const skullFrame = ((game.animTick * 8) | 0) & 1;
+  for (const hz of game.hazards) {
+    if (hz.kind === "skull") {
+      ctx.drawImage(VOODOO_SKULL_FRAMES[skullFrame], (hz.x - 1) | 0, hz.y | 0);
+    } else {
+      ctx.drawImage(ATLANTEAN_DART_SPRITE, hz.x | 0, hz.y | 0);
+    }
+  }
+}
+
+function drawPaddleAndBalls() {
+  if (game.state === STATE_TITLE) return;
+
+  // Blink paddle cleanly during post-respawn invulnerability
+  if (game.paddle.invuln <= 0 || (((game.animTick * 16) | 0) & 1) === 0) {
+    let pSpr = PADDLE_STD;
+    let yOff = 0;
+    if (game.paddle.mode === "LASER") { pSpr = PADDLE_LASER; yOff = -2; }
+    else if (game.paddle.mode === "EXPAND") { pSpr = PADDLE_CHICKEN; yOff = -1; }
+    else if (game.paddle.mode === "CATCH") { pSpr = PADDLE_COMPASS; yOff = -2; }
+    ctx.drawImage(pSpr, Math.round(game.paddle.x - pSpr.width * 0.5), PADDLE_Y + yOff);
+  }
+
+  // Balls (or spinning 9x9 Golden Cutlass during Insult-Duel Pierce Mode!)
+  const cutlassFrame = ((game.animTick * 18) | 0) & 3;
+  for (const b of game.balls) {
+    if (game.cutlassTimer > 0) {
+      ctx.drawImage(CUTLASS_FRAMES[cutlassFrame], Math.round(b.x - 4), Math.round(b.y - 4));
+    } else {
+      const bSpr = b.swan ? BALL_SWAN : (game.worldIdx === 1 && game.chronoEra !== 1 ? BALL_CHRONO : BALL_STEEL);
+      ctx.drawImage(bSpr, Math.round(b.x - 2), Math.round(b.y - 2));
+    }
+  }
+}
+
+function drawEffectsAndBanners() {
+  // EGA Debris Particles (pure crisp integer pixel blocks)
+  for (const p of game.particles) {
+    const px = p.x | 0;
+    const py = p.y | 0;
+    if (px >= PF_LEFT && px < PF_RIGHT && py >= PF_TOP && py < PF_BOTTOM) {
+      ctx.fillStyle = EGA[C_BLACK];
+      ctx.fillRect(px, py + 1, p.size, p.size);
+      ctx.fillStyle = EGA[p.reg];
+      ctx.fillRect(px, py, p.size, p.size);
+    }
+  }
+
+  // Outlined Floating Score Popups (+150, PARRY!, 1UP!)
+  for (const pp of game.popups) {
+    const cx = Math.max(PF_LEFT + 14, Math.min(PF_RIGHT - 14, pp.x | 0));
+    const cy = Math.max(PF_TOP + 4, pp.y | 0);
+    drawTextCentered(ctx, pp.text, cx, cy, pp.reg, 1, false);
+  }
+
+  // World 1 Insult Sword-Fighting Duel Pixel Scroll Banner (auto-wrapped to fit playfield!)
+  if (game.insultBannerTimer > 0 && game.insultBanner) {
+    const twoLines = measureTextPx(game.insultBanner, 1) > 220;
+    const bh = twoLines ? 20 : 11;
+    const by = twoLines ? 159 : 168;
+    dither(ctx, 12, by, 232, bh, C_BLACK, C_NAVY, 12);
+    ctx.fillStyle = EGA[C_GOLD];
+    ctx.fillRect(12, by, 232, 1);
+    ctx.fillRect(12, by + bh - 1, 232, 1);
+    drawWrappedCentered(ctx, game.insultBanner, 128, by + 2, 220, 9, game.insultColor);
+  }
+
+  // Pure EGA Scanline / 4x4 Bayer Stipple Flash (ZERO non-EGA alpha blending!)
+  if (game.flashLevel >= 1) {
+    const lvl = Math.min(12, game.flashLevel | 0);
+    ctx.fillStyle = EGA[game.flashReg];
+    for (let y = PF_TOP; y < PF_BOTTOM; y += 2) {
+      const rowOff = (y & 3) * 4;
+      for (let x = PF_LEFT; x < PF_RIGHT; x++) {
+        if (BAYER4[rowOff + (x & 3)] < lvl) ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+}
+
+// ============================================================================
+// RIGHT-HAND 64x200 BAYER-DITHERED SCUMM HUD SIDEBAR (x = 256..319)
+// ============================================================================
+function pad7(n) {
+  const s = String(Math.max(0, n | 0));
+  return s.length >= 7 ? s : "0".repeat(7 - s.length) + s;
+}
+
+function pad2(n) {
+  return n < 10 ? "0" + n : String(n);
+}
+
+function drawHUD() {
+  const hx = 256;
+  ctx.drawImage(HUD_BG_CANVAS, hx, 0);
+  ctx.drawImage(HUD_LOGO_SPRITE, hx + 4, 3);
+
+  // HI-SCORE (y = 20..38)
+  drawTextCentered(ctx, "HI-SCORE", hx + 32, 20, C_GOLD, 1, false);
+  drawTextCentered(ctx, pad7(game.hiScore), hx + 32, 30, C_WHITE, 1, false);
+
+  // 1UP SCORE (y = 44..62)
+  drawTextCentered(ctx, "1UP SCORE", hx + 32, 44, C_BCYAN, 1, false);
+  const scoreCol = (game.score > 0 && game.score >= game.hiScore) ? C_BYELLOW : C_WHITE;
+  drawTextCentered(ctx, pad7(game.score), hx + 32, 54, scoreCol, 1, false);
+
+  // STAGE XX/33 & WORLD NAME (y = 68..88)
+  const shownLvl = (game.state === STATE_TITLE ? game.selectedLevel : game.levelIdx) + 1;
+  drawTextCentered(ctx, "STG " + pad2(shownLvl) + "/33", hx + 32, 69, C_BYELLOW, 1, false);
+  const wbName = (WORLD_BACKDROPS[game.worldIdx] || WORLD_BACKDROPS[0]).name;
+  drawTextCentered(ctx, wbName, hx + 32, 79, C_BGREEN, 1, false);
+
+  // MINI-PADDLE LIVES (y = 94..107)
+  drawTextPx(ctx, "P:", hx + 6, 97, C_GOLD, 1, false);
+  const maxIcons = Math.min(3, game.lives);
+  for (let i = 0; i < maxIcons; i++) {
+    ctx.drawImage(PADDLE_MINI, hx + 17 + i * 14, 99);
+  }
+  if (game.lives > 3) {
+    drawTextPx(ctx, "+" + (game.lives - 3), hx + 46, 97, C_BYELLOW, 1, false);
+  }
+
+  // ACTIVE WORLD MECHANIC UI / METER (y = 113..147)
+  const mx = hx + 6;
+  if (game.worldIdx === 0) {
+    drawTextCentered(ctx, "DUEL MODE", hx + 32, 114, C_GOLD, 1, false);
+    if (game.cutlassTimer > 0) {
+      drawTextCentered(ctx, "CUTLASS!", hx + 32, 124, C_BYELLOW, 1, false);
+      const bw = Math.round((game.cutlassTimer / 7.5) * 48);
+      dither(ctx, mx + 2, 136, bw, 6, C_GOLD, C_BYELLOW, 10);
+    } else {
+      for (let p = 0; p < 3; p++) {
+        const lit = p < game.duelPips;
+        dither(ctx, mx + 3 + p * 16, 127, 13, 12, C_BLACK, lit ? C_BGREEN : C_DGRAY, lit ? 14 : 5);
+      }
+    }
+  } else if (game.worldIdx === 1) {
+    drawTextCentered(ctx, "ERA PHASE", hx + 32, 114, C_BCYAN, 1, false);
+    const eraNames = ["1789 PAST", "1993 NOW", "2193 FUTR"];
+    const eraCols  = [C_BCYAN, C_BYELLOW, C_BMAG];
+    drawTextCentered(ctx, eraNames[game.chronoEra], hx + 32, 125, eraCols[game.chronoEra], 1, false);
+    const bw = Math.round((game.chronoTimer / 6.0) * 48);
+    dither(ctx, mx + 2, 137, bw, 5, C_BLUE, eraCols[game.chronoEra], 12);
+  } else if (game.worldIdx === 2) {
+    drawTextCentered(ctx, "DART TRAP", hx + 32, 114, C_ORANGE, 1, false);
+    const idolsLeft = game.bricks.filter((b) => b.alive && b.type === "idol").length;
+    drawTextCentered(ctx, "IDOLS:" + idolsLeft, hx + 32, 125, game.idolWarn ? C_BRED : C_BYELLOW, 1, false);
+    const bw = Math.round((1 - Math.max(0, game.idolShotTimer) / 3.2) * 48);
+    dither(ctx, mx + 2, 137, bw, 5, C_RED, C_BYELLOW, 11);
+  } else if (game.worldIdx === 3) {
+    drawTextCentered(ctx, "GRAV WELL", hx + 32, 114, C_VIOLET, 1, false);
+    dither(ctx, mx + 4, 124, 44, 20, C_BLACK, C_INDIGO, 6);
+    for (const gw of game.gravityWells) {
+      const rx = mx + 4 + Math.round(((gw.cx - PF_LEFT) / 240) * 42);
+      const ry = 124 + Math.round(((gw.cy - PF_TOP) / 192) * 18);
+      ctx.fillStyle = EGA[C_BCYAN];
+      ctx.fillRect(rx - 1, ry - 1, 3, 3);
+    }
+  } else if (game.worldIdx === 4) {
+    drawTextCentered(ctx, "DISTAFF", hx + 32, 114, C_BMAG, 1, false);
+    for (let n = 0; n < 4; n++) {
+      const col = game.loomNotes[n];
+      dither(ctx, mx + 3 + n * 12, 127, 10, 14, C_BLACK, col !== undefined ? col : C_DGRAY, col !== undefined ? 14 : 4);
+      if (col !== undefined) drawTextPx(ctx, "♪", mx + 5 + n * 12, 130, C_WHITE, 1, false);
+    }
+  } else if (game.worldIdx === 5) {
+    drawTextCentered(ctx, "SAM & MAX", hx + 32, 114, C_ORANGE, 1, false);
+    drawTextCentered(ctx, "PATROL X2", hx + 32, 125, C_BYELLOW, 1, false);
+    for (let r = 0; r < game.roadWalls.length; r++) {
+      const lx = mx + 3 + Math.round(((game.roadWalls[r].x - PF_LEFT) / 220) * 40);
+      ctx.fillStyle = EGA[C_ORANGE];
+      ctx.fillRect(lx, 136 + r * 5, 8, 3);
+    }
+  } else {
+    drawTextCentered(ctx, "LECHUCK", hx + 32, 114, C_BGREEN, 1, false);
+    drawTextCentered(ctx, game.boss.hp + "/" + game.boss.maxHp, hx + 32, 125, C_BYELLOW, 1, false);
+    const bw = Math.round((game.boss.hp / game.boss.maxHp) * 48);
+    dither(ctx, mx + 2, 137, bw, 6, C_RED, C_BGREEN, 12);
+  }
+
+  // ACTIVE CAPSULE SLOTS (L, E, C, S, P at y = 153..172)
+  const slots = [
+    ["L", game.paddle.mode === "LASER", C_BRED],
+    ["E", game.paddle.mode === "EXPAND", C_AZURE],
+    ["C", game.paddle.mode === "CATCH", C_BGREEN],
+    ["S", game.slowTimer > 0, C_BMAG],
+    ["P", game.doubleScoreTimer > 0 || game.cutlassTimer > 0, C_BYELLOW]
+  ];
+  for (let i = 0; i < slots.length; i++) {
+    const [lbl, active, col] = slots[i];
+    const sx = hx + 5 + i * 11;
+    dither(ctx, sx, 154, 10, 17, C_BLACK, active ? col : C_DGRAY, active ? 13 : 3);
+    drawTextPx(ctx, lbl, sx + 3, 159, active ? C_WHITE : C_LGRAY, 1, false);
+  }
+
+  // SCROLLING ADLIB SONG MARQUEE + 4-CHANNEL OPL2 VU METER (y = 176..196)
+  const trTitle = "♪ " + TRACKS[OPL2.trackIdx].title + (OPL2.muted ? " [MUTED] " : " • ADLIB OPL2 FM ") + "   ";
+  const mWidth = measureTextPx(trTitle, 1);
+  const scrollX = Math.round(game.marqueePx) % Math.max(1, mWidth);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(hx + 5, 177, 54, 10);
+  ctx.clip();
+  drawTextPx(ctx, trTitle, hx + 5 - scrollX, 178, OPL2.muted ? C_LGRAY : C_BGREEN, 1, false);
+  drawTextPx(ctx, trTitle, hx + 5 - scrollX + mWidth, 178, OPL2.muted ? C_LGRAY : C_BGREEN, 1, false);
+  ctx.restore();
+
+  // Mini 4-voice OPL2 FM Channel Visualizer bars at y = 189..194
+  for (let ch = 0; ch < 4; ch++) {
+    const vw = Math.round(OPL2.vu[ch] * 11);
+    const vx = hx + 6 + ch * 13;
+    ctx.fillStyle = EGA[C_DGRAY];
+    ctx.fillRect(vx, 190, 11, 4);
+    if (vw > 0 && !OPL2.muted) {
+      ctx.fillStyle = EGA[ch === 0 ? C_BYELLOW : (ch === 3 ? C_BRED : C_BGREEN)];
+      ctx.fillRect(vx, 190, vw, 4);
+    }
+  }
+}
+
+// ============================================================================
+// OVERLAYS: LIVE ATTRACT TITLE SCREEN, PAUSE, STAGE INTRO, GAME OVER & VICTORY
+// ============================================================================
+function drawBannerBox(x, y, w, h, borderReg, regA, regB) {
+  x |= 0; y |= 0; w |= 0; h |= 0;
+  ctx.fillStyle = EGA[C_BLACK];
+  ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+  dither(ctx, x, y, w, h, regA, regB, 7);
+  ctx.fillStyle = EGA[borderReg];
+  ctx.fillRect(x, y, w, 1);
+  ctx.fillRect(x, y + h - 1, w, 1);
+  ctx.fillRect(x, y, 1, h);
+  ctx.fillRect(x + w - 1, y, 1, h);
+}
+
+function drawOverlays() {
+  const def = LEVEL_DEFS[game.levelIdx];
+
+  if (game.state === STATE_TITLE) {
+    // Docked cleanly at y = 115..194 so 100% of the live backdrop, 30x16 mosaic & LeChuck are unobstructed!
+    drawBannerBox(14, 115, 228, 79, C_GOLD, C_BLACK, C_INDIGO);
+    drawTextCentered(ctx, "SCUMM-VAUS", 128, 119, C_BYELLOW, 2, true);
+    drawTextCentered(ctx, "1990 LUCASARTS EGA ANTHOLOGY", 128, 137, C_BCYAN, 1, false);
+
+    dither(ctx, 18, 147, 220, 23, C_BLACK, C_DARKRED, 8);
+    const stgLabel = "◄ STAGE " + pad2(game.selectedLevel + 1) + "/33 ►";
+    drawTextCentered(ctx, stgLabel, 128, 149, C_BGREEN, 1, false);
+    drawTextCentered(ctx, def.title, 128, 160, C_WHITE, 1, false);
+    drawTextCentered(ctx, "◄/► PREVIEW 1-33 • L/E/C/S/P CAPSULES", 128, 173, C_TAN, 1, false);
+
+    if ((((game.animTick * 3) | 0) & 1) === 0) {
+      drawTextCentered(ctx, "PRESS SPACE OR CLICK TO LAUNCH!", 128, 184, C_BYELLOW, 1, false);
+    }
+  } else if (game.state === STATE_READY) {
+    drawBannerBox(18, 126, 220, 32, C_GOLD, C_BLACK, C_NAVY);
+    drawTextCentered(ctx, "STG " + pad2(game.levelIdx + 1) + ": " + def.title, 128, 131, C_BYELLOW, 1, false);
+    drawTextCentered(ctx, "GET READY, GUYBRUSH!", 128, 144, C_BCYAN, 1, false);
+  } else if (game.state === STATE_PAUSED) {
+    drawBannerBox(58, 82, 140, 36, C_BCYAN, C_BLACK, C_NAVY);
+    drawTextCentered(ctx, "PAUSED", 128, 88, C_BYELLOW, 2, true);
+    drawTextCentered(ctx, "PRESS P TO RESUME", 128, 107, C_WHITE, 1, false);
+  } else if (game.state === STATE_CLEAR) {
+    drawBannerBox(32, 80, 192, 38, C_BGREEN, C_BLACK, C_DTEAL);
+    drawTextCentered(ctx, "STAGE CLEAR!", 128, 86, C_BGREEN, 2, true);
+    drawTextCentered(ctx, "ENTERING NEXT CHAPTER...", 128, 106, C_BYELLOW, 1, false);
+  } else if (game.state === STATE_OVER) {
+    drawBannerBox(30, 72, 196, 54, C_BRED, C_BLACK, C_DARKRED);
+    drawTextCentered(ctx, "GAME OVER", 128, 78, C_BRED, 2, true);
+    drawTextCentered(ctx, "FINAL SCORE: " + pad7(game.score), 128, 99, C_WHITE, 1, false);
+    drawTextCentered(ctx, "SPACE / CLICK FOR TITLE", 128, 112, C_BYELLOW, 1, false);
+  } else if (game.state === STATE_VICTORY) {
+    drawBannerBox(16, 48, 224, 96, C_GOLD, C_BLACK, C_INDIGO);
+    drawTextCentered(ctx, "VICTORY!", 128, 54, C_BYELLOW, 3, true);
+    drawTextCentered(ctx, "LECHUCK IS VAPORIZED IN", 128, 84, C_BGREEN, 1, false);
+    drawTextCentered(ctx, "FIZZING VOODOO ROOT BEER!", 128, 95, C_BCYAN, 1, false);
+    drawTextCentered(ctx, "ALL 33 EGA STAGES CONQUERED!", 128, 109, C_WHITE, 1, false);
+    drawTextCentered(ctx, "FINAL SCORE: " + pad7(game.score), 128, 121, C_BYELLOW, 1, false);
+    if ((((game.animTick * 3) | 0) & 1) === 0) {
+      drawTextCentered(ctx, "CLICK OR SPACE TO CELEBRATE", 128, 133, C_BMAG, 1, false);
+    }
+  }
+}
+
+function render() {
+  ctx.fillStyle = EGA[C_BLACK];
+  ctx.fillRect(0, 0, 320, 200);
+
+  // Integer pixel screen-shake offset on playfield
+  let sx = 0, sy = 0;
+  if (game.shakeTime > 0) {
+    sx = Math.round((Math.random() * 2 - 1) * game.shakeMag);
+    sy = Math.round((Math.random() * 2 - 1) * game.shakeMag);
+  }
+
+  ctx.save();
+  ctx.translate(sx | 0, sy | 0);
+  drawParallaxWorld(game.worldIdx);
+  drawBricks();
+  drawWorldEntities();
+  drawPaddleAndBalls();
+  drawEffectsAndBanners();
+  ctx.drawImage(BORDER_CANVAS, 0, 0);
+  drawOverlays();
+  ctx.restore();
+
+  drawHUD();
+}
+
+// ============================================================================
+// 11. INPUT CONTROLS, RESPONSIVE INTEGER SCALING & MAIN RAF LOOP
+// ============================================================================
+function fitCabinetScale() {
+  const maxW = Math.max(320, window.innerWidth - 56);
+  const maxH = Math.max(200, window.innerHeight - 92);
+  const scale = Math.max(1, Math.min(Math.floor(maxW / 320), Math.floor(maxH / 200)));
+  canvas.style.width = (320 * scale) + "px";
+  canvas.style.height = (200 * scale) + "px";
+}
+window.addEventListener("resize", fitCabinetScale);
+fitCabinetScale();
+
+function previewDelta(delta) {
+  OPL2.init();
+  game.selectedLevel = ((game.selectedLevel + delta) % LEVEL_DEFS.length + LEVEL_DEFS.length) % LEVEL_DEFS.length;
+  loadLevel(game.selectedLevel, true);
+  OPL2.sfx("paddle");
+}
+
+function togglePause() {
+  if (game.state === STATE_PLAYING || game.state === STATE_READY) {
+    game.state = STATE_PAUSED;
+  } else if (game.state === STATE_PAUSED) {
+    game.state = STATE_PLAYING;
+  }
+  const btn = document.getElementById("btn-pause");
+  if (btn) btn.classList.toggle("active", game.state === STATE_PAUSED);
+}
+
+canvas.addEventListener("mousemove", (ev) => {
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width) return;
+  const logicalX = ((ev.clientX - rect.left) / rect.width) * 320;
+  game.paddle.x = logicalX;
+  clampPaddle();
+});
+
+canvas.addEventListener("mousedown", (ev) => {
+  if (ev.button !== 0) return;
+  OPL2.init();
+  if (game.state === STATE_TITLE) {
+    const rect = canvas.getBoundingClientRect();
+    const lx = ((ev.clientX - rect.left) / rect.width) * 320;
+    const ly = ((ev.clientY - rect.top) / rect.height) * 200;
+    // Allow clicking left/right stage selector arrows on Title Banner!
+    if (ly >= 145 && ly <= 170 && lx >= 16 && lx <= 104) {
+      previewDelta(-1);
+      return;
+    }
+    if (ly >= 145 && ly <= 170 && lx >= 152 && lx <= 242) {
+      previewDelta(1);
+      return;
+    }
+  }
+  launchOrFire();
+});
+
+window.addEventListener("keydown", (ev) => {
+  const k = ev.key;
+  if (k === "ArrowLeft" || k === "a" || k === "A") {
+    keys.left = true;
+    if (game.state === STATE_TITLE) previewDelta(-1);
+    ev.preventDefault();
+  } else if (k === "ArrowRight" || k === "d" || k === "D") {
+    keys.right = true;
+    if (game.state === STATE_TITLE) previewDelta(1);
+    ev.preventDefault();
+  } else if (k === " " || k === "Enter") {
+    keys.fire = true;
+    launchOrFire();
+    ev.preventDefault();
+  } else if (k === "p" || k === "P") {
+    togglePause();
+  } else if (k === "m" || k === "M") {
+    OPL2.init();
+    OPL2.setMuted(!OPL2.muted);
+  }
+});
+
+window.addEventListener("keyup", (ev) => {
+  const k = ev.key;
+  if (k === "ArrowLeft" || k === "a" || k === "A") keys.left = false;
+  if (k === "ArrowRight" || k === "d" || k === "D") keys.right = false;
+  if (k === " " || k === "Enter") keys.fire = false;
+});
+
+// Arcade Cabinet Bezel Microswitch Buttons
+document.getElementById("btn-crt").addEventListener("click", (ev) => {
+  const sl = document.getElementById("scanlines");
+  const isOff = sl.classList.toggle("off");
+  ev.currentTarget.textContent = isOff ? "CRT: OFF" : "CRT: ON";
+  ev.currentTarget.classList.toggle("active", !isOff);
+});
+
+document.getElementById("btn-sfx").addEventListener("click", () => {
+  OPL2.init();
+  OPL2.setMuted(!OPL2.muted);
+});
+
+document.getElementById("btn-pause").addEventListener("click", () => {
+  togglePause();
+});
+
+// Initialize Live Attract Preview on Stage 01
+loadLevel(0, true);
+
+let lastTs = performance.now();
+function frame(ts) {
+  const rawDt = (ts - lastTs) / 1000;
+  lastTs = ts;
+  const dt = Math.min(0.033, Math.max(0.001, rawDt));
+  update(dt);
+  render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

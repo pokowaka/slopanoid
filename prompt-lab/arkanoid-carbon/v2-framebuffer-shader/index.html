@@ -1,0 +1,4428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCUMM-OID 320x200 — EGA Demoscene Framebuffer Arkanoid</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #14121d 0%, #050508 75%, #000000 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: monospace;
+  }
+  #bezel {
+    position: relative;
+    padding: 10px;
+    background: #0b0b10;
+    border: 2px solid #2a2a38;
+    box-shadow: 0 0 40px rgba(0, 170, 255, 0.14), 0 18px 50px rgba(0, 0, 0, 0.9), inset 0 0 12px #000;
+    border-radius: 6px;
+  }
+  canvas {
+    display: block;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    background: #000;
+    cursor: none;
+  }
+</style>
+</head>
+<body>
+<div id="bezel">
+  <canvas id="screen" width="320" height="200"></canvas>
+</div>
+<script>
+(() => {
+  'use strict';
+
+  // ============================================================================
+  // 1. 320x200 SOFTWARE FRAMEBUFFER & EXACT 64-COLOR IBM EGA HARDWARE QUANTIZER
+  // ============================================================================
+  const W = 320;
+  const H = 200;
+  const PLAY_W = 256;
+  const WALL = 8;
+  const INNER_X0 = WALL;              // 8
+  const INNER_X1 = PLAY_W - WALL;     // 248 (width = 240 = 30 * 8)
+  const INNER_Y0 = WALL;              // 8   (height = 192)
+  const HUD_X = 256;                  // 256..319 (width = 64)
+  const BG_W = 288;                   // Wide parallax overscan buffer
+  const BG_H = 192;
+
+  const canvas = document.getElementById('screen');
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+  ctx.imageSmoothingEnabled = false;
+  const imageData = ctx.createImageData(W, H);
+  const fb = new Uint32Array(imageData.data.buffer);
+
+  function updateCanvasScale() {
+    const maxW = Math.max(320, window.innerWidth - 28);
+    const maxH = Math.max(200, window.innerHeight - 28);
+    const scale = Math.max(1, Math.floor(Math.min(maxW / W, maxH / H)));
+    canvas.style.width = (W * scale) + 'px';
+    canvas.style.height = (H * scale) + 'px';
+  }
+  window.addEventListener('resize', updateCanvasScale);
+  updateCanvasScale();
+
+  // Detect endianness once for packed 32-bit Uint32 pixel writes
+  const IS_LITTLE_ENDIAN = (() => {
+    const b = new ArrayBuffer(4);
+    const u8 = new Uint8Array(b);
+    const u32 = new Uint32Array(b);
+    u32[0] = 0x0a0b0c0d;
+    return u8[0] === 0x0d;
+  })();
+
+  function packRGBA(r, g, b) {
+    return IS_LITTLE_ENDIAN
+      ? ((0xFF000000 | (b << 16) | (g << 8) | r) >>> 0)
+      : (((r << 24) | (g << 16) | (b << 8) | 0xFF) >>> 0);
+  }
+
+  // All 64 exact IBM EGA hardware palette registers (2 bits/channel: 0, 85, 170, 255)
+  // Indexed by (r2 << 4) | (g2 << 2) | b2 where r2,g2,b2 in 0..3
+  const EGA_PALETTE = new Uint32Array(64);
+  const EGA_RGB = new Uint8Array(64 * 3);
+  const EGA_STEPS = [0, 85, 170, 255];
+  for (let i = 0; i < 64; i++) {
+    const r = EGA_STEPS[(i >> 4) & 3];
+    const g = EGA_STEPS[(i >> 2) & 3];
+    const b = EGA_STEPS[i & 3];
+    EGA_PALETTE[i] = packRGBA(r, g, b);
+    EGA_RGB[i * 3] = r;
+    EGA_RGB[i * 3 + 1] = g;
+    EGA_RGB[i * 3 + 2] = b;
+  }
+
+  function egaIdx(r2, g2, b2) {
+    return ((r2 & 3) << 4) | ((g2 & 3) << 2) | (b2 & 3);
+  }
+  function egaCol(r2, g2, b2) {
+    return EGA_PALETTE[egaIdx(r2, g2, b2)];
+  }
+
+  // Canonical 4x4 Bayer ordered dithering matrix (0..15)
+  const BAYER_4X4 = new Uint8Array([
+     0,  8,  2, 10,
+    12,  4, 14,  6,
+     3, 11,  1,  9,
+    15,  7, 13,  5
+  ]);
+
+  // Fast L1-cached channel dither LUT: (bayer16 << 8) | chan255 -> 0..3 EGA 2-bit level
+  // Exact EGA levels (0, 85, 170, 255) have remainder 0 and stay 100% solid!
+  const DITHER_CHAN_LUT = new Uint8Array(16 * 256);
+  for (let b = 0; b < 16; b++) {
+    const thresh = (2 * b + 1) * 85; // vs rem * 32
+    for (let c = 0; c < 256; c++) {
+      let q = (c / 85) | 0;
+      const rem = c - q * 85;
+      if (q < 3 && (rem * 32) > thresh) q++;
+      DITHER_CHAN_LUT[(b << 8) | c] = q;
+    }
+  }
+
+  function quantizeEgaIndex(r, g, b, x, y) {
+    const rc = r < 0 ? 0 : (r > 255 ? 255 : (r | 0));
+    const gc = g < 0 ? 0 : (g > 255 ? 255 : (g | 0));
+    const bc = b < 0 ? 0 : (b > 255 ? 255 : (b | 0));
+    const bayer = BAYER_4X4[((y & 3) << 2) | (x & 3)] << 8;
+    return (DITHER_CHAN_LUT[bayer | rc] << 4) |
+           (DITHER_CHAN_LUT[bayer | gc] << 2) |
+           DITHER_CHAN_LUT[bayer | bc];
+  }
+
+  function quantizeEgaColor(r, g, b, x, y) {
+    return EGA_PALETTE[quantizeEgaIndex(r, g, b, x, y)];
+  }
+
+  // Named EGA colors
+  const C_BLACK   = egaCol(0, 0, 0);
+  const C_DKGRAY  = egaCol(1, 1, 1);
+  const C_LTGRAY  = egaCol(2, 2, 2);
+  const C_WHITE   = egaCol(3, 3, 3);
+  const C_DKBLUE  = egaCol(0, 0, 1);
+  const C_BLUE    = egaCol(0, 1, 3);
+  const C_CYAN    = egaCol(0, 3, 3);
+  const C_LTCYAN  = egaCol(2, 3, 3);
+  const C_RED     = egaCol(3, 0, 0);
+  const C_LTRED   = egaCol(3, 1, 1);
+  const C_ORANGE  = egaCol(3, 2, 0);
+  const C_GOLD    = egaCol(3, 3, 0);
+  const C_LTGOLD  = egaCol(3, 3, 2);
+  const C_GREEN   = egaCol(0, 3, 0);
+  const C_LIME    = egaCol(2, 3, 0);
+  const C_EMERALD = egaCol(0, 2, 1);
+  const C_PURPLE  = egaCol(2, 0, 3);
+  const C_MAGENTA = egaCol(3, 1, 3);
+  const C_INDIGO  = egaCol(1, 0, 2);
+
+  // Artistic multi-stop RGB ramps for 3D lit EGA quantization (shadow -> mid -> highlight)
+  const RAMPS = {
+    R: [[55,0,25],   [145,0,20],  [225,25,25], [255,115,85], [255,235,215]], // Ruby Red
+    O: [[65,15,0],   [155,55,0],  [235,115,0], [255,185,55], [255,245,190]], // Sunset Orange
+    Y: [[70,40,0],   [165,110,0], [240,195,10],[255,245,95], [255,255,235]], // Pirate Gold
+    G: [[0,45,15],   [0,115,25],  [20,185,35], [105,245,85], [215,255,205]], // Jungle Green
+    E: [[0,55,30],   [15,140,60], [65,225,85], [165,255,115],[235,255,220]], // Scumm Lime
+    C: [[0,45,75],   [0,115,155], [10,195,225],[110,245,255],[230,255,255]], // Caribbean Cyan
+    B: [[0,15,75],   [10,50,155], [35,105,235],[110,175,255],[220,245,255]], // Melee Blue
+    I: [[15,0,55],   [40,20,115], [75,55,185], [135,120,240],[220,215,255]], // Loom Indigo
+    V: [[45,0,65],   [105,15,145],[170,45,225],[220,125,255],[250,225,255]], // Tentacle Violet
+    M: [[65,0,50],   [150,10,115],[230,45,185],[255,135,225],[255,235,250]], // Neon Magenta
+    W: [[65,70,90],  [135,140,160],[200,205,220],[240,242,250],[255,255,255]],// Ivory / Bone
+    S: [[35,45,60],  [85,95,115], [145,160,180],[205,218,235],[255,255,255]], // Brushed Silver
+    D: [[15,18,28],  [42,48,65],  [78,86,108], [125,135,160],[195,205,225]], // Dark Iron
+    N: [[40,15,5],   [95,42,12],  [150,78,28], [205,125,65], [245,195,140]], // Mahogany Wood
+    T: [[65,45,20],  [130,98,52], [190,155,95],[235,205,145],[255,245,210]], // Parchment Tan
+    F: [[75,25,25],  [150,70,55], [215,125,95],[250,185,150],[255,235,220]], // Coral / Flesh
+    K: [[5,5,12],    [22,24,38],  [48,52,72],  [88,95,120],  [165,175,205]], // Obsidian
+    A: [[60,30,0],   [135,75,10], [205,135,25],[250,198,75], [255,248,195]], // Orichalcum Brass
+    STEEL: [[20,28,45],[68,80,105],[130,145,172],[200,215,238],[255,255,255]],
+    ARMOR3:[[45,35,20],[105,85,55],[168,142,98],[225,200,150],[255,250,225]],
+    ARMOR2:[[40,28,35],[95,72,78], [152,122,125],[215,180,175],[255,235,230]],
+    ARMOR1:[[55,15,15],[120,40,35],[185,85,65], [245,155,105],[255,235,190]],
+    GROG:  [[0,40,10], [10,115,15],[55,205,20], [155,255,55], [240,255,195]],
+    GHOST: [[0,45,40], [15,115,95],[55,195,155],[140,250,205],[235,255,245]],
+    FIRE:  [[85,0,0],  [180,25,0], [245,105,0], [255,205,35], [255,255,200]]
+  };
+
+  function sampleRampRGB(ramp, t) {
+    const tc = t <= 0 ? 0 : (t >= 1 ? 1 : t);
+    const scaled = tc * (ramp.length - 1);
+    const idx = Math.min(ramp.length - 2, scaled | 0);
+    const f = scaled - idx;
+    const a = ramp[idx];
+    const b = ramp[idx + 1];
+    return [
+      a[0] + (b[0] - a[0]) * f,
+      a[1] + (b[1] - a[1]) * f,
+      a[2] + (b[2] - a[2]) * f
+    ];
+  }
+
+  // ============================================================================
+  // 2. FRAMEBUFFER BLITTERS & PROPORTIONAL 5x7 OUTLINED BITMAP FONT
+  // ============================================================================
+  function putPixel(x, y, col) {
+    if (x >= 0 && x < W && y >= 0 && y < H) {
+      fb[y * W + x] = col;
+    }
+  }
+
+  function fillDitherRect(x0, y0, w, h, r, g, b) {
+    const xStart = Math.max(0, x0 | 0);
+    const yStart = Math.max(0, y0 | 0);
+    const xEnd = Math.min(W, (x0 + w) | 0);
+    const yEnd = Math.min(H, (y0 + h) | 0);
+    for (let y = yStart; y < yEnd; y++) {
+      let row = y * W;
+      for (let x = xStart; x < xEnd; x++) {
+        fb[row + x] = quantizeEgaColor(r, g, b, x, y);
+      }
+    }
+  }
+
+  function fillSolidRect(x0, y0, w, h, col) {
+    const xStart = Math.max(0, x0 | 0);
+    const yStart = Math.max(0, y0 | 0);
+    const xEnd = Math.min(W, (x0 + w) | 0);
+    const yEnd = Math.min(H, (y0 + h) | 0);
+    for (let y = yStart; y < yEnd; y++) {
+      fb.fill(col, y * W + xStart, y * W + xEnd);
+    }
+  }
+
+  function drawBevelBox(x0, y0, w, h, rBg, gBg, bBg, colTopLeft, colBotRight) {
+    fillDitherRect(x0 + 1, y0 + 1, w - 2, h - 2, rBg, gBg, bBg);
+    fillSolidRect(x0, y0, w, 1, colTopLeft);
+    fillSolidRect(x0, y0, 1, h, colTopLeft);
+    fillSolidRect(x0, y0 + h - 1, w, 1, colBotRight);
+    fillSolidRect(x0 + w - 1, y0, 1, h, colBotRight);
+  }
+
+  // Blit compiled Uint32Array sprite with optional playfield clipping
+  function blitSprite(spr, dx, dy, clipPlayfield = false, flashWhite = false) {
+    const sw = spr.w;
+    const sh = spr.h;
+    const data = spr.data;
+    const x0 = dx | 0;
+    const y0 = dy | 0;
+    const minX = clipPlayfield ? INNER_X0 : 0;
+    const maxX = clipPlayfield ? INNER_X1 : W;
+    const minY = clipPlayfield ? INNER_Y0 : 0;
+    const maxY = clipPlayfield ? H : H;
+
+    const sxStart = x0 < minX ? minX - x0 : 0;
+    const syStart = y0 < minY ? minY - y0 : 0;
+    const sxEnd = (x0 + sw) > maxX ? maxX - x0 : sw;
+    const syEnd = (y0 + sh) > maxY ? maxY - y0 : sh;
+    if (sxStart >= sxEnd || syStart >= syEnd) return;
+
+    for (let sy = syStart; sy < syEnd; sy++) {
+      const dstRow = (y0 + sy) * W + x0;
+      const srcRow = sy * sw;
+      for (let sx = sxStart; sx < sxEnd; sx++) {
+        const px = data[srcRow + sx];
+        if (px !== 0) {
+          fb[dstRow + sx] = flashWhite ? (px === C_BLACK ? C_DKGRAY : C_WHITE) : px;
+        }
+      }
+    }
+  }
+
+  // Bayer-stippled fade blitter for afterimage trails & ghosts (density 0..15)
+  function blitSpriteStipple(spr, dx, dy, density, tintCol = 0, clipPlayfield = true) {
+    const sw = spr.w;
+    const sh = spr.h;
+    const data = spr.data;
+    const x0 = dx | 0;
+    const y0 = dy | 0;
+    const minX = clipPlayfield ? INNER_X0 : 0;
+    const maxX = clipPlayfield ? INNER_X1 : W;
+    const minY = clipPlayfield ? INNER_Y0 : 0;
+    for (let sy = 0; sy < sh; sy++) {
+      const py = y0 + sy;
+      if (py < minY || py >= H) continue;
+      const dstRow = py * W;
+      const srcRow = sy * sw;
+      for (let sx = 0; sx < sw; sx++) {
+        const px = x0 + sx;
+        if (px < minX || px >= maxX) continue;
+        const col = data[srcRow + sx];
+        if (col !== 0 && col !== C_BLACK) {
+          if (BAYER_4X4[((py & 3) << 2) | (px & 3)] < density) {
+            fb[dstRow + px] = tintCol || col;
+          }
+        }
+      }
+    }
+  }
+
+  // Full Proportional 5x7 ASCII Bitmap Font (7 rows of 5-bit patterns, MSB on left)
+  const FONT_RAW = {
+    ' ': [0,0,0,0,0,0,0],
+    '!': [4,4,4,4,4,0,4],
+    '"': [10,10,4,0,0,0,0],
+    '#': [10,31,10,10,31,10,0],
+    '$': [4,15,20,14,5,30,4],
+    '%': [25,25,2,4,8,19,19],
+    '&': [12,18,20,8,21,18,13],
+    '\'':[4,4,2,0,0,0,0],
+    '(': [2,4,8,8,8,4,2],
+    ')': [8,4,2,2,2,4,8],
+    '*': [0,21,14,31,14,21,0],
+    '+': [0,4,4,31,4,4,0],
+    ',': [0,0,0,0,4,4,8],
+    '-': [0,0,0,14,0,0,0],
+    '.': [0,0,0,0,0,4,4],
+    '/': [1,2,2,4,8,8,16],
+    '0': [14,17,19,21,25,17,14],
+    '1': [4,12,4,4,4,4,14],
+    '2': [14,17,1,6,8,16,31],
+    '3': [30,1,2,14,1,17,14],
+    '4': [2,6,10,18,31,2,2],
+    '5': [31,16,30,1,1,17,14],
+    '6': [6,8,16,30,17,17,14],
+    '7': [31,1,2,4,8,8,8],
+    '8': [14,17,17,14,17,17,14],
+    '9': [14,17,17,15,1,2,12],
+    ':': [0,4,4,0,4,4,0],
+    ';': [0,4,0,0,4,4,8],
+    '<': [2,4,8,16,8,4,2],
+    '=': [0,0,31,0,31,0,0],
+    '>': [8,4,2,1,2,4,8],
+    '?': [14,17,1,6,4,0,4],
+    '@': [14,17,23,21,23,16,14],
+    'A': [14,17,17,31,17,17,17],
+    'B': [30,17,17,30,17,17,30],
+    'C': [14,17,16,16,16,17,14],
+    'D': [30,17,17,17,17,17,30],
+    'E': [31,16,16,30,16,16,31],
+    'F': [31,16,16,30,16,16,16],
+    'G': [14,17,16,23,17,17,15],
+    'H': [17,17,17,31,17,17,17],
+    'I': [14,4,4,4,4,4,14],
+    'J': [7,2,2,2,18,18,12],
+    'K': [17,18,20,24,20,18,17],
+    'L': [16,16,16,16,16,16,31],
+    'M': [17,27,21,21,17,17,17],
+    'N': [17,25,21,19,17,17,17],
+    'O': [14,17,17,17,17,17,14],
+    'P': [30,17,17,30,16,16,16],
+    'Q': [14,17,17,17,21,18,13],
+    'R': [30,17,17,30,20,18,17],
+    'S': [15,16,16,14,1,1,30],
+    'T': [31,4,4,4,4,4,4],
+    'U': [17,17,17,17,17,17,14],
+    'V': [17,17,17,17,17,10,4],
+    'W': [17,17,17,21,21,27,17],
+    'X': [17,17,10,4,10,17,17],
+    'Y': [17,17,10,4,4,4,4],
+    'Z': [31,1,2,4,8,16,31],
+    '[': [14,8,8,8,8,8,14],
+    '\\':[16,8,8,4,2,2,1],
+    ']': [14,2,2,2,2,2,14],
+    '^': [4,10,17,0,0,0,0],
+    '_': [0,0,0,0,0,0,31],
+    '`': [8,4,2,0,0,0,0],
+    '~': [3,7,5,5,13,27,24] // Musical eighth-note glyph!
+  };
+
+  // Precompute trimmed proportional glyph bounds for every ASCII char
+  const FONT_GLYPHS = {};
+  for (const ch in FONT_RAW) {
+    const rows = FONT_RAW[ch];
+    if (ch === ' ') {
+      FONT_GLYPHS[ch] = { rows, left: 0, width: 3 };
+      continue;
+    }
+    let minBit = 5, maxBit = -1;
+    for (let r = 0; r < 7; r++) {
+      const bits = rows[r];
+      for (let b = 0; b < 5; b++) {
+        if ((bits >> (4 - b)) & 1) {
+          if (b < minBit) minBit = b;
+          if (b > maxBit) maxBit = b;
+        }
+      }
+    }
+    if (maxBit < minBit) {
+      FONT_GLYPHS[ch] = { rows, left: 0, width: 3 };
+    } else {
+      FONT_GLYPHS[ch] = { rows, left: minBit, width: maxBit - minBit + 1 };
+    }
+  }
+
+  function getGlyph(ch) {
+    if (FONT_GLYPHS[ch]) return FONT_GLYPHS[ch];
+    const up = ch.toUpperCase();
+    return FONT_GLYPHS[up] || FONT_GLYPHS['?'];
+  }
+
+  function measureText(str, scale = 1, monoDigits = false) {
+    let total = 0;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      const isDigit = monoDigits && ch >= '0' && ch <= '9';
+      const gw = isDigit ? 5 : getGlyph(ch).width;
+      total += (gw + 1) * scale;
+    }
+    return total > 0 ? total - scale : 0;
+  }
+
+  // Blit proportional 5x7 text directly into fb with 1px 8-neighbor black outline & 1x/2x/3x scale
+  function drawText(str, x, y, colTop, scale = 1, opts = {}) {
+    const colBot = opts.colBot || colTop;
+    const outlineCol = opts.outlineCol !== undefined ? opts.outlineCol : C_BLACK;
+    const monoDigits = !!opts.monoDigits;
+    const clipX0 = opts.clipX0 !== undefined ? opts.clipX0 : 0;
+    const clipX1 = opts.clipX1 !== undefined ? opts.clipX1 : W;
+    let cx = x | 0;
+    const cy = y | 0;
+
+    // Pass 1: 1px 8-neighbor black outline
+    let ox = cx;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      const g = getGlyph(ch);
+      const isDigit = monoDigits && ch >= '0' && ch <= '9';
+      const left = isDigit ? 0 : g.left;
+      const gw = isDigit ? 5 : g.width;
+      if (ch !== ' ' && ox + gw * scale + 1 >= clipX0 && ox - 1 < clipX1) {
+        for (let r = 0; r < 7; r++) {
+          const rowBits = g.rows[r];
+          if (!rowBits) continue;
+          for (let c = 0; c < gw; c++) {
+            if ((rowBits >> (4 - (left + c))) & 1) {
+              const px0 = ox + c * scale;
+              const py0 = cy + r * scale;
+              for (let sy = -1; sy <= scale; sy++) {
+                const py = py0 + sy;
+                if (py < 0 || py >= H) continue;
+                const rowIdx = py * W;
+                for (let sx = -1; sx <= scale; sx++) {
+                  const px = px0 + sx;
+                  if (px >= clipX0 && px < clipX1) {
+                    fb[rowIdx + px] = outlineCol;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      ox += (gw + 1) * scale;
+    }
+
+    // Pass 2: Crisp foreground glyph pixels
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      const g = getGlyph(ch);
+      const isDigit = monoDigits && ch >= '0' && ch <= '9';
+      const left = isDigit ? 0 : g.left;
+      const gw = isDigit ? 5 : g.width;
+      if (ch !== ' ' && cx + gw * scale >= clipX0 && cx < clipX1) {
+        for (let r = 0; r < 7; r++) {
+          const rowBits = g.rows[r];
+          if (!rowBits) continue;
+          const rowCol = r < 3 ? colTop : (r === 3 && opts.colMid ? opts.colMid : colBot);
+          for (let c = 0; c < gw; c++) {
+            if ((rowBits >> (4 - (left + c))) & 1) {
+              const px0 = cx + c * scale;
+              const py0 = cy + r * scale;
+              for (let sy = 0; sy < scale; sy++) {
+                const py = py0 + sy;
+                if (py < 0 || py >= H) continue;
+                const rowIdx = py * W;
+                for (let sx = 0; sx < scale; sx++) {
+                  const px = px0 + sx;
+                  if (px >= clipX0 && px < clipX1) {
+                    fb[rowIdx + px] = rowCol;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      cx += (gw + 1) * scale;
+    }
+  }
+
+  function drawTextCentered(str, centerX, y, colTop, scale = 1, opts = {}) {
+    const w = measureText(str, scale, opts.monoDigits);
+    drawText(str, Math.round(centerX - w * 0.5), y, colTop, scale, opts);
+  }
+
+  // ============================================================================
+  // 3. PROCEDURAL HEIGHTMAP + SURFACE-NORMAL SPRITE COMPILER (compileLitSprite)
+  // ============================================================================
+  // Key light (-0.55, -0.60, 0.58) normalized + half-vector for specular
+  const KEY_L = (() => {
+    const lx = -0.55, ly = -0.60, lz = 0.58;
+    const len = Math.hypot(lx, ly, lz);
+    const nx = lx / len, ny = ly / len, nz = lz / len;
+    const hx = nx, hy = ny, hz = nz + 1.0;
+    const hlen = Math.hypot(hx, hy, hz);
+    return { lx: nx, ly: ny, lz: nz, hx: hx / hlen, hy: hy / hlen, hz: hz / hlen };
+  })();
+
+  /**
+   * Evaluates procedural heightmap + material ramp per pixel, computes finite-difference
+   * surface normals lit by key light (-0.55, -0.60, 0.58), quantizes onto EGA palette
+   * with Bayer 4x4 dithering, and stamps a 1px dark EGA outline around silhouette pixels.
+   */
+  function compileLitSprite(w, h, sampleFn, opts = {}) {
+    const data = new Uint32Array(w * h);
+    const heights = new Float32Array(w * h);
+    const mask = new Uint8Array(w * h);
+    const samples = new Array(w * h);
+    const normalScale = opts.normalScale !== undefined ? opts.normalScale : 1.75;
+    const outline8 = !!opts.outline8;
+    const outlineColor = opts.outlineColor !== undefined ? opts.outlineColor : C_BLACK;
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const s = sampleFn(x, y, w, h);
+        const idx = y * w + x;
+        if (s) {
+          mask[idx] = 1;
+          heights[idx] = s.h !== undefined ? s.h : 0.5;
+          samples[idx] = s;
+        }
+      }
+    }
+
+    const HAt = (x, y, fallback) => {
+      if (x < 0 || x >= w || y < 0 || y >= h) return 0;
+      const idx = y * w + x;
+      return mask[idx] ? heights[idx] : 0;
+      void fallback;
+    };
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = y * w + x;
+        if (!mask[idx]) continue;
+        const s = samples[idx];
+        if (s.directCol !== undefined) {
+          data[idx] = s.directCol;
+          continue;
+        }
+        const hc = heights[idx];
+        const hl = HAt(x - 1, y, hc);
+        const hr = HAt(x + 1, y, hc);
+        const hu = HAt(x, y - 1, hc);
+        const hd = HAt(x, y + 1, hc);
+
+        const dhdx = (hr - hl) * 0.5 * normalScale;
+        const dhdy = (hd - hu) * 0.5 * normalScale;
+        const invLen = 1.0 / Math.hypot(dhdx, dhdy, 1.0);
+        const nx = -dhdx * invLen;
+        const ny = -dhdy * invLen;
+        const nz = invLen;
+
+        const diff = Math.max(0, nx * KEY_L.lx + ny * KEY_L.ly + nz * KEY_L.lz);
+        const ndoth = Math.max(0, nx * KEY_L.hx + ny * KEY_L.hy + nz * KEY_L.hz);
+        const shininess = s.shininess !== undefined ? s.shininess : 18.0;
+        const specStr = s.spec !== undefined ? s.spec : 0.48;
+        const spec = Math.pow(ndoth, shininess) * specStr;
+        const emissive = s.emissive || 0;
+
+        const shade = Math.min(1, Math.max(0, 0.14 + diff * 0.78 + emissive));
+        const rgb = sampleRampRGB(s.ramp || RAMPS.W, shade);
+        const r = rgb[0] + spec * 230;
+        const g = rgb[1] + spec * 230;
+        const b = rgb[2] + spec * 240;
+        data[idx] = quantizeEgaColor(r, g, b, x, y);
+      }
+    }
+
+    // Automatic 1px dark EGA outline pass around every non-transparent silhouette pixel
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = y * w + x;
+        if (mask[idx]) continue;
+        let touches = false;
+        if ((x > 0 && mask[idx - 1]) ||
+            (x + 1 < w && mask[idx + 1]) ||
+            (y > 0 && mask[idx - w]) ||
+            (y + 1 < h && mask[idx + w])) {
+          touches = true;
+        } else if (outline8) {
+          if ((x > 0 && y > 0 && mask[idx - w - 1]) ||
+              (x + 1 < w && y > 0 && mask[idx - w + 1]) ||
+              (x > 0 && y + 1 < h && mask[idx + w - 1]) ||
+              (x + 1 < w && y + 1 < h && mask[idx + w + 1])) {
+            touches = true;
+          }
+        }
+        if (touches) {
+          data[idx] = outlineColor;
+        }
+      }
+    }
+
+    return { w, h, data };
+  }
+
+  // ============================================================================
+  // 3B. PRE-COMPILE ALL BRICKS, CAPSULES, BALLS, VAUS MORPHS & LECHUCK BOSS
+  // ============================================================================
+  // Bricks sit on an 8x6 grid; compiled as 9x7 sprites (blitted at bx-1, by-1)
+  // so the 7x5 3D beveled body has a complete 4-sided 1px dark EGA outline!
+  function beveledBrickHeight(lx, ly) {
+    // lx in 0..6, ly in 0..4
+    const dx = Math.min(lx, 6 - lx);
+    const dy = Math.min(ly, 4 - ly);
+    const edge = Math.min(dx * 0.42, dy * 0.48, 0.55);
+    return 0.25 + edge + (ly === 1 && lx >= 1 && lx <= 4 ? 0.08 : 0);
+  }
+
+  const BRICK_SPRITES = {};
+  const COLOR_KEYS = ['R','O','Y','G','E','C','B','I','V','M','W','S','D','N','T','F','K','A'];
+  for (const key of COLOR_KEYS) {
+    const ramp = RAMPS[key];
+    BRICK_SPRITES[key] = compileLitSprite(9, 7, (x, y) => {
+      if (x < 1 || x > 7 || y < 1 || y > 5) return null;
+      const lx = x - 1, ly = y - 1;
+      return { h: beveledBrickHeight(lx, ly), ramp, shininess: 20, spec: 0.52 };
+    }, { outline8: true });
+  }
+
+  // Multi-stage Battle-Scarred Armored Bricks (HP 3, 2, 1) with recessed fracture cracks
+  BRICK_SPRITES.ARMOR = [1, 2, 3].map((hp) => {
+    const ramp = hp === 3 ? RAMPS.ARMOR3 : (hp === 2 ? RAMPS.ARMOR2 : RAMPS.ARMOR1);
+    return compileLitSprite(9, 7, (x, y) => {
+      if (x < 1 || x > 7 || y < 1 || y > 5) return null;
+      const lx = x - 1, ly = y - 1;
+      let h = beveledBrickHeight(lx, ly) + 0.1;
+      // Corner rivets on intact armor
+      if ((lx === 0 || lx === 6) && (ly === 0 || ly === 4)) h += 0.22;
+      // Recessed diagonal fracture cracks for damaged HP stages
+      if (hp <= 2 && Math.abs(lx - (ly + 1)) === 0 && ly >= 1 && ly <= 3) {
+        return { h: 0.02, ramp: RAMPS.K, shininess: 8, spec: 0.1 };
+      }
+      if (hp === 1 && ((lx + ly === 6 && ly >= 1) || (lx === 3 && ly === 2))) {
+        return { h: 0.01, ramp: RAMPS.FIRE, shininess: 10, spec: 0.2, emissive: 0.35 };
+      }
+      return { h, ramp, shininess: 22, spec: 0.55 };
+    }, { outline8: true });
+  });
+
+  // Brushed-Chrome Riveted Steel Bricks (normal + metallic hit-glint frame)
+  BRICK_SPRITES.STEEL = [0, 1].map((glint) => compileLitSprite(9, 7, (x, y) => {
+    if (x < 1 || x > 7 || y < 1 || y > 5) return null;
+    const lx = x - 1, ly = y - 1;
+    let h = beveledBrickHeight(lx, ly) + ((ly & 1) ? 0.04 : -0.04);
+    if ((lx === 1 || lx === 5) && (ly === 1 || ly === 3)) h += 0.28; // 4 rivets
+    const sheen = glint && (lx + ly >= 3 && lx + ly <= 5) ? 0.45 : 0;
+    return { h, ramp: RAMPS.STEEL, shininess: 28, spec: 0.72, emissive: sheen };
+  }, { outline8: true }));
+
+  // 4-Frame Animated Bubbling Green-Acid Grog Bricks
+  BRICK_SPRITES.GROG = [0, 1, 2, 3].map((frame) => compileLitSprite(9, 7, (x, y) => {
+    if (x < 1 || x > 7 || y < 1 || y > 5) return null;
+    const lx = x - 1, ly = y - 1;
+    let h = beveledBrickHeight(lx, ly);
+    const b1x = (2 + frame) % 5 + 1;
+    const b1y = (4 - frame + 4) % 3 + 1;
+    const b2x = (5 - frame + 5) % 5 + 1;
+    const b2y = (2 + frame) % 3 + 1;
+    let em = 0.14;
+    if ((lx === b1x && ly === b1y) || (lx === b2x && ly === b2y)) {
+      h += 0.36;
+      em = 0.45;
+    }
+    return { h, ramp: RAMPS.GROG, shininess: 16, spec: 0.65, emissive: em };
+  }, { outline8: true }));
+
+  // Glowing World-Mechanic Bricks (4 animation frames each)
+  function compileMechanicBricks(kind) {
+    return [0, 1, 2, 3].map((f) => compileLitSprite(9, 7, (x, y) => {
+      if (x < 1 || x > 7 || y < 1 || y > 5) return null;
+      const lx = x - 1, ly = y - 1;
+      const pulse = 0.15 + Math.sin(f * Math.PI * 0.5) * 0.12;
+      let h = beveledBrickHeight(lx, ly);
+      if (kind === 'CUTLASS') {
+        // Crossed silver pirate blades over ruby pirate crest
+        const onBlade = (Math.abs((lx - 1) - ly) === 0 || Math.abs((5 - lx) - ly) === 0) && lx >= 1 && lx <= 5;
+        return onBlade
+          ? { h: h + 0.3, ramp: RAMPS.W, shininess: 30, spec: 0.8, emissive: pulse }
+          : { h, ramp: RAMPS.R, shininess: 18, spec: 0.4 };
+      }
+      if (kind === 'CHRONO') {
+        // Swirling cyan/violet Chron-o-John diamond portal
+        const dist = Math.abs(lx - 3) + Math.abs(ly - 2);
+        const ring = (dist === (f % 3) + 1);
+        return {
+          h: h + (ring ? 0.28 : 0),
+          ramp: dist <= 1 ? RAMPS.C : RAMPS.V,
+          shininess: 24,
+          spec: 0.65,
+          emissive: ring ? 0.38 : 0.1
+        };
+      }
+      if (kind === 'IDOL') {
+        // Sculpted golden Mayan idol with glowing ruby eyes & dart mouth
+        const eyes = (ly === 1 && (lx === 2 || lx === 4));
+        const mouth = (ly === 3 && lx === 3);
+        if (eyes) return { h: h + 0.25, ramp: RAMPS.R, shininess: 20, spec: 0.6, emissive: 0.35 + pulse };
+        if (mouth) return { h: 0.05, ramp: RAMPS.K, shininess: 8, spec: 0.1 };
+        return { h: h + 0.15, ramp: RAMPS.Y, shininess: 26, spec: 0.68, emissive: pulse * 0.4 };
+      }
+      if (kind === 'GRAV') {
+        // Orbital cyan/indigo core
+        const d = Math.hypot(lx - 3, ly - 2);
+        return {
+          h: 0.7 - d * 0.18,
+          ramp: d < 1.5 ? RAMPS.C : RAMPS.I,
+          shininess: 24,
+          spec: 0.7,
+          emissive: d < 1.5 ? 0.35 + pulse : 0.08
+        };
+      }
+      if (kind === 'RUNE') {
+        // Loom glowing crystal musical note brick
+        const note = (lx === 3 && ly >= 1 && ly <= 3) || (lx === 2 && ly === 3) || (lx === 4 && ly === 1);
+        const ramps = [RAMPS.C, RAMPS.E, RAMPS.Y, RAMPS.M];
+        return note
+          ? { h: h + 0.3, ramp: RAMPS.W, shininess: 30, spec: 0.85, emissive: 0.4 }
+          : { h, ramp: ramps[f & 3], shininess: 22, spec: 0.55, emissive: 0.12 };
+      }
+      if (kind === 'SIREN') {
+        // Sam & Max flashing red/blue highway police lightbar
+        const leftHalf = lx <= 2;
+        const active = (f & 1) ? leftHalf : !leftHalf;
+        return {
+          h: h + (active ? 0.22 : 0),
+          ramp: leftHalf ? RAMPS.R : RAMPS.B,
+          shininess: 26,
+          spec: 0.7,
+          emissive: active ? 0.45 : 0.05
+        };
+      }
+      // VOODOO skull totem brick (World 7)
+      const eye = ly === 1 && (lx === 2 || lx === 4);
+      return eye
+        ? { h: h + 0.2, ramp: RAMPS.GROG, shininess: 20, spec: 0.6, emissive: 0.45 }
+        : { h: h + 0.1, ramp: RAMPS.FIRE, shininess: 18, spec: 0.5, emissive: pulse };
+    }, { outline8: true }));
+  }
+
+  BRICK_SPRITES.MECH = {
+    X: compileMechanicBricks('CUTLASS'),
+    J: compileMechanicBricks('CHRONO'),
+    Q: compileMechanicBricks('IDOL'),
+    U: compileMechanicBricks('GRAV'),
+    Z: compileMechanicBricks('RUNE'),
+    H: compileMechanicBricks('SIREN'),
+    L: compileMechanicBricks('VOODOO')
+  };
+
+  // Sculpted 18x9 Pill Capsules (L, E, C, S, P) with icon + crisp embossed letter
+  const CAPSULE_ICONS = {
+    L: [ // Space-Ranger Blaster
+      '..1111.',
+      '.222222',
+      '1111...',
+      '.11....',
+      '.1.....'
+    ],
+    E: [ // Rubber Chicken with Pulley
+      '.33.44.',
+      '5333443',
+      '.333333',
+      '..3.44.',
+      '..6..6.'
+    ],
+    C: [ // Magnetic Compass
+      '..333..',
+      '.35511.',
+      '351.153',
+      '.31122.',
+      '..333..'
+    ],
+    S: [ // Golden Hourglass
+      '.33333.',
+      '..111..',
+      '...3...',
+      '..333..',
+      '.33333.'
+    ],
+    P: [ // Iconic LucasArts Gold Guy!
+      '3..3..3',
+      '.33333.',
+      '..333..',
+      '.33.33.',
+      '3.....3'
+    ]
+  };
+
+  const CAPSULE_LETTERS = {
+    L: ['1...','1...','1...','1...','1111'],
+    E: ['1111','1...','111.','1...','1111'],
+    C: ['.111','1...','1...','1...','.111'],
+    S: ['.111','1...','.11.','...1','111.'],
+    P: ['111.','1..1','111.','1...','1...']
+  };
+
+  const CAPSULE_BASE_RAMPS = {
+    L: RAMPS.R,
+    E: RAMPS.Y,
+    C: RAMPS.E,
+    S: RAMPS.V,
+    P: RAMPS.B
+  };
+
+  const ICON_CODE_RAMP = {
+    '1': RAMPS.W,
+    '2': RAMPS.C,
+    '3': RAMPS.Y,
+    '4': RAMPS.STEEL,
+    '5': RAMPS.R,
+    '6': RAMPS.O
+  };
+
+  const CAPSULE_SPRITES = {};
+  for (const type of ['L', 'E', 'C', 'S', 'P']) {
+    const icon = CAPSULE_ICONS[type];
+    const letBmp = CAPSULE_LETTERS[type];
+    const bodyRamp = CAPSULE_BASE_RAMPS[type];
+    CAPSULE_SPRITES[type] = [0, 1].map((shimmer) => compileLitSprite(18, 9, (x, y) => {
+      // Pill silhouette inside x=1..16, y=1..7 with rounded corners -> 1px outline fills 18x9!
+      if (x < 1 || x > 16 || y < 1 || y > 7) return null;
+      if ((x === 1 || x === 16) && (y === 1 || y === 7)) return null;
+
+      const nyNorm = (y - 4) / 3.4;
+      let h = Math.sqrt(Math.max(0.05, 1 - nyNorm * nyNorm)) * 0.85;
+      if (x <= 2 || x >= 15) h *= 0.72;
+
+      // Divider seam between icon chamber & letter cap
+      if (x === 10) {
+        return { h: h * 0.55, ramp: RAMPS.STEEL, shininess: 26, spec: 0.65 };
+      }
+
+      // Left chamber (x=2..8, y=2..6): detailed pixel-art icon
+      if (x >= 2 && x <= 8 && y >= 2 && y <= 6) {
+        const ch = icon[y - 2][x - 2];
+        if (ch !== '.') {
+          return {
+            h: h + 0.28,
+            ramp: ICON_CODE_RAMP[ch],
+            shininess: 26,
+            spec: 0.7,
+            emissive: 0.22 + shimmer * 0.12
+          };
+        }
+      }
+
+      // Right cap (x=11..14, y=2..6): crisp embossed letter stamp
+      if (x >= 11 && x <= 14 && y >= 2 && y <= 6) {
+        if (letBmp[y - 2][x - 11] === '1') {
+          return {
+            h: h + 0.32,
+            ramp: RAMPS.W,
+            shininess: 30,
+            spec: 0.85,
+            emissive: 0.3 + shimmer * 0.1
+          };
+        }
+      }
+
+      return {
+        h,
+        ramp: bodyRamp,
+        shininess: 24,
+        spec: 0.62,
+        emissive: shimmer && y === 2 ? 0.12 : 0
+      };
+    }, { outline8: false }));
+  }
+
+  // Specular-Lit 5x5 Chrome & Plasma Sphere Balls (3x3 lit sphere + 4-neighbor 1px dark outline = exact 5x5!)
+  function compileBall(ramp, emissive = 0.1) {
+    return compileLitSprite(5, 5, (x, y) => {
+      const dx = x - 2, dy = y - 2;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return null;
+      const r2 = (dx * dx + dy * dy) / 2.6;
+      const h = Math.sqrt(Math.max(0.08, 1.0 - r2));
+      return { h, ramp, shininess: 28, spec: 0.9, emissive };
+    }, { outline8: false, normalScale: 2.2 });
+  }
+  const BALL_CHROME = compileBall(RAMPS.STEEL, 0.12);
+  const BALL_PLASMA = compileBall(RAMPS.C, 0.28);
+  const BALL_FIRE   = compileBall(RAMPS.FIRE, 0.30);
+
+  // Sculpted Vaus Paddles & Physical Morphs
+  function compileStandardPaddle() {
+    // 36x9 cylindrical metallic Vaus with glowing crimson endcaps
+    return compileLitSprite(36, 9, (x, y) => {
+      if (x < 1 || x > 34 || y < 1 || y > 7) return null;
+      if ((x === 1 || x === 34) && (y === 1 || y === 7)) return null;
+      const ny = (y - 4) / 3.4;
+      let h = Math.sqrt(Math.max(0.08, 1 - ny * ny)) * 0.85;
+      if (x <= 5 || x >= 30) {
+        return { h: h * 0.9, ramp: RAMPS.R, shininess: 24, spec: 0.65, emissive: 0.14 };
+      }
+      if (x === 6 || x === 29) {
+        return { h: h * 0.65, ramp: RAMPS.D, shininess: 16, spec: 0.3 };
+      }
+      if (x >= 16 && x <= 19 && y >= 2 && y <= 6) {
+        return { h: h + 0.18, ramp: RAMPS.C, shininess: 28, spec: 0.8, emissive: 0.2 };
+      }
+      return { h, ramp: RAMPS.STEEL, shininess: 28, spec: 0.72 };
+    });
+  }
+
+  function compileChickenPaddle(withLasers) {
+    // 52x11 Sculpted Rubber Chicken with a Pulley in the Middle!
+    return compileLitSprite(52, 11, (x, y) => {
+      // Twin laser barrels mounted on head/tail if L+E combined!
+      if (withLasers && ((x >= 6 && x <= 8) || (x >= 43 && x <= 45)) && y >= 1 && y <= 3) {
+        return { h: 0.75, ramp: y === 1 ? RAMPS.C : RAMPS.STEEL, shininess: 26, spec: 0.75, emissive: y === 1 ? 0.35 : 0 };
+      }
+      if (x < 1 || x > 50 || y < 2 || y > 9) return null;
+
+      // Central spinning steel Pulley wheel (x=23..28, y=2..9) + cable
+      const pdx = x - 25.5, pdy = y - 5.5;
+      const pr = Math.hypot(pdx, pdy);
+      if (pr <= 3.7) {
+        const groove = Math.abs(pr - 2.3) < 0.7 ? -0.22 : 0.15;
+        const axle = pr < 1.1;
+        return {
+          h: 0.72 + groove,
+          ramp: axle ? RAMPS.R : RAMPS.STEEL,
+          shininess: 30,
+          spec: 0.8
+        };
+      }
+      // Stretched rubber neck/cable flanks around pulley
+      if ((x >= 20 && x <= 22) || (x >= 29 && x <= 31)) {
+        if (y < 4 || y > 7) return null;
+        return { h: 0.55, ramp: RAMPS.T, shininess: 16, spec: 0.35 };
+      }
+      // Left end (x=1..8): Red comb, orange beak, chicken head & eye!
+      if (x <= 8) {
+        if (x <= 3) {
+          if (y < 4 || y > 7) return null;
+          return { h: 0.62, ramp: RAMPS.O, shininess: 20, spec: 0.5 }; // Beak
+        }
+        if (y === 2 && x >= 5 && x <= 7) {
+          return { h: 0.7, ramp: RAMPS.R, shininess: 18, spec: 0.45, emissive: 0.12 }; // Red comb
+        }
+        if (x === 5 && y === 4) {
+          return { h: 0.85, ramp: RAMPS.W, shininess: 30, spec: 0.9 }; // Chicken eye
+        }
+        if (y === 9 && x <= 5) return null;
+      }
+      // Right end (x=45..50): Stretched orange webbed feet!
+      if (x >= 45) {
+        if (y === 2 || y === 9 || (x >= 48 && y === 5)) return null;
+        return { h: 0.6, ramp: RAMPS.O, shininess: 18, spec: 0.45 };
+      }
+      // Plump sculpted yellow rubber chicken torso & wing feathers
+      if ((y === 2 || y === 9) && (x < 10 || x > 42)) return null;
+      const ny = (y - 5.5) / 3.8;
+      let h = Math.sqrt(Math.max(0.1, 1 - ny * ny)) * 0.88;
+      // Sculpted feather ridges
+      if (((x + y) % 4 === 0) && y >= 4 && y <= 7) h += 0.12;
+      return { h, ramp: RAMPS.Y, shininess: 20, spec: 0.55 };
+    });
+  }
+
+  function compileLaserPaddle() {
+    // 38x11 Twin Space-Ranger Laser Cannons
+    return compileLitSprite(38, 11, (x, y) => {
+      // Twin forward cannon barrels at x=5..7 and x=30..32
+      const inLeftGun = (x >= 5 && x <= 7);
+      const inRightGun = (x >= 30 && x <= 32);
+      if ((inLeftGun || inRightGun) && y >= 1 && y <= 4) {
+        const muzzle = y === 1;
+        return {
+          h: 0.78 - Math.abs(x - (inLeftGun ? 6 : 31)) * 0.15,
+          ramp: muzzle ? RAMPS.C : RAMPS.STEEL,
+          shininess: 28,
+          spec: 0.8,
+          emissive: muzzle ? 0.42 : 0
+        };
+      }
+      if (x < 1 || x > 36 || y < 3 || y > 9) return null;
+      if ((x === 1 || x === 36) && (y === 3 || y === 9)) return null;
+      const ny = (y - 6) / 3.4;
+      const h = Math.sqrt(Math.max(0.08, 1 - ny * ny)) * 0.86;
+      if (x <= 4 || x >= 33) return { h, ramp: RAMPS.R, shininess: 24, spec: 0.6, emissive: 0.15 };
+      if (x >= 15 && x <= 22) return { h: h + 0.12, ramp: RAMPS.B, shininess: 26, spec: 0.7, emissive: 0.1 };
+      return { h, ramp: RAMPS.W, shininess: 26, spec: 0.7 };
+    });
+  }
+
+  function compileCatchPaddle() {
+    // 38x10 Glowing Magnetic Compass Core Vaus
+    return compileLitSprite(38, 10, (x, y) => {
+      if (x < 1 || x > 36 || y < 2 || y > 8) {
+        // Raised compass dome in center (x=15..22, y=1)
+        if (y === 1 && x >= 16 && x <= 21) {
+          return { h: 0.75, ramp: RAMPS.Y, shininess: 28, spec: 0.75 };
+        }
+        return null;
+      }
+      if ((x === 1 || x === 36) && (y === 2 || y === 8)) return null;
+      const cdx = x - 18.5, cdy = y - 5.0;
+      const cr = Math.hypot(cdx, cdy);
+      if (cr <= 4.3) {
+        if (cr >= 3.1) return { h: 0.82, ramp: RAMPS.Y, shininess: 28, spec: 0.75 }; // Brass bezel
+        const needle = Math.abs(cdx) < 1.1 || Math.abs(cdy) < 1.0;
+        return {
+          h: 0.92,
+          ramp: needle ? (cdy < 0 ? RAMPS.R : RAMPS.C) : RAMPS.E,
+          shininess: 30,
+          spec: 0.85,
+          emissive: 0.28
+        };
+      }
+      const ny = (y - 5) / 3.4;
+      const h = Math.sqrt(Math.max(0.08, 1 - ny * ny)) * 0.82;
+      if (x <= 5 || x >= 32) return { h, ramp: RAMPS.E, shininess: 24, spec: 0.65, emissive: 0.2 };
+      return { h, ramp: RAMPS.A, shininess: 24, spec: 0.62 };
+    });
+  }
+
+  const PADDLE_SPRITES = {
+    NORMAL: compileStandardPaddle(),
+    EXPAND: compileChickenPaddle(false),
+    EXPAND_LASER: compileChickenPaddle(true),
+    LASER: compileLaserPaddle(),
+    CATCH: compileCatchPaddle(),
+    MINI: compileLitSprite(14, 5, (x, y) => {
+      if (x < 1 || x > 12 || y < 1 || y > 3) return null;
+      const h = y === 2 ? 0.85 : 0.55;
+      return { h, ramp: (x <= 2 || x >= 11) ? RAMPS.R : RAMPS.STEEL, shininess: 24, spec: 0.65 };
+    })
+  };
+
+  // Pipe wall 8x8 segments (vertical, horizontal, corner, top hatch)
+  const PIPE_VERT = compileLitSprite(8, 8, (x, y) => {
+    const nx = (x - 3.5) / 3.8;
+    let h = Math.sqrt(Math.max(0.05, 1 - nx * nx)) * 0.9;
+    if (y === 0) h *= 0.7;
+    return { h, ramp: x === 0 || x === 7 ? RAMPS.K : RAMPS.STEEL, shininess: 26, spec: 0.68 };
+  });
+  const PIPE_HORIZ = compileLitSprite(8, 8, (x, y) => {
+    const ny = (y - 3.5) / 3.8;
+    let h = Math.sqrt(Math.max(0.05, 1 - ny * ny)) * 0.9;
+    if (x === 0) h *= 0.7;
+    return { h, ramp: y === 0 || y === 7 ? RAMPS.K : RAMPS.STEEL, shininess: 26, spec: 0.68 };
+  });
+  const PIPE_CORNER = compileLitSprite(8, 8, (x, y) => {
+    const d = Math.hypot(x - 3.5, y - 3.5) / 5.0;
+    const h = Math.max(0.15, 1 - d * d);
+    return { h, ramp: (x === 0 || y === 0 || x === 7 || y === 7) ? RAMPS.D : RAMPS.A, shininess: 26, spec: 0.72 };
+  });
+
+  // Sculpted 40x28 Ghost Pirate LeChuck Boss (4 animated fire-beard frames!)
+  const LECHUCK_SPRITES = [0, 1, 2, 3].map((frame) => compileLitSprite(40, 28, (x, y) => {
+    const cx = x - 19.5;
+    const ax = Math.abs(cx);
+
+    // 1. Pirate Tricorne Hat (y=1..10, wide curved cocked brim)
+    const brimCurve = Math.round(Math.sin((ax / 15) * Math.PI) * 2.4);
+    if (y >= 2 && y <= 10 - brimCurve * 0.3 && ax <= 15 - Math.max(0, (5 - y) * 1.6)) {
+      // Skull & crossbones badge on center of hat
+      if (ax <= 2.6 && y >= 4 && y <= 7) {
+        const eye = (Math.abs(ax - 1) < 0.8 && y === 5);
+        return eye
+          ? { h: 0.4, ramp: RAMPS.K, shininess: 8, spec: 0.1 }
+          : { h: 0.92, ramp: RAMPS.W, shininess: 24, spec: 0.65 };
+      }
+      // Golden hat trim along top edge
+      const topEdge = y <= 3 || ax >= 13 - Math.max(0, (5 - y) * 1.5);
+      return {
+        h: 0.65 + (10 - y) * 0.04,
+        ramp: topEdge ? RAMPS.Y : RAMPS.I,
+        shininess: topEdge ? 26 : 14,
+        spec: topEdge ? 0.7 : 0.3
+      };
+    }
+    // Red pirate feather plume on left side of tricorne
+    if (cx >= -14 && cx <= -8 && y >= 1 && y <= 4 && Math.abs((y - 1) - (cx + 13) * 0.5) < 1.3) {
+      return { h: 0.75, ramp: RAMPS.R, shininess: 18, spec: 0.5, emissive: 0.15 };
+    }
+
+    // 2. Glowing Red-Eyed Zombie Skull Face (y=9..16, ax <= 6.5)
+    if (y >= 9 && y <= 16 && ax <= 6.5) {
+      // Blazing red voodoo eyes!
+      if (y >= 11 && y <= 12 && ax >= 1.6 && ax <= 3.8) {
+        const pupil = Math.abs(ax - 2.5) < 0.7 && y === 12;
+        return {
+          h: 0.88,
+          ramp: pupil ? RAMPS.Y : RAMPS.R,
+          shininess: 28,
+          spec: 0.85,
+          emissive: 0.55
+        };
+      }
+      // Skeletal nose cavity
+      if (y === 13 && ax < 1.2) {
+        return { h: 0.15, ramp: RAMPS.K, shininess: 8, spec: 0.1 };
+      }
+      // Menacing toothed grin
+      if (y === 15 && ax <= 4.5) {
+        const tooth = ((x + 1) & 1) === 0;
+        return { h: tooth ? 0.75 : 0.15, ramp: tooth ? RAMPS.W : RAMPS.K, shininess: 18, spec: 0.4 };
+      }
+      return {
+        h: 0.82 - (ax / 8.0) * 0.35,
+        ramp: RAMPS.GHOST,
+        shininess: 20,
+        spec: 0.48,
+        emissive: 0.12
+      };
+    }
+
+    // 3. Flickering Dithered Hellfire / Ectoplasm Beard (y=14..26)
+    if (y >= 14 && y <= 26) {
+      const wave = Math.sin(x * 0.75 + frame * 1.57 + y * 0.45) * 1.8;
+      const maxBeardW = 11.5 - (y - 14) * 0.58 + wave * 0.55;
+      const tendrilGap = y >= 22 && ((Math.floor((x + frame) * 0.5) % 3) === 0);
+      if (ax <= maxBeardW && !tendrilGap) {
+        const heat = 1.0 - (y - 14) / 13.0 + Math.sin(x * 0.9 - frame * 1.6) * 0.18;
+        return {
+          h: 0.55 + Math.max(0, heat) * 0.4,
+          ramp: ((x + y + frame) % 5 === 0) ? RAMPS.GHOST : RAMPS.FIRE,
+          shininess: 20,
+          spec: 0.55,
+          emissive: 0.35
+        };
+      }
+    }
+
+    // 4. Pirate Captain Coat & Golden Epaulets (y=15..24, shoulders)
+    if (y >= 15 && y <= 24 && ax >= 7 && ax <= 16 - (y - 15) * 0.35) {
+      const epaulet = y <= 17 && ax >= 10;
+      return {
+        h: 0.65 - Math.abs(y - 19) * 0.05,
+        ramp: epaulet ? RAMPS.Y : RAMPS.R,
+        shininess: epaulet ? 26 : 16,
+        spec: epaulet ? 0.7 : 0.35
+      };
+    }
+    return null;
+  }));
+
+  // Voodoo Flaming Skull Projectile (9x9) & Atlantean Poison Dart (5x9)
+  const VOODOO_SKULL_SPRITE = [0, 1].map((f) => compileLitSprite(9, 9, (x, y) => {
+    const dx = x - 4, dy = y - 4.3;
+    const d = Math.hypot(dx, dy);
+    if (y <= 2 && Math.abs(dx) <= 2 - (f & 1)) {
+      return { h: 0.7, ramp: RAMPS.GROG, shininess: 20, spec: 0.6, emissive: 0.45 };
+    }
+    if (d > 3.1) return null;
+    if (y === 4 && (x === 3 || x === 5)) {
+      return { h: 0.85, ramp: RAMPS.R, shininess: 24, spec: 0.7, emissive: 0.5 };
+    }
+    return { h: 0.85 - d * 0.18, ramp: RAMPS.GHOST, shininess: 22, spec: 0.55, emissive: 0.2 };
+  }));
+
+  const POISON_DART_SPRITE = compileLitSprite(5, 9, (x, y) => {
+    if (y === 0 || y === 8) return null;
+    if (y <= 2 && (x === 1 || x === 3)) return { h: 0.65, ramp: RAMPS.E, shininess: 20, spec: 0.5, emissive: 0.25 }; // Feathers
+    if (x === 2 && y >= 1 && y <= 7) {
+      return {
+        h: 0.8,
+        ramp: y >= 6 ? RAMPS.GROG : RAMPS.Y,
+        shininess: 26,
+        spec: 0.75,
+        emissive: y >= 6 ? 0.4 : 0.1
+      };
+    }
+    return null;
+  });
+
+  // ============================================================================
+  // 4. PRE-BAKED 288x192 MULTI-LAYER BACKDROPS & PER-SCANLINE RASTER EFFECTS
+  // ============================================================================
+  const TRANSPARENT_IDX = 255;
+  const WORLD_BACKDROPS = [];
+
+  // Deterministic pseudo-random helper for crisp procedural world art
+  function hash2D(x, y, seed = 1) {
+    let n = (x * 374761393 + y * 668265263 + seed * 1442695041) | 0;
+    n = (n ^ (n >>> 13)) * 1274126177;
+    return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+  }
+
+  function bakeAllWorlds() {
+    for (let wId = 0; wId < 7; wId++) {
+      const far = new Uint8Array(BG_W * BG_H);
+      const mid = new Uint8Array(BG_W * BG_H).fill(TRANSPARENT_IDX);
+      const near = new Uint8Array(BG_W * BG_H).fill(TRANSPARENT_IDX);
+
+      if (wId === 0) {
+        // WORLD 1: MELEE ISLAND — Twilight sky, cratered moon, hilltop town & Scumm Bar
+        for (let y = 0; y < BG_H; y++) {
+          const t = Math.min(1, y / 142);
+          const r = 8 + t * 55;
+          const g = 6 + t * 28;
+          const b = 52 + t * 95;
+          for (let x = 0; x < BG_W; x++) {
+            let idx = quantizeEgaIndex(r, g, b, x, y);
+            if (y < 110 && hash2D(x, y, 11) > 0.992) {
+              idx = hash2D(x, y, 12) > 0.5 ? egaIdx(3, 3, 3) : egaIdx(2, 2, 3);
+            }
+            // Cratered lit circular moon at (208, 36), radius 20
+            const mdx = x - 208, mdy = y - 36;
+            const mr2 = mdx * mdx + mdy * mdy;
+            if (mr2 <= 400) {
+              const mz = Math.sqrt(400 - mr2) / 20;
+              const crater = (Math.hypot(mdx - 5, mdy + 4) < 5 || Math.hypot(mdx + 6, mdy - 5) < 4 || Math.hypot(mdx - 2, mdy - 8) < 3) ? -0.18 : 0;
+              const shade = Math.min(1, Math.max(0.15, 0.35 + (-mdx * 0.025 - mdy * 0.025 + mz * 0.65) + crater));
+              const mrgb = sampleRampRGB(RAMPS.W, shade);
+              idx = quantizeEgaIndex(mrgb[0], mrgb[1], mrgb[2] + 15, x, y);
+            }
+            far[y * BG_W + x] = idx;
+          }
+        }
+        // Mid layer: jagged misty Mêlée Island mountain ridges
+        for (let x = 0; x < BG_W; x++) {
+          const ridge = 108 - Math.round(Math.sin(x * 0.035) * 18 + Math.sin(x * 0.09 + 1.2) * 9 + Math.cos(x * 0.19) * 4);
+          for (let y = ridge; y < 142; y++) {
+            const shade = (y - ridge) / 40;
+            mid[y * BG_W + x] = quantizeEgaIndex(12 + shade * 15, 14 + shade * 25, 48 + shade * 40, x, y);
+          }
+        }
+        // Near layer: Hilltop pirate town silhouette, clocktower & warm glowing Scumm Bar windows!
+        for (let x = 0; x < BG_W; x++) {
+          const hill = 128 - Math.round(Math.max(0, Math.sin((x - 30) * 0.024)) * 22);
+          const bldgId = (x / 14) | 0;
+          const bx = x % 14;
+          const hasHouse = bx >= 1 && bx <= 12 && (hash2D(bldgId, 1, 77) > 0.22);
+          const roofH = hasHouse ? (8 + ((hash2D(bldgId, 2, 77) * 14) | 0)) : 0;
+          const gable = hasHouse ? Math.max(0, 5 - Math.abs(bx - 6)) : 0;
+          const topY = hill - roofH - gable;
+          for (let y = Math.max(60, topY); y < 142; y++) {
+            let idx = egaIdx(0, 0, 1);
+            if (x > 165 && x < 235 && y > 122) idx = egaIdx(1, 0, 0); // Wooden Scumm Bar pier
+            // Warm glowing Scumm Bar & town windows
+            if (hasHouse && y > topY + 5 && y < 137 && ((bx === 4 || bx === 9) && ((y % 7) <= 3))) {
+              if (hash2D(bldgId, (y / 7) | 0, 99) > 0.25) {
+                idx = (y & 1) ? egaIdx(3, 3, 0) : egaIdx(3, 2, 0);
+              }
+            }
+            near[y * BG_W + x] = idx;
+          }
+        }
+      } else if (wId === 1) {
+        // WORLD 2: EDISON MANSION — Stormy sky, crooked mansard roof towers, radioactive lab
+        for (let y = 0; y < BG_H; y++) {
+          const t = y / BG_H;
+          for (let x = 0; x < BG_W; x++) {
+            const swirl = Math.sin(x * 0.04 + Math.cos(y * 0.07) * 2.0) * 18;
+            far[y * BG_W + x] = quantizeEgaIndex(28 + t * 35 + swirl, 8 + t * 55, 55 + (1 - t) * 65 + swirl, x, y);
+          }
+        }
+        // Crooked mansard roof towers & tilted chimneys
+        const towers = [{ cx: 52, w: 30, top: 44, tilt: -0.16 }, { cx: 142, w: 38, top: 34, tilt: 0.14 }, { cx: 228, w: 32, top: 48, tilt: -0.12 }];
+        for (let y = 26; y < 158; y++) {
+          for (let x = 0; x < BG_W; x++) {
+            // Rolling haunted hills
+            const hillY = 136 + Math.round(Math.sin(x * 0.03) * 10);
+            if (y >= hillY) mid[y * BG_W + x] = quantizeEgaIndex(10, 28, 18, x, y);
+            for (let ti = 0; ti < towers.length; ti++) {
+              const tw = towers[ti];
+              if (y < tw.top) continue;
+              const dy = y - tw.top;
+              const shiftX = cxShift(dy, tw.tilt);
+              const dx = x - (tw.cx + shiftX);
+              const flare = dy < 20 ? (tw.w * 0.35 + dy * 0.55) : (tw.w * 0.52 - Math.sin(dy * 0.05) * 2);
+              if (Math.abs(dx) <= flare) {
+                const isRoof = dy < 20;
+                let col = isRoof
+                  ? quantizeEgaIndex(45, 22, 68, x, y)
+                  : quantizeEgaIndex(22, 32, 38, x, y);
+                // Glowing crooked attic/lab windows
+                if (!isRoof && (dy % 22 >= 7 && dy % 22 <= 15) && Math.abs(dx) >= 4 && Math.abs(dx) <= 10) {
+                  col = (ti === 1) ? egaIdx(1, 3, 0) : egaIdx(3, 3, 1);
+                }
+                near[y * BG_W + x] = col;
+              }
+            }
+          }
+        }
+      } else if (wId === 2) {
+        // WORLD 3: ATLANTIS CRYPT — Carved dithered Mayan stonework & temple pillars
+        for (let y = 0; y < BG_H; y++) {
+          for (let x = 0; x < BG_W; x++) {
+            const bx = x % 24, by = y % 16;
+            const mortar = (bx === 0 || by === 0 || (by === 8 && ((x + 12) % 24 === 0)));
+            const glyph = (bx >= 6 && bx <= 18 && by >= 4 && by <= 12) && (((bx ^ by) & 3) === 0);
+            const base = mortar ? 14 : (glyph ? 62 : 42);
+            far[y * BG_W + x] = quantizeEgaIndex(base * 1.25, base * 0.82, base * 0.45, x, y);
+          }
+        }
+        // Stepped Mayan temple pyramid & carved sun-disk medallion in mid layer
+        for (let y = 24; y < 170; y++) {
+          for (let x = 0; x < BG_W; x++) {
+            const dSun = Math.hypot(x - 144, y - 78);
+            if (dSun <= 38) {
+              const ring = Math.sin(dSun * 0.55) * 22;
+              mid[y * BG_W + x] = quantizeEgaIndex(115 + ring, 72 + ring * 0.7, 22, x, y);
+            }
+            // Temple pillars with lava conduit grooves at x=42, 144, 246
+            for (const px of [42, 246]) {
+              if (Math.abs(x - px) <= 12) {
+                const groove = Math.abs(x - px) <= 2;
+                near[y * BG_W + x] = groove
+                  ? egaIdx(3, 1, 0)
+                  : quantizeEgaIndex(88 - Math.abs(x - px) * 4, 58 - Math.abs(x - px) * 3, 28, x, y);
+              }
+            }
+          }
+        }
+      } else if (wId === 3) {
+        // WORLD 4: SPACE COMBAT — Nebula dither + ringed gas-giant planet (Yavin)
+        for (let y = 0; y < BG_H; y++) {
+          for (let x = 0; x < BG_W; x++) {
+            const neb = Math.max(0, Math.sin(x * 0.022 + y * 0.018) * Math.cos(x * 0.013 - y * 0.025));
+            far[y * BG_W + x] = quantizeEgaIndex(neb * 42, neb * 14, 12 + neb * 68, x, y);
+          }
+        }
+        // Dithered ringed gas-giant planet at (196, 56), radius 28 + tilted perspective ring!
+        const pcx = 196, pcy = 56, pr = 27;
+        for (let y = 12; y < 108; y++) {
+          for (let x = 120; x < 272; x++) {
+            const dx = x - pcx, dy = y - pcy;
+            // Tilted ring coords
+            const rx = dx * 0.94 + dy * 0.34;
+            const ry = (-dx * 0.34 + dy * 0.94) * 3.2;
+            const rr = Math.hypot(rx, ry);
+            const inRing = rr >= 34 && rr <= 52;
+            const inPlanet = (dx * dx + dy * dy) <= pr * pr;
+
+            if (inRing && ry < 0) {
+              // Back half of ring behind planet
+              const band = 140 + Math.sin(rr * 0.9) * 45;
+              mid[y * BG_W + x] = quantizeEgaIndex(band, band * 0.75, band * 0.5, x, y);
+            }
+            if (inPlanet) {
+              const pz = Math.sqrt(pr * pr - dx * dx - dy * dy) / pr;
+              const lit = Math.max(0.08, (-dx * 0.024 - dy * 0.02 + pz * 0.72));
+              const band = Math.sin((dy + Math.sin(dx * 0.12) * 2) * 0.42) * 28;
+              mid[y * BG_W + x] = quantizeEgaIndex((195 + band) * lit, (95 + band * 0.6) * lit, (55 + band * 0.3) * lit, x, y);
+            }
+            if (inRing && ry >= 0) {
+              // Front half of ring crossing over planet
+              const shadow = (dx > 6 && dy > 2) ? 0.35 : 1.0;
+              const band = (155 + Math.sin(rr * 0.9) * 50) * shadow;
+              mid[y * BG_W + x] = quantizeEgaIndex(band, band * 0.8, band * 0.55, x, y);
+            }
+          }
+        }
+      } else if (wId === 4) {
+        // WORLD 5: LOOM — Starlit indigo aurora sky & crystalline guild spires
+        for (let y = 0; y < BG_H; y++) {
+          const t = y / 145;
+          for (let x = 0; x < BG_W; x++) {
+            const aurora = Math.max(0, Math.sin(x * 0.045 + Math.sin(y * 0.06) * 2.2) * (1 - t));
+            let idx = quantizeEgaIndex(14 + t * 25, 10 + aurora * 95 + t * 35, 65 + aurora * 95 + t * 65, x, y);
+            if (y < 110 && hash2D(x, y, 501) > 0.990) idx = egaIdx(3, 3, 3);
+            far[y * BG_W + x] = idx;
+          }
+        }
+        // Crystalline Guild Spires on floating island cliffs
+        const spires = [48, 86, 144, 198, 240];
+        for (let x = 0; x < BG_W; x++) {
+          let top = 144;
+          let spireOwner = -1;
+          for (let si = 0; si < spires.length; si++) {
+            const sx = spires[si];
+            const hPeak = si === 2 ? 42 : (64 + (si & 1) * 14);
+            const wHalf = si === 2 ? 22 : 14;
+            const d = Math.abs(x - sx);
+            if (d <= wHalf) {
+              const sy = hPeak + Math.round(Math.pow(d / wHalf, 1.35) * (144 - hPeak));
+              if (sy < top) { top = sy; spireOwner = si; }
+            }
+          }
+          for (let y = top; y < 145; y++) {
+            const facet = ((x - spires[spireOwner]) < 0) ? 1.25 : 0.72;
+            near[y * BG_W + x] = quantizeEgaIndex(25 * facet, 125 * facet, 185 * facet, x, y);
+          }
+        }
+      } else if (wId === 5) {
+        // WORLD 6: SAM & MAX — Sunset desert mesas & roadside saguaro cacti
+        for (let y = 0; y < BG_H; y++) {
+          const t = Math.min(1, y / 136);
+          const r = 95 + t * 160;
+          const g = 18 + Math.pow(t, 1.4) * 165;
+          const b = 85 * (1 - t) + 20;
+          for (let x = 0; x < BG_W; x++) {
+            far[y * BG_W + x] = quantizeEgaIndex(r, g, b, x, y);
+          }
+        }
+        // Monument Valley flat-top desert mesas
+        const mesas = [{ x0: 18, x1: 78, top: 88 }, { x0: 112, x1: 176, top: 76 }, { x0: 210, x1: 268, top: 92 }];
+        for (let y = 74; y < 138; y++) {
+          for (let x = 0; x < BG_W; x++) {
+            for (const m of mesas) {
+              const slope = Math.max(0, y - m.top) * 0.45;
+              if (y >= m.top && x >= m.x0 - slope && x <= m.x1 + slope) {
+                const band = ((y % 9) < 3) ? 1.15 : 0.9;
+                mid[y * BG_W + x] = quantizeEgaIndex(145 * band, 58 * band, 32 * band, x, y);
+              }
+            }
+          }
+        }
+      } else {
+        // WORLD 7: LECHUCK'S LAIR — Volcanic cavern walls & jagged stalactites
+        for (let y = 0; y < BG_H; y++) {
+          const glow = Math.pow(y / BG_H, 2.1);
+          for (let x = 0; x < BG_W; x++) {
+            const rock = Math.sin(x * 0.08 + y * 0.05) * 16;
+            far[y * BG_W + x] = quantizeEgaIndex(38 + glow * 165 + rock, 8 + glow * 48, 18 + (1 - glow) * 28, x, y);
+          }
+        }
+        // Hanging volcanic stalactites & subterranean cavern ribs
+        for (let x = 0; x < BG_W; x++) {
+          const stalLen = 14 + Math.round(Math.pow(Math.abs(Math.sin(x * 0.14) * Math.cos(x * 0.05)), 0.7) * 44);
+          for (let y = 0; y < stalLen; y++) {
+            near[y * BG_W + x] = quantizeEgaIndex(55 + y * 1.5, 18, 22, x, y);
+          }
+        }
+      }
+
+      WORLD_BACKDROPS.push({ far, mid, near });
+    }
+  }
+
+  function cxShift(dy, tilt) {
+    return Math.round(dy * tilt);
+  }
+  bakeAllWorlds();
+
+  // 3-Plane Parallax Starfield state (World 4) & Rising Volcanic Embers (World 7)
+  const SPACE_STARS = Array.from({ length: 78 }, (_, i) => ({
+    x: (hash2D(i, 1, 404) * 240) | 0,
+    y: (hash2D(i, 2, 404) * 136) | 0,
+    plane: (i % 3) + 1
+  }));
+  const LAIR_EMBERS = Array.from({ length: 42 }, (_, i) => ({
+    x: hash2D(i, 3, 707) * 240,
+    y: hash2D(i, 4, 707) * 180,
+    spd: 0.35 + hash2D(i, 5, 707) * 0.75,
+    phase: hash2D(i, 6, 707) * 6.28
+  }));
+
+  /**
+   * Composites the active world's pre-baked 288x192 EGA layers with real-time
+   * per-scanline demoscene raster effects directly into fb!
+   */
+  function renderWorldBackdrop(worldId, tick, paddleNormX, chronoEra) {
+    const bd = WORLD_BACKDROPS[worldId];
+    const t = tick / 60;
+    // Parallax horizontal offsets within 288-wide overscan buffer (0..48 margin)
+    const farScroll = Math.max(0, Math.min(48, Math.round(24 + (paddleNormX - 0.5) * 10)));
+    const midScroll = Math.max(0, Math.min(48, Math.round(24 + (paddleNormX - 0.5) * 24)));
+    const nearScroll = Math.max(0, Math.min(48, Math.round(24 + (paddleNormX - 0.5) * 40)));
+
+    const lightningFlash = (worldId === 1 && ((tick % 260 >= 248 && tick % 260 <= 251) || tick % 260 === 255));
+
+    for (let sy = 0; sy < BG_H; sy++) {
+      const screenY = INNER_Y0 + sy;
+      const dstRow = screenY * W + INNER_X0;
+
+      // World 7 per-scanline volcanic heat-haze horizontal shimmer!
+      const heatShift = worldId === 6
+        ? Math.round(Math.sin(sy * 0.32 - t * 5.6) * (1.2 + sy * 0.008))
+        : 0;
+
+      // ---- Per-World Bottom Scanline Raster Zones ----
+      if (worldId === 0 && sy >= 142) {
+        // WORLD 1: Per-scanline sine-wave harbor water reflections of sky, moon & Scumm Bar!
+        const depth = sy - 142; // 0..49
+        const wave = Math.round(Math.sin(sy * 0.52 + t * 4.4) * (1.4 + depth * 0.09));
+        const mirrorY = Math.max(8, Math.min(141, 141 - ((depth * 1.9) | 0)));
+        const glint = Math.sin(sy * 0.9 - t * 6.2) > 0.82;
+        for (let sx = 0; sx < 240; sx++) {
+          const rxNear = Math.max(0, Math.min(BG_W - 1, nearScroll + sx + wave));
+          const rxFar = Math.max(0, Math.min(BG_W - 1, farScroll + sx + wave));
+          let srcIdx = bd.near[mirrorY * BG_W + rxNear];
+          if (srcIdx === TRANSPARENT_IDX) srcIdx = bd.mid[mirrorY * BG_W + rxNear];
+          if (srcIdx === TRANSPARENT_IDX) srcIdx = bd.far[mirrorY * BG_W + rxFar];
+          const sr = EGA_RGB[srcIdx * 3] * 0.45;
+          const sg = EGA_RGB[srcIdx * 3 + 1] * 0.55 + 12;
+          const sb = EGA_RGB[srcIdx * 3 + 2] * 0.72 + 42 + (glint && ((sx + wave) % 13 === 0) ? 75 : 0);
+          fb[dstRow + sx] = quantizeEgaColor(sr, sg, sb, INNER_X0 + sx, screenY);
+        }
+        continue;
+      }
+
+      if (worldId === 1 && sy >= 154) {
+        // WORLD 2: Bubbling radioactive green sludge waves at bottom of Edison Mansion!
+        const depth = sy - 154;
+        const wave = Math.sin(sy * 0.4 + t * 5.0) * 3.0;
+        for (let sx = 0; sx < 240; sx++) {
+          const crest = Math.sin((sx + wave) * 0.12 + t * 3.8) * 3.5 + Math.cos(sx * 0.27 - t * 5.2) * 2.0;
+          if (depth < 4 + crest * 0.5) {
+            const fx = farScroll + sx;
+            fb[dstRow + sx] = EGA_PALETTE[bd.far[sy * BG_W + fx]];
+          } else {
+            const foam = depth < 6.5 + crest * 0.5;
+            const bubble = (((sx + ((t * 18) | 0)) % 23 === 0) && ((depth + ((t * 14) | 0)) % 9 < 3));
+            const gVal = foam || bubble ? 245 : (115 + depth * 2.2);
+            const rVal = foam || bubble ? 145 : 18;
+            fb[dstRow + sx] = quantizeEgaColor(rVal, gVal, 20, INNER_X0 + sx, screenY);
+          }
+        }
+        continue;
+      }
+
+      if (worldId === 3 && sy >= 132) {
+        // WORLD 4: Scrolling perspective Death-Star trench scanlines!
+        const dy = sy - 130; // 2..61
+        const z = 420.0 / dy;
+        const zScroll = (z + t * 58.0);
+        const panelRib = ((zScroll | 0) & 15) < 2;
+        for (let sx = 0; sx < 240; sx++) {
+          const cx = sx - 120;
+          const worldX = (cx * z) / 90.0 + (paddleNormX - 0.5) * 40;
+          const inFloor = Math.abs(worldX) < 110;
+          if (inFloor) {
+            const laneLine = Math.abs(Math.abs(worldX) - 55) < 4 || Math.abs(worldX) < 2.5;
+            const lum = (panelRib ? 88 : 46) + dy * 0.7 + (laneLine ? 45 : 0);
+            fb[dstRow + sx] = quantizeEgaColor(lum * 0.85, lum * 0.92, lum * 1.15, INNER_X0 + sx, screenY);
+          } else {
+            // Perspective angled trench walls with turbo-laser ribs
+            const wallRib = (((zScroll * 0.7) | 0) & 15) < 3;
+            const lum = (wallRib ? 105 : 62) - Math.min(35, Math.abs(cx) * 0.15);
+            fb[dstRow + sx] = quantizeEgaColor(lum * 0.9, lum * 0.95, lum * 1.1, INNER_X0 + sx, screenY);
+          }
+        }
+        continue;
+      }
+
+      if (worldId === 4 && sy >= 145) {
+        // WORLD 5: Shimmering emerald & turquoise Loom ocean waves!
+        const depth = sy - 145;
+        const wave = Math.sin(sy * 0.55 - t * 4.0) * (2.0 + depth * 0.08);
+        for (let sx = 0; sx < 240; sx++) {
+          const shimmer = Math.sin((sx + wave) * 0.14 + sy * 0.3 - t * 4.5);
+          const r = shimmer > 0.86 ? 160 : 8;
+          const g = 85 + depth * 1.8 + shimmer * 52;
+          const b = 110 + depth * 1.5 + shimmer * 65;
+          fb[dstRow + sx] = quantizeEgaColor(r, g, b, INNER_X0 + sx, screenY);
+        }
+        continue;
+      }
+
+      if (worldId === 5 && sy >= 136) {
+        // WORLD 6: OutRun-style perspective-warped scrolling highway scanlines with yellow center dashes!
+        const dy = sy - 134; // 2..63
+        const z = 360.0 / dy;
+        const stripe = (((z + t * 95.0) / 14) | 0) & 1;
+        const normY = (64 - dy) / 64;
+        const curve = Math.sin(t * 1.15) * 42 * normY * normY;
+        const roadCenter = 120 + curve - (paddleNormX - 0.5) * 28 * (1 - normY);
+        const roadHalfW = 14 + dy * 1.65;
+
+        for (let sx = 0; sx < 240; sx++) {
+          const dx = Math.abs(sx - roadCenter);
+          if (dx > roadHalfW + 5) {
+            // Perspective desert sand bands
+            const sand = stripe ? [195, 118, 52] : [172, 98, 42];
+            fb[dstRow + sx] = quantizeEgaColor(sand[0], sand[1], sand[2], INNER_X0 + sx, screenY);
+          } else if (dx > roadHalfW) {
+            // Red/white rumble curbs
+            fb[dstRow + sx] = stripe ? C_RED : C_WHITE;
+          } else if (dx < Math.max(1.2, dy * 0.055) && stripe === 0) {
+            // Scrolling yellow highway center dashes!
+            fb[dstRow + sx] = C_GOLD;
+          } else {
+            // Perspective asphalt
+            const asph = stripe ? 58 : 46;
+            fb[dstRow + sx] = quantizeEgaColor(asph, asph, asph + 12, INNER_X0 + sx, screenY);
+          }
+        }
+        continue;
+      }
+
+      if (worldId === 6 && sy >= 164) {
+        // WORLD 7: Churning molten cavern lava river!
+        const depth = sy - 164;
+        for (let sx = 0; sx < 240; sx++) {
+          const plasma = Math.sin(sx * 0.09 + t * 4.5 + Math.sin(sy * 0.35 - t * 3.2) * 2.0);
+          const hot = 0.55 + plasma * 0.42 + (depth < 3 ? 0.25 : 0);
+          const rgb = sampleRampRGB(RAMPS.FIRE, hot);
+          fb[dstRow + sx] = quantizeEgaColor(rgb[0], rgb[1], rgb[2], INNER_X0 + sx, screenY);
+        }
+        continue;
+      }
+
+      // ---- Standard Multi-Layer Parallax Scanline Composite ----
+      const farRow = sy * BG_W + farScroll;
+      const midRow = sy * BG_W + midScroll;
+      const nearRow = sy * BG_W + nearScroll;
+
+      for (let sx = 0; sx < 240; sx++) {
+        const hx = Math.max(0, Math.min(239, sx + heatShift));
+        let ega = bd.near[nearRow + hx];
+        if (ega === TRANSPARENT_IDX) {
+          ega = bd.mid[midRow + hx];
+          if (ega === TRANSPARENT_IDX) {
+            ega = bd.far[farRow + hx];
+            if (lightningFlash) {
+              ega = (sy < 95 && ((sx + sy) & 1) === 0) ? egaIdx(3, 3, 3) : egaIdx(2, 3, 3);
+            } else if (worldId === 1 && chronoEra !== 1) {
+              // Chron-o-John Past (sepia-gold) vs 2200 Future (neon violet-cyan) sky tint!
+              const r0 = EGA_RGB[ega * 3], g0 = EGA_RGB[ega * 3 + 1], b0 = EGA_RGB[ega * 3 + 2];
+              ega = chronoEra === 0
+                ? quantizeEgaIndex(r0 + 45, g0 + 28, b0 * 0.5, INNER_X0 + sx, screenY)
+                : quantizeEgaIndex(r0 * 0.6, g0 + 38, b0 + 55, INNER_X0 + sx, screenY);
+            }
+          }
+        }
+        fb[dstRow + sx] = EGA_PALETTE[ega];
+      }
+
+      // World 3: Flickering Torchlight Radial Dither Halos & Molten Orichalcum Conduits!
+      if (worldId === 2) {
+        if (sy >= 168) {
+          // Bottom molten orichalcum conduit river
+          for (let sx = 0; sx < 240; sx++) {
+            const flow = 0.55 + Math.sin(sx * 0.13 - t * 6.0 + sy * 0.4) * 0.38;
+            const rgb = sampleRampRGB(RAMPS.FIRE, flow);
+            fb[dstRow + sx] = quantizeEgaColor(rgb[0], rgb[1], rgb[2], INNER_X0 + sx, screenY);
+          }
+        } else {
+          // Flickering radial wall-sconce torch halos at x=40 and x=200, y=92
+          const flick = 26 + Math.sin(t * 13.0) * 3.5 + Math.cos(t * 21.0) * 2.0;
+          for (const tx of [38, 202]) {
+            const dy = sy - 92;
+            if (Math.abs(dy) > flick) continue;
+            const xSpan = Math.sqrt(flick * flick - dy * dy) | 0;
+            const xMin = Math.max(0, tx - xSpan);
+            const xMax = Math.min(239, tx + xSpan);
+            for (let sx = xMin; sx <= xMax; sx++) {
+              const d = Math.hypot(sx - tx, dy) / flick;
+              const boost = (1 - d) * (1 - d) * 145;
+              const cur = fb[dstRow + sx];
+              // Extract approx luminance & warm with Bayer dither
+              const r = ((cur & 0xFF) + boost * 1.25);
+              const g = (((cur >> 8) & 0xFF) + boost * 0.72);
+              const b = (((cur >> 16) & 0xFF) + boost * 0.15);
+              fb[dstRow + sx] = quantizeEgaColor(r, g, b, INNER_X0 + sx, screenY);
+            }
+          }
+        }
+      }
+    }
+
+    // World 3 Sconce flames
+    if (worldId === 2) {
+      for (const tx of [38, 202]) {
+        const fh = 4 + ((tick >> 2) & 1);
+        for (let fy = 0; fy < fh; fy++) {
+          putPixel(INNER_X0 + tx, INNER_Y0 + 92 - fy, fy < 2 ? C_WHITE : C_GOLD);
+          if (fy < 3) {
+            putPixel(INNER_X0 + tx - 1, INNER_Y0 + 92 - fy, C_ORANGE);
+            putPixel(INNER_X0 + tx + 1, INNER_Y0 + 92 - fy, C_RED);
+          }
+        }
+      }
+    }
+
+    // World 4: Live 3-Plane Parallax Starfield
+    if (worldId === 3) {
+      for (let i = 0; i < SPACE_STARS.length; i++) {
+        const s = SPACE_STARS[i];
+        const sx = ((s.x - tick * s.plane * 0.35 - paddleNormX * s.plane * 12) % 240 + 240) % 240 | 0;
+        const sy = s.y;
+        if (sy < 132) {
+          const col = s.plane === 3 ? C_WHITE : (s.plane === 2 ? C_LTCYAN : C_DKGRAY);
+          putPixel(INNER_X0 + sx, INNER_Y0 + sy, col);
+        }
+      }
+    }
+
+    // World 7: Rising Volcanic Ember Particles
+    if (worldId === 6) {
+      for (let i = 0; i < LAIR_EMBERS.length; i++) {
+        const e = LAIR_EMBERS[i];
+        const ey = (176 - ((e.y + tick * e.spd) % 168)) | 0;
+        const ex = ((e.x + Math.sin(t * 2.5 + e.phase) * 9) % 240 + 240) % 240 | 0;
+        putPixel(INNER_X0 + ex, INNER_Y0 + ey, (i & 1) ? C_GOLD : C_ORANGE);
+      }
+    }
+  }
+
+  // Render 8px Lit Metallic Playfield Pipes (left x=0..7, top y=0..7, right x=248..255)
+  function renderPlayfieldPipes() {
+    for (let y = 8; y < H; y += 8) {
+      blitSprite(PIPE_VERT, 0, y);
+      blitSprite(PIPE_VERT, 248, y);
+    }
+    for (let x = 8; x < 248; x += 8) {
+      blitSprite(PIPE_HORIZ, x, 0);
+    }
+    blitSprite(PIPE_CORNER, 0, 0);
+    blitSprite(PIPE_CORNER, 248, 0);
+    // Classic Arkanoid Vaus warp hatches on top pipe
+    fillSolidRect(56, 1, 24, 6, C_DKGRAY);
+    fillSolidRect(58, 2, 20, 4, C_BLACK);
+    fillSolidRect(176, 1, 24, 6, C_DKGRAY);
+    fillSolidRect(178, 2, 20, 4, C_BLACK);
+  }
+
+  // ============================================================================
+  // 5. SIMULATED ADLIB / OPL2 FM SYNTHESIZER & 7 MULTI-BAR COMPOSITIONS
+  // ============================================================================
+  const TRACK_TITLES = [
+    '1: MELEE ISLAND REGGAE (126 BPM)',
+    '2: PURPLE TENTACLE MARCH (128 BPM)',
+    '3: ATLANTIS CRYPT CHIMES (120 BPM)',
+    '4: DEATH STAR TRENCH RUN (138 BPM)',
+    '5: SWANS OF THE GREAT LOOM (124 BPM)',
+    '6: SAM & MAX HIGHWAY BLUES (130 BPM)',
+    '7: LECHUCK BATTLE ANTHEM (140 BPM)'
+  ];
+
+  // MIDI note helper: C4 = 60
+  function midiFreq(m) {
+    return 440 * Math.pow(2, (m - 69) / 12);
+  }
+
+  // 7 Distinct Multi-Bar LucasArts-Style Compositions (64 sixteenth-note steps = 4 dense bars per loop with A/B melodic phrasing = 8-bar evolution!)
+  const COMPOSITIONS = [
+    // 0: Levels 1-6 (Monkey Island Reggae Groove, Steel-Pan FM, Walking Bass)
+    {
+      bpm: 126, swing: 0, leadPatch: 'steelPan', harmPatch: 'reggaeOrgan',
+      leadA: [
+        79,0,83,0, 86,0,83,84, 83,0,79,0, 76,0,74,0,
+        79,0,83,86, 88,0,86,0, 83,0,81,0, 79,0,0,0,
+        84,0,84,83, 81,0,79,0, 83,0,83,81, 79,0,76,0,
+        74,0,78,0, 81,0,84,0, 83,0,79,0, 74,0,0,0
+      ],
+      leadB: [
+        86,0,88,0, 91,0,88,86, 84,0,81,0, 79,0,0,0,
+        83,0,84,0, 86,0,83,0, 81,0,78,0, 74,0,0,0,
+        79,81,83,0, 84,86,88,0, 86,0,83,0, 79,0,76,0,
+        74,0,81,0, 79,0,78,0, 79,0,0,0, 0,0,0,0
+      ],
+      harm: [
+        0,0,67,0, 0,0,67,0, 0,0,64,0, 0,0,64,0,
+        0,0,67,0, 0,0,69,0, 0,0,67,0, 0,0,67,0,
+        0,0,60,0, 0,0,60,0, 0,0,67,0, 0,0,64,0,
+        0,0,62,0, 0,0,66,0, 0,0,67,0, 0,0,62,0
+      ],
+      bass: [
+        43,0,0,47, 50,0,47,0, 40,0,0,43, 47,0,43,0,
+        43,0,0,47, 48,0,50,0, 43,0,47,0, 50,0,47,0,
+        36,0,0,40, 43,0,40,0, 43,0,0,47, 40,0,43,0,
+        38,0,0,42, 45,0,42,0, 43,0,38,0, 43,0,38,42
+      ],
+      drums: 'K.h.S.h.K.hKS.h.K.h.S.h.K.hKS.hH'
+    },
+    // 1: Levels 7-12 (Purple Tentacle March — Quirky Chromatic B-Movie March + Descending Bass Stabs)
+    {
+      bpm: 128, swing: 0, leadPatch: 'tentacleBrass', harmPatch: 'reggaeOrgan',
+      leadA: [
+        72,0,75,74, 73,0,72,0, 79,0,78,77, 75,0,0,0,
+        72,0,75,78, 79,0,82,0, 81,0,80,79, 78,0,0,0,
+        84,0,83,0, 82,0,80,0, 79,78,77,75, 74,0,75,0,
+        72,0,67,0, 70,0,71,0, 72,0,0,0, 0,0,67,70
+      ],
+      leadB: [
+        75,0,78,0, 81,0,84,0, 83,82,81,80, 79,0,0,0,
+        77,0,80,0, 83,0,86,0, 84,83,82,80, 79,0,0,0,
+        84,0,79,0, 78,0,75,0, 74,0,71,0, 72,0,75,0,
+        74,73,72,71, 70,69,68,67, 72,0,0,0, 0,0,0,0
+      ],
+      harm: [
+        60,0,0,0, 63,0,0,0, 62,0,0,0, 61,0,0,0,
+        60,0,0,0, 66,0,0,0, 67,0,0,0, 62,0,0,0,
+        68,0,0,0, 67,0,0,0, 65,0,0,0, 62,0,0,0,
+        60,0,63,0, 62,0,59,0, 60,0,0,0, 0,0,0,0
+      ],
+      bass: [
+        36,0,36,0, 35,0,35,0, 34,0,34,0, 33,0,32,31,
+        36,0,43,0, 35,0,42,0, 34,0,41,0, 33,0,31,0,
+        44,0,44,0, 43,0,43,0, 41,0,39,0, 38,0,35,0,
+        36,0,43,0, 42,0,41,0, 36,0,0,0, 31,32,34,35
+      ],
+      drums: 'K.S.K.SSK.S.K.hSK.S.K.SSK.SSKSSS'
+    },
+    // 2: Levels 13-18 (Atlantis Crypt — Sweeping Echoing FM Pad, Deep Bass Hums, Pentatonic Chimes)
+    {
+      bpm: 120, swing: 0, leadPatch: 'pentatonicChime', harmPatch: 'atlantisPad',
+      leadA: [
+        74,0,0,81, 0,0,79,0, 76,0,74,0, 69,0,0,0,
+        0,0,86,0, 81,0,0,79, 0,0,76,0, 74,0,0,0,
+        81,0,0,84, 0,0,86,0, 88,0,86,0, 81,0,0,0,
+        79,0,76,0, 74,0,69,0, 72,0,74,0, 0,0,0,0
+      ],
+      leadB: [
+        86,0,0,88, 0,0,93,0, 88,0,86,0, 81,0,0,0,
+        84,0,0,81, 0,0,79,0, 76,0,72,0, 74,0,0,0,
+        74,0,77,0, 81,0,84,0, 86,0,81,0, 79,0,0,0,
+        77,0,76,0, 72,0,69,0, 74,0,0,0, 0,0,0,0
+      ],
+      harm: [
+        62,0,0,0, 0,0,0,0, 65,0,0,0, 0,0,0,0,
+        58,0,0,0, 0,0,0,0, 62,0,0,0, 0,0,0,0,
+        60,0,0,0, 0,0,0,0, 64,0,0,0, 0,0,0,0,
+        57,0,0,0, 0,0,0,0, 62,0,0,0, 0,0,0,0
+      ],
+      bass: [
+        38,0,0,0, 0,0,0,38, 38,0,0,0, 0,0,0,0,
+        34,0,0,0, 0,0,0,34, 34,0,0,0, 0,0,0,0,
+        31,0,0,0, 0,0,0,31, 36,0,0,0, 0,0,0,0,
+        33,0,0,0, 0,0,0,33, 38,0,0,0, 0,0,0,0
+      ],
+      drums: 'K...h..h..K.S..hK...h..h..K.S.h.'
+    },
+    // 3: Levels 19-24 (Space Combat — Driving 16th-Note Bassline, Heroic Brass Lead, Rapid Snare Rolls)
+    {
+      bpm: 138, swing: 0, leadPatch: 'spaceBrass', harmPatch: 'loomHarpsichord',
+      leadA: [
+        64,0,0,64, 71,0,0,0, 74,72,71,0, 79,0,0,0,
+        78,0,76,74, 79,0,0,0, 74,72,71,69, 71,0,0,0,
+        64,0,0,64, 72,0,0,0, 76,74,72,0, 81,0,0,0,
+        79,0,78,76, 83,0,0,0, 78,0,76,74, 76,0,0,0
+      ],
+      leadB: [
+        79,0,79,79, 83,0,79,0, 78,0,74,0, 76,0,0,0,
+        76,0,78,79, 81,0,79,76, 74,0,71,0, 74,0,0,0,
+        72,0,74,76, 79,0,81,83, 84,0,83,79, 83,0,0,0,
+        86,0,83,79, 78,0,74,78, 76,0,0,0, 0,0,0,0
+      ],
+      harm: [
+        52,59,64,59, 52,59,64,59, 55,62,67,62, 55,62,67,62,
+        50,57,62,57, 52,59,64,59, 47,54,59,54, 52,59,64,59,
+        48,55,60,55, 48,55,60,55, 45,52,57,52, 45,52,57,52,
+        50,57,62,57, 47,54,59,54, 52,59,64,59, 52,64,71,76
+      ],
+      bass: [
+        40,52,40,52, 40,52,40,52, 43,55,43,55, 43,55,43,55,
+        38,50,38,50, 40,52,40,52, 35,47,35,47, 40,52,40,52,
+        36,48,36,48, 36,48,36,48, 33,45,33,45, 33,45,33,45,
+        38,50,38,50, 35,47,35,47, 40,52,40,52, 40,43,45,47
+      ],
+      drums: 'K.h.S.h.K.K.S.h.K.h.S.h.K.SSSSSS'
+    },
+    // 4: Levels 25-30 (Loom of Fate — 4-Voice Classical Swan Counterpoint & Arpeggiated Chords)
+    {
+      bpm: 124, swing: 0, leadPatch: 'loomFlute', harmPatch: 'loomHarpsichord',
+      leadA: [
+        76,0,0,0, 69,0,71,0, 72,0,74,0, 76,0,0,72,
+        76,0,0,72, 76,0,0,69, 72,69,65,72, 69,0,0,0,
+        77,0,76,0, 74,0,72,0, 71,0,72,0, 74,0,0,71,
+        76,0,74,0, 72,0,71,0, 69,0,68,0, 69,0,0,0
+      ],
+      leadB: [
+        81,0,0,79, 77,0,76,0, 74,0,76,0, 77,0,0,0,
+        79,0,0,77, 76,0,74,0, 72,0,74,0, 76,0,0,0,
+        81,0,84,0, 83,0,80,0, 81,0,76,0, 77,0,74,0,
+        76,0,72,0, 71,0,68,0, 69,0,0,0, 0,0,0,0
+      ],
+      harm: [
+        57,60,64,69, 64,60,57,60, 57,60,64,69, 64,60,57,60,
+        53,57,60,65, 60,57,53,57, 57,60,64,69, 64,60,57,60,
+        50,53,57,62, 57,53,50,53, 52,56,59,64, 59,56,52,56,
+        57,60,64,69, 52,56,59,64, 57,60,64,69, 72,69,64,60
+      ],
+      bass: [
+        45,0,0,0, 45,0,0,0, 45,0,0,0, 48,0,0,0,
+        41,0,0,0, 41,0,0,0, 45,0,0,0, 45,0,0,0,
+        38,0,0,0, 38,0,0,0, 40,0,0,0, 40,0,0,0,
+        45,0,48,0, 40,0,44,0, 45,0,0,0, 33,0,0,0
+      ],
+      drums: 'K...h...h...h...K...h...S...h...'
+    },
+    // 5: Levels 31-32 (Sam & Max — Swing-Jazz Walking Bass Blues + Pitch-Bending FM Saxophone)
+    {
+      bpm: 130, swing: 0.036, leadPatch: 'jazzSax', harmPatch: 'reggaeOrgan',
+      leadA: [
+        70,0,73,74, 77,0,75,0, 73,74,70,0, 68,0,70,0,
+        75,0,77,0, 80,0,77,75, 73,0,70,0, 0,0,0,0,
+        82,0,80,77, 75,0,73,74, 77,0,74,0, 70,0,0,0,
+        77,0,75,0, 73,74,70,68, 70,0,77,0, 70,0,0,0
+      ],
+      leadB: [
+        82,0,85,86, 89,0,86,0, 85,82,79,0, 77,0,0,0,
+        80,0,77,75, 73,74,77,0, 70,0,73,74, 70,0,0,0,
+        79,0,77,75, 77,0,75,73, 74,0,70,0, 68,0,65,0,
+        70,0,73,74, 77,0,80,82, 70,0,0,0, 0,0,0,0
+      ],
+      harm: [
+        0,0,62,0, 0,0,65,0, 0,0,62,0, 0,0,68,0,
+        0,0,63,0, 0,0,67,0, 0,0,62,0, 0,0,65,0,
+        0,0,65,0, 0,0,63,0, 0,0,62,0, 0,0,68,0,
+        0,0,65,0, 0,0,63,0, 0,0,62,0, 0,0,65,0
+      ],
+      bass: [
+        46,0,50,0, 53,0,55,0, 56,0,55,0, 53,0,50,0,
+        39,0,43,0, 46,0,48,0, 46,0,50,0, 53,0,50,0,
+        41,0,45,0, 39,0,43,0, 46,0,50,0, 53,0,56,0,
+        41,0,39,0, 38,0,36,0, 46,0,53,0, 46,0,45,0
+      ],
+      drums: 'K.h.S.hhK.h.S.hhK.h.S.hhK.hKS.hH'
+    },
+    // 6: Level 33 (LeChuck's Battle Anthem — Double-Time Heavy Metal w/ Distorted FM Guitar)
+    {
+      bpm: 140, swing: 0, leadPatch: 'metalGuitar', harmPatch: 'spaceBrass',
+      leadA: [
+        62,62,74,62, 75,62,74,62, 70,62,69,62, 67,69,70,67,
+        62,62,74,62, 78,62,79,62, 81,79,78,75, 74,0,0,0,
+        79,78,75,74, 78,75,74,70, 75,74,70,69, 70,74,75,78,
+        79,0,81,0, 82,0,86,0, 85,0,81,79, 74,0,0,0
+      ],
+      leadB: [
+        86,81,78,81, 86,81,78,81, 87,82,79,82, 87,82,79,82,
+        88,85,81,85, 90,86,81,78, 79,78,75,74, 73,0,74,0,
+        74,75,78,79, 81,82,85,86, 90,87,86,82, 81,79,78,75,
+        74,0,62,62, 75,0,62,62, 73,0,74,0, 62,0,0,0
+      ],
+      harm: [
+        50,0,57,0, 51,0,50,0, 46,0,45,0, 43,0,46,0,
+        50,0,57,0, 54,0,55,0, 57,0,51,0, 50,0,57,0,
+        55,0,54,0, 51,0,50,0, 46,0,45,0, 46,0,50,0,
+        55,0,57,0, 58,0,62,0, 61,0,57,0, 50,0,0,0
+      ],
+      bass: [
+        38,38,38,38, 39,38,38,38, 34,34,33,33, 31,33,34,31,
+        38,38,38,38, 42,38,43,38, 45,43,42,39, 38,38,38,38,
+        43,43,42,42, 39,39,38,38, 34,34,33,33, 34,38,39,42,
+        43,43,45,45, 46,46,50,50, 49,49,45,43, 38,38,26,38
+      ],
+      drums: 'KKSSKKSSKKSSKKSSKKSSKKSSKKSSKSSS'
+    }
+  ];
+
+  const AudioEngine = (() => {
+    let actx = null;
+    let masterGain = null;
+    let musicBus = null;
+    let sfxBus = null;
+    let delaySend = null;
+    let noiseBuffer = null;
+    let distCurve = null;
+    let muted = false;
+    let currentTrack = 0;
+    let stepIdx = 0;
+    let nextNoteTime = 0;
+    let schedulerTimer = null;
+    let lastSfxTime = 0;
+
+    function makeDistortionCurve(amount) {
+      const n = 256;
+      const curve = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const x = (i * 2) / n - 1;
+        curve[i] = ((3 + amount) * x * 20 * (Math.PI / 180)) / (Math.PI + amount * Math.abs(x));
+      }
+      return curve;
+    }
+
+    function init() {
+      if (actx) {
+        if (actx.state === 'suspended') actx.resume();
+        return;
+      }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      actx = new AC();
+
+      const comp = actx.createDynamicsCompressor();
+      comp.threshold.value = -8;
+      comp.knee.value = 10;
+      comp.ratio.value = 8;
+      comp.attack.value = 0.003;
+      comp.release.value = 0.12;
+
+      masterGain = actx.createGain();
+      masterGain.gain.value = muted ? 0 : 0.48;
+      comp.connect(masterGain);
+      masterGain.connect(actx.destination);
+
+      musicBus = actx.createGain();
+      musicBus.gain.value = 0.55;
+      musicBus.connect(comp);
+
+      sfxBus = actx.createGain();
+      sfxBus.gain.value = 0.72;
+      sfxBus.connect(comp);
+
+      // Stereo/echo feedback delay for Atlantis Crypt & Loom
+      const delay = actx.createDelay(0.5);
+      delay.delayTime.value = 0.24;
+      const fbGain = actx.createGain();
+      fbGain.gain.value = 0.32;
+      delaySend = actx.createGain();
+      delaySend.gain.value = 0.28;
+      delaySend.connect(delay);
+      delay.connect(fbGain);
+      fbGain.connect(delay);
+      delay.connect(musicBus);
+
+      // Reusable 1-second white noise buffer
+      noiseBuffer = actx.createBuffer(1, actx.sampleRate, actx.sampleRate);
+      const ch = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+
+      distCurve = makeDistortionCurve(70);
+
+      nextNoteTime = actx.currentTime + 0.05;
+      if (!schedulerTimer) {
+        schedulerTimer = setInterval(schedulerTick, 38);
+      }
+    }
+
+    // 2-Operator OPL2 FM Voice (modulator Osc -> Gain -> carrier.frequency)
+    function playFMVoice(freq, time, dur, patchName, vol = 0.16) {
+      if (!actx || muted) return;
+      const mod = actx.createOscillator();
+      const modGain = actx.createGain();
+      const car = actx.createOscillator();
+      const amp = actx.createGain();
+
+      let ratio = 1.0, modIdxStart = 2.0, modIdxEnd = 0.5, carType = 'sine', modType = 'sine';
+      let attack = 0.006, release = dur, useEcho = false, useDist = false, scoop = false;
+
+      switch (patchName) {
+        case 'steelPan':
+          ratio = 2.0; modIdxStart = 3.8; modIdxEnd = 0.3; release = Math.max(0.14, dur * 1.1); break;
+        case 'reggaeOrgan':
+          ratio = 1.0; modIdxStart = 1.2; modIdxEnd = 0.9; carType = 'triangle'; release = 0.09; break;
+        case 'tentacleBrass':
+          ratio = 1.5; modIdxStart = 2.8; modIdxEnd = 1.1; carType = 'sawtooth'; release = dur * 1.1; break;
+        case 'pentatonicChime':
+          ratio = 3.5; modIdxStart = 4.2; modIdxEnd = 0.15; release = 0.42; useEcho = true; break;
+        case 'atlantisPad':
+          ratio = 1.004; modIdxStart = 1.6; modIdxEnd = 0.8; attack = 0.09; release = 0.55; useEcho = true; break;
+        case 'spaceBrass':
+          ratio = 1.0; modIdxStart = 3.2; modIdxEnd = 1.4; modType = 'sawtooth'; release = dur * 1.15; break;
+        case 'loomFlute':
+          ratio = 1.0; modIdxStart = 0.85; modIdxEnd = 0.45; attack = 0.025; release = dur * 1.3; useEcho = true; break;
+        case 'loomHarpsichord':
+          ratio = 2.0; modIdxStart = 3.4; modIdxEnd = 0.25; modType = 'triangle'; release = 0.18; useEcho = true; break;
+        case 'jazzSax':
+          ratio = 1.0; modIdxStart = 2.9; modIdxEnd = 1.5; modType = 'triangle'; scoop = true; release = dur * 1.2; break;
+        case 'metalGuitar':
+          ratio = 1.0; modIdxStart = 4.5; modIdxEnd = 2.4; modType = 'sawtooth'; useDist = true; release = dur * 1.05; break;
+      }
+
+      car.type = carType;
+      mod.type = modType;
+      if (scoop) {
+        car.frequency.setValueAtTime(freq * 0.91, time);
+        car.frequency.exponentialRampToValueAtTime(freq, time + 0.045);
+      } else {
+        car.frequency.setValueAtTime(freq, time);
+      }
+      mod.frequency.setValueAtTime(freq * ratio, time);
+
+      modGain.gain.setValueAtTime(freq * modIdxStart, time);
+      modGain.gain.exponentialRampToValueAtTime(Math.max(1, freq * modIdxEnd), time + release);
+
+      amp.gain.setValueAtTime(0.0001, time);
+      amp.gain.linearRampToValueAtTime(vol, time + attack);
+      amp.gain.exponentialRampToValueAtTime(0.0001, time + attack + release);
+
+      mod.connect(modGain);
+      modGain.connect(car.frequency);
+
+      if (useDist) {
+        const shaper = actx.createWaveShaper();
+        shaper.curve = distCurve;
+        const lp = actx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 2600;
+        car.connect(shaper);
+        shaper.connect(lp);
+        lp.connect(amp);
+      } else {
+        car.connect(amp);
+      }
+
+      amp.connect(musicBus);
+      if (useEcho && delaySend) amp.connect(delaySend);
+
+      mod.start(time);
+      car.start(time);
+      const stopAt = time + attack + release + 0.02;
+      mod.stop(stopAt);
+      car.stop(stopAt);
+    }
+
+    // Resonant Low-Pass Triangle Bass
+    function playBass(freq, time, dur) {
+      if (!actx || muted) return;
+      const osc = actx.createOscillator();
+      const sub = actx.createOscillator();
+      const filt = actx.createBiquadFilter();
+      const amp = actx.createGain();
+
+      osc.type = 'triangle';
+      sub.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, time);
+      sub.frequency.setValueAtTime(freq, time);
+
+      const subGain = actx.createGain();
+      subGain.gain.value = 0.35;
+
+      filt.type = 'lowpass';
+      filt.Q.value = 4.2;
+      filt.frequency.setValueAtTime(920, time);
+      filt.frequency.exponentialRampToValueAtTime(190, time + dur);
+
+      amp.gain.setValueAtTime(0.0001, time);
+      amp.gain.linearRampToValueAtTime(0.24, time + 0.006);
+      amp.gain.exponentialRampToValueAtTime(0.0001, time + dur + 0.03);
+
+      osc.connect(filt);
+      sub.connect(subGain);
+      subGain.connect(filt);
+      filt.connect(amp);
+      amp.connect(musicBus);
+
+      osc.start(time);
+      sub.start(time);
+      osc.stop(time + dur + 0.04);
+      sub.stop(time + dur + 0.04);
+    }
+
+    // Filtered White-Noise & Pitch-Swept Percussion
+    function playDrum(ch, time) {
+      if (!actx || muted || ch === '.') return;
+      if (ch === 'K') {
+        const osc = actx.createOscillator();
+        const amp = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(155, time);
+        osc.frequency.exponentialRampToValueAtTime(38, time + 0.085);
+        amp.gain.setValueAtTime(0.32, time);
+        amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.11);
+        osc.connect(amp);
+        amp.connect(musicBus);
+        osc.start(time);
+        osc.stop(time + 0.12);
+        return;
+      }
+      const src = actx.createBufferSource();
+      src.buffer = noiseBuffer;
+      const filt = actx.createBiquadFilter();
+      const amp = actx.createGain();
+      if (ch === 'S') {
+        filt.type = 'bandpass';
+        filt.frequency.value = 1450;
+        filt.Q.value = 0.9;
+        const dur = 0.11;
+        amp.gain.setValueAtTime(0.20, time);
+        amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+        src.connect(filt); filt.connect(amp); amp.connect(musicBus);
+        src.start(time); src.stop(time + dur + 0.01);
+        // Snare body
+        const body = actx.createOscillator();
+        const bAmp = actx.createGain();
+        body.type = 'triangle';
+        body.frequency.setValueAtTime(195, time);
+        body.frequency.exponentialRampToValueAtTime(95, time + 0.06);
+        bAmp.gain.setValueAtTime(0.14, time);
+        bAmp.gain.exponentialRampToValueAtTime(0.0001, time + 0.07);
+        body.connect(bAmp); bAmp.connect(musicBus);
+        body.start(time); body.stop(time + 0.08);
+      } else {
+        // 'h' closed hi-hat or 'H' open hi-hat
+        filt.type = 'highpass';
+        filt.frequency.value = 6500;
+        const dur = ch === 'H' ? 0.14 : 0.04;
+        amp.gain.setValueAtTime(ch === 'H' ? 0.10 : 0.075, time);
+        amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+        src.connect(filt); filt.connect(amp); amp.connect(musicBus);
+        src.start(time); src.stop(time + dur + 0.01);
+      }
+    }
+
+    function schedulerTick() {
+      if (!actx || actx.state !== 'running') return;
+      const comp = COMPOSITIONS[currentTrack];
+      const stepDur = (60 / comp.bpm) / 4; // 16th note
+
+      while (nextNoteTime < actx.currentTime + 0.14) {
+        const s64 = stepIdx & 63;
+        const useB = ((stepIdx >> 6) & 1) === 1;
+        const swingOffset = (s64 & 1) ? comp.swing : 0;
+        const t = nextNoteTime + swingOffset;
+
+        const leadNote = (useB ? comp.leadB : comp.leadA)[s64];
+        if (leadNote > 0) {
+          playFMVoice(midiFreq(leadNote), t, stepDur * 1.85, comp.leadPatch, 0.16);
+        }
+        const harmNote = comp.harm[s64];
+        if (harmNote > 0) {
+          playFMVoice(midiFreq(harmNote), t, stepDur * 2.2, comp.harmPatch, 0.095);
+        }
+        const bassNote = comp.bass[s64];
+        if (bassNote > 0) {
+          playBass(midiFreq(bassNote), t, stepDur * 1.75);
+        }
+        const drumCh = comp.drums[s64 & 31];
+        playDrum(drumCh, t);
+
+        nextNoteTime += stepDur;
+        stepIdx++;
+      }
+    }
+
+    // Dedicated Non-Clipping Lo-Fi OPL2 SFX Channels
+    function playSfx(kind, param = 0) {
+      if (!actx || muted || actx.state !== 'running') return;
+      const now = actx.currentTime;
+      if (now - lastSfxTime < 0.018 && kind === 'brick') return; // Throttle dense multi-hit
+      lastSfxTime = now;
+
+      const osc = actx.createOscillator();
+      const amp = actx.createGain();
+      osc.connect(amp);
+      amp.connect(sfxBus);
+
+      if (kind === 'paddle') {
+        osc.type = 'square';
+        const f = 310 + Math.abs(param) * 90;
+        osc.frequency.setValueAtTime(f, now);
+        osc.frequency.exponentialRampToValueAtTime(f * 1.45, now + 0.055);
+        amp.gain.setValueAtTime(0.16, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
+        osc.start(now); osc.stop(now + 0.07);
+      } else if (kind === 'wall') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(210, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.04);
+        amp.gain.setValueAtTime(0.12, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+        osc.start(now); osc.stop(now + 0.05);
+      } else if (kind === 'brick') {
+        osc.type = 'square';
+        const f = 440 * Math.pow(1.06, Math.min(14, param));
+        osc.frequency.setValueAtTime(f, now);
+        osc.frequency.exponentialRampToValueAtTime(f * 1.35, now + 0.07);
+        amp.gain.setValueAtTime(0.15, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+        osc.start(now); osc.stop(now + 0.09);
+      } else if (kind === 'armor') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.linearRampToValueAtTime(420, now + 0.03);
+        osc.frequency.exponentialRampToValueAtTime(180, now + 0.09);
+        amp.gain.setValueAtTime(0.16, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.10);
+        osc.start(now); osc.stop(now + 0.11);
+      } else if (kind === 'steel') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(980, now);
+        osc.frequency.exponentialRampToValueAtTime(620, now + 0.05);
+        amp.gain.setValueAtTime(0.13, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+        osc.start(now); osc.stop(now + 0.07);
+      } else if (kind === 'grog') {
+        // Acid boom + filtered noise roar
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(170, now);
+        osc.frequency.exponentialRampToValueAtTime(36, now + 0.24);
+        amp.gain.setValueAtTime(0.24, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
+        osc.start(now); osc.stop(now + 0.27);
+        if (noiseBuffer) {
+          const ns = actx.createBufferSource();
+          ns.buffer = noiseBuffer;
+          const lp = actx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.setValueAtTime(1100, now);
+          lp.frequency.exponentialRampToValueAtTime(160, now + 0.25);
+          const na = actx.createGain();
+          na.gain.setValueAtTime(0.22, now);
+          na.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
+          ns.connect(lp); lp.connect(na); na.connect(sfxBus);
+          ns.start(now); ns.stop(now + 0.27);
+        }
+      } else if (kind === 'laser') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1150, now);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.085);
+        amp.gain.setValueAtTime(0.13, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+        osc.start(now); osc.stop(now + 0.10);
+      } else if (kind === 'powerup') {
+        osc.disconnect();
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((nf, idx) => {
+          const o = actx.createOscillator();
+          const a = actx.createGain();
+          o.type = 'square';
+          o.frequency.setValueAtTime(nf, now + idx * 0.045);
+          a.gain.setValueAtTime(0.13, now + idx * 0.045);
+          a.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.045 + 0.09);
+          o.connect(a); a.connect(sfxBus);
+          o.start(now + idx * 0.045);
+          o.stop(now + idx * 0.045 + 0.10);
+        });
+      } else if (kind === 'note') {
+        const scaleMidi = [72, 74, 76, 77, 79, 81];
+        const f = midiFreq(scaleMidi[param % scaleMidi.length]);
+        playFMVoice(f, now, 0.28, 'pentatonicChime', 0.22);
+      } else if (kind === 'lost') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(340, now);
+        osc.frequency.exponentialRampToValueAtTime(65, now + 0.42);
+        amp.gain.setValueAtTime(0.20, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+        osc.start(now); osc.stop(now + 0.46);
+      } else if (kind === 'bossHit') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.12);
+        amp.gain.setValueAtTime(0.22, now);
+        amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+        osc.start(now); osc.stop(now + 0.15);
+      } else if (kind === 'clear') {
+        osc.disconnect();
+        [523, 659, 784, 1046, 784, 1046].forEach((nf, idx) => {
+          const o = actx.createOscillator();
+          const a = actx.createGain();
+          o.type = 'triangle';
+          const t0 = now + idx * 0.075;
+          o.frequency.setValueAtTime(nf, t0);
+          a.gain.setValueAtTime(0.18, t0);
+          a.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.14);
+          o.connect(a); a.connect(sfxBus);
+          o.start(t0); o.stop(t0 + 0.15);
+        });
+      }
+    }
+
+    function setWorldTrack(worldId) {
+      if (currentTrack !== worldId) {
+        currentTrack = worldId;
+        stepIdx = 0;
+      }
+    }
+
+    function toggleMute() {
+      muted = !muted;
+      if (masterGain && actx) {
+        masterGain.gain.setValueAtTime(muted ? 0 : 0.48, actx.currentTime);
+      }
+      return muted;
+    }
+
+    return {
+      init,
+      playSfx,
+      setWorldTrack,
+      toggleMute,
+      isMuted: () => muted,
+      getTrackTitle: () => TRACK_TITLES[currentTrack]
+    };
+  })();
+
+  // ============================================================================
+  // 6. 33 RECOGNIZABLE LUCASARTS PIXEL-ART MOSAIC LEVELS (28 COLS x 16-17 ROWS)
+  // ============================================================================
+  // Legend:
+  //   '.' = empty
+  //   Normal 1-HP EGA hues: R O Y G E C B I V M W S D N T F K A
+  //   '2' = 2-HP Armored, '3' = 3-HP Armored
+  //   '#' = Brushed-Chrome Riveted Steel (indestructible)
+  //   '!' = Bubbling Green-Acid Grog (3x3 recursive chain explosion!)
+  //   World-Mechanic Special Bricks:
+  //     'X' = Crossed Cutlasses (W1)   'J' = Chron-o-John (W2)
+  //     'Q' = Dart-Spitting Idol (W3)  'U' = Gravity Core (W4)
+  //     'Z' = Musical Rune (W5)        'H' = Highway Siren (W6)
+  //     'L' = Voodoo Skull Totem (W7)
+  const LEVELS = [
+    // ---- WORLD 1: MELEE ISLAND (Levels 1-6) ----
+    { name: 'JOLLY ROGER', world: 0, grid: [
+      '..........RRRRRRRR..........',
+      '........RRRRRRRRRRRR........',
+      '.......RRRWWWWWWWWRRR.......',
+      '......RRWWWWWWWWWWWWRR......',
+      '......XWWWWWWWWWWWWWWX......',
+      '......WWWW!KKWWKK!WWWW......',
+      '......WWWWKKKWWKKKWWWW......',
+      '.......WWWWWWKKWWWWWW.......',
+      '........WWWWWWWWWWWW........',
+      '.........WWWKWWKWWW.........',
+      '....WW....WWWWWWWW....WW....',
+      '...WWWW.....WWWW.....WWWW...',
+      '....WWWW...WWWWWW...WWWW....',
+      '.......WWWWWW..WWWWWW.......',
+      '....WWWW...WW..WW...WWWW....',
+      '...WWWW..............WWWW...'
+    ]},
+    { name: 'SCUMM BAR GROG MUG', world: 0, grid: [
+      '......WWWW..WWWW..WWWW......',
+      '.....WWWWWWWWWWWWWWWWWW.....',
+      '....WWWWWWWWWWWWWWWWWWWW....',
+      '.....WWEEEEEEEEEEEEEEWW.....',
+      '.....SSSSSSSSSSSSSSSSSS.....',
+      '.....NNEEEE!EEEE!EEEENNSSSS.',
+      '.....NNEEEEEEEEEEEEEENNSS.SS',
+      '.....NNEEE!EEEEEE!EEENN...SS',
+      '.....NNEEEEEEEEEEEEEENN...SS',
+      '.....NNEEEE!EEEE!EEEENN...SS',
+      '.....SSSSSSSSSSSSSSSSSSSSSS.',
+      '.....NNNNNNNNNNNNNNNNNN.....',
+      '.....NNXNNNNNNNNNNNNXNN.....',
+      '.....NNNNNNNNNNNNNNNNNN.....',
+      '.....SSSSSSSSSSSSSSSSSS.....',
+      '....22222222222222222222....'
+    ]},
+    { name: 'THREE-HEADED MONKEY!', world: 0, grid: [
+      '..GGGG................GGGG..',
+      '.GG..NNNN...NNNN...NNNN..GG.',
+      '....NNNNNN.NNNNNN.NNNNNN....',
+      '...TTNWWNTTTNWWNTTTNWWNTT...',
+      '....NNNNNN.NNNNNN.NNNNNN....',
+      '....NTTTTN.NTTTTN.NTTTTN....',
+      '.....NNNN...NNNN...NNNN.....',
+      '......NN..NNNNNNNN..NN......',
+      '......NNNNNNTTTTNNNNNN......',
+      '.....NNN..TTTTTTTT..NNN.....',
+      '....NNN..XTTTTTTTTX..NNN....',
+      '....NN....NNNNNNNN....NN....',
+      '.........NNN....NNN...NN....',
+      '........NNN..!!..NNN...NN...',
+      '.......TTT........TTT...NN..',
+      '......GGGGGGGGGGGGGGGGGGGG..'
+    ]},
+    { name: 'RUBBER CHICKEN PULLEY', world: 0, grid: [
+      '##........................##',
+      '..##........SSSS........##..',
+      '....##.....SS22SS.....##....',
+      '.....RR...SS2!!2SS..##......',
+      '....RYYY..SS2222SS##........',
+      '...OOYYYY..SSSSSS..YYYY.....',
+      '....YYYYYYYYY22YYYYYYYYY....',
+      '.....YYYYYYYY22YYYYYYYYYY...',
+      '......YYYYYYYYYYYYYYYYYY....',
+      '.......YYYYYXYYXYYYYYYY.....',
+      '........YYYYYYYYYYYYYY......',
+      '..........YYYYYYYYYY........',
+      '...........OO....OO.........',
+      '..........OOO....OOO........',
+      '....CCCCCCCCCCCCCCCCCCCC....',
+      '..BBBBBBBBBBBBBBBBBBBBBBBB..'
+    ]},
+    { name: 'MELEE HARBOR ANCHOR', world: 0, grid: [
+      '...........YYYYYY...........',
+      '..........YY....YY..........',
+      '..........YY.!!.YY..........',
+      '...........YYYYYY...........',
+      '............SSSS............',
+      '......222222SSSS222222......',
+      '......22XXXXSSSSXXXX22......',
+      '............SSSS............',
+      '............SSSS............',
+      '...SS.......SSSS.......SS...',
+      '..SSSS......SSSS......SSSS..',
+      '..SSSSS.....SSSS.....SSSSS..',
+      '...SSSSSS..SSSSSS..SSSSSS...',
+      '.....SSSSSSSSSSSSSSSSSS.....',
+      '.......SSSSSSSSSSSSSS.......',
+      '..CCCCCCCCCCCCCCCCCCCCCCCC..'
+    ]},
+    { name: 'SEA MONKEY GALLEON', world: 0, grid: [
+      '.............RR.............',
+      '............RRRR............',
+      '.......WWWW..NN..WWWW.......',
+      '......WWWWWW.NN.WWWWWW......',
+      '.....WWWWWWW.NN.WWWWWWW.....',
+      '....WWWWWWWW.NN.WWWWWWWW....',
+      '....WWWRRWWW.NN.WWWRRWWW....',
+      '.....WWWWWWW.NN.WWWWWWW.....',
+      '......WWWWWW.NN.WWWWWW......',
+      '..YY........NNNN........YY..',
+      '..NNNNNNNNNNNNNNNNNNNNNNNN..',
+      '...NNN22NN!NNXXNN!NN22NNN...',
+      '....NNNNNNNNNNNNNNNNNNNN....',
+      '.....NNNNNNNNNNNNNNNNNN.....',
+      '..CCCCCCCCCCCCCCCCCCCCCCCC..',
+      '.BBBBBBBBBBBBBBBBBBBBBBBBBB.'
+    ]},
+
+    // ---- WORLD 2: EDISON MANSION (Levels 7-12) ----
+    { name: 'PURPLE TENTACLE!', world: 1, grid: [
+      '...........VVVVVV...........',
+      '..........VVVVVVVV..........',
+      '.........VVVEEEEVVV.........',
+      '........VVKKWWWWKKVV........',
+      '........VVWWKKKKWWVV........',
+      '.......VVVVVVVVVVVVVV.......',
+      '......VVVEEVVVVVVEEVVV......',
+      '.....VVVVVVVVJJVVVVVVVV.....',
+      '...EEVVVVVVVVVVVVVVVVVVEE...',
+      '..EEEVVVVEEVVVVVVEEVVVVEEE..',
+      '....VVVVVVVVV!!VVVVVVVVV....',
+      '.....VVVVVVVVVVVVVVVVVV.....',
+      '....VVVEEVVVVVVVVVVEEVVV....',
+      '...VVVVVVVVVVVVVVVVVVVVVV...',
+      '..22VVVVEEVVVVVVVVEEVVVV22..',
+      '.2222VVVVVVVVVVVVVVVVVV2222.'
+    ]},
+    { name: 'CHRON-O-JOHN BOOTH', world: 1, grid: [
+      '.....CC......YY......CC.....',
+      '......CC...YYYYYY...CC......',
+      '.......CCCCCCCCCCCCCC.......',
+      '......2222222222222222......',
+      '......2WWWWWWWWWWWWWW2......',
+      '......2WWWWWWJJWWWWWW2......',
+      '......2WWWWWCCCCWWWWW2......',
+      '......2WWWWCC!!CCWWWW2......',
+      '......2WWWWWCCCCWWWWW2......',
+      '......2WWWWWWJJWWWWWW2......',
+      '......2WWWWWWWWWWYYWW2......',
+      '......2WWWWWWWWWWYYWW2......',
+      '......2VVVVVVVVVVVVVV2......',
+      '......2VVVVVV!!VVVVVV2......',
+      '......2222222222222222......',
+      '....####............####....'
+    ]},
+    { name: 'SLUDGE-O-MATIC LAB', world: 1, grid: [
+      '..####..RRRRRRRRRRRR..####..',
+      '..#!!#..RRYYYYYYYYRR..#!!#..',
+      '..#EE#..RRYJJ!!JJYRR..#EE#..',
+      '..#EE#..RRYYYYYYYYRR..#EE#..',
+      '..SSSSSSSSSSSSSSSSSSSSSSSS..',
+      '.....SS....EEEEEE....SS.....',
+      '.....SS...EEEEEEEE...SS.....',
+      '...222222.EE!EE!EE.222222...',
+      '...2EEEE2.EEEEEEEE.2EEEE2...',
+      '...2E!!E2.EE!JJ!EE.2E!!E2...',
+      '...2EEEE2.EEEEEEEE.2EEEE2...',
+      '...222222..EEEEEE..222222...',
+      '.....SS......SS......SS.....',
+      '...SSSSSSSSSSSSSSSSSSSSSS...',
+      '..EEEEEEEEEEEEEEEEEEEEEEEE..',
+      '.GGGGGGGGGGGGGGGGGGGGGGGGGG.'
+    ]},
+    { name: 'FROZEN HAMSTER CUBE', world: 1, grid: [
+      '....CCCCCCCCCCCCCCCCCCCC....',
+      '...CCWWWWWWWWWWWWWWWWWWCC...',
+      '..CCWWCCCCTTTT..TTTTCCCCWW..',
+      '..CCWCCCCTTTTT..TTTTTCCCWW..',
+      '..CCWCCCTTTTTTTTTTTTTTCCWW..',
+      '..CCWCCCTTKKTTTTTTKKTTCCWW..',
+      '..CCWCCCTTTTTFFTTTTTTTCCWW..',
+      '..CCWCCCCTTTTTTTTTTTTCCCWW..',
+      '..CCWCCCCCTTTTJJTTTTCCCCWW..',
+      '..CCWCCCCCTTTTTTTTTTCCCCWW..',
+      '..CCWCCCCTTWWTTTTWWTTCCCWW..',
+      '..CCWWCCCTTTT....TTTTCCWWC..',
+      '...CCWWWWWWWW!JJ!WWWWWWCC...',
+      '....CCCCCCCCCCCCCCCCCCCC....',
+      '......2222222222222222......',
+      '....BBBBBBBBBBBBBBBBBBBB....'
+    ]},
+    { name: 'BETSY ROSS TENTACLE SUIT', world: 1, grid: [
+      '..........BBBBBBBB..........',
+      '.........BBWBBWBBWB.........',
+      '........BBBBWBBWBBBB........',
+      '........BBWBBWBBWBBB........',
+      '.......RRRRRRRRRRRRRR.......',
+      '......WWWWWWWWWWWWWWWW......',
+      '.....RRRRRRRRJJRRRRRRRR.....',
+      '....WWWWWWWWWWWWWWWWWWWW....',
+      '...RRRRRRRRRR!!RRRRRRRRRR...',
+      '.....WWWWWWWWWWWWWWWWWW.....',
+      '.....RRRRRRRRRRRRRRRRRR.....',
+      '....WWWWWWWWWWWWWWWWWWWW....',
+      '...RRRRRRRRRRJJRRRRRRRRRR...',
+      '...WWWWWWWWWWWWWWWWWWWWWW...',
+      '..22RRRRRRRRRRRRRRRRRRRR22..',
+      '..2222WWWWWWWWWWWWWWWW2222..'
+    ]},
+    { name: 'BOWLING & ROCK AMP', world: 1, grid: [
+      '...DDDDDDDDDDDDDDDDDDDDDD...',
+      '..DDSSSSSSSSSSSSSSSSSSSSDD..',
+      '..DDSKKKKKKKKKKKKKKKKKKSDD..',
+      '..DDSKKCCCCKKKKKKCCCCKKSDD..',
+      '..DDSKCCJJCCKKKKCCJJCCKSDD..',
+      '..DDSKCC!!CCKKKKCC!!CCKSDD..',
+      '..DDSKKCCCCKKKKKKCCCCKKSDD..',
+      '..DDSKKKKKKKKKKKKKKKKKKSDD..',
+      '..DDSSSSSSSSSSSSSSSSSSSSDD..',
+      '..DDSKKKKKKKKKKKKKKKKKKSDD..',
+      '..DDSKKYYYYYYKKYYYYYYKKSDD..',
+      '..DDSKKYRRRRYYYYRRRRYKKSDD..',
+      '..DDSKKYYYYYYKKYYYYYYKKSDD..',
+      '..DDSKKKKKKKKKKKKKKKKKKSDD..',
+      '..DD22222222222222222222DD..',
+      '...########################.'
+    ]},
+
+    // ---- WORLD 3: ATLANTIS CRYPT (Levels 13-18) ----
+    { name: 'GOLDEN ATLANTEAN IDOL', world: 2, grid: [
+      '......CCCC.YYYYYY.CCCC......',
+      '.....CC..YYYYYYYYYY..CC.....',
+      '........YYYYYYYYYYYY........',
+      '....CC..YYAAYYYYAAYY..CC....',
+      '...CCCC.YYRRYYYYRRYY.CCCC...',
+      '...CCCC.YYYYYYYYYYYY.CCCC...',
+      '....CC..YYYYYQQYYYYY..CC....',
+      '........YYYAA!!AAYYY........',
+      '........YYAAKKKKAAYY........',
+      '.........YYYYQQYYYY.........',
+      '......AAAYYYYYYYYYYAAA......',
+      '.....AA22YYYYYYYYYY22AA.....',
+      '....AA2222AAACCCC22222AA....',
+      '....AA22..AAACCAAA..22AA....',
+      '.....AA...AAAAAAAA...AA.....',
+      '...3333333333333333333333...'
+    ]},
+    { name: 'FEDORA & BULLWHIP', world: 2, grid: [
+      '.........NNNNNNNNNN.........',
+      '........NNNNNNNNNNNN........',
+      '.......NNNNNNKKNNNNNN.......',
+      '......NNNNNNNNNNNNNNNN......',
+      '.....KKKKKKKKKKKKKKKKKK.....',
+      '..NNNNNNNNNNNNNNNNNNNNNNNN..',
+      '.NNNNNNNNNNNNNNNNNNNNNNNNNN.',
+      '..................TTTTTTTT..',
+      '......TTTTTT....TTTT....TTT.',
+      '....TTT....TT..TT........TT.',
+      '...TT..QQ...TTTT...!!....TT.',
+      '...TT....................TT.',
+      '....TTT.......TTTTTT....TTT.',
+      '......TTTTTTTTT....TTTTTT...',
+      '....AAAA............QQ......',
+      '..33333333........33333333..'
+    ]},
+    { name: 'SUN MOON & WORLD DISKS', world: 2, grid: [
+      '........YYYYYYYYYYYY........',
+      '......YYYAAAAAAAAAAYYY......',
+      '....YYYAAASSSSSSSSAAAYYY....',
+      '...YYYAASSCCCCCCCCSSAAAYY...',
+      '..YYYAASSCCOOOOOOCCSSAAAYY..',
+      '..YYAASSCCOOQ!!QOOCCSSAAYY..',
+      '..YYAASSCCOOKYYKOOCCSSAAYY..',
+      '..YYAASSCCOOYYYYOOCCSSAAYY..',
+      '..YYAASSCCOOKYYKOOCCSSAAYY..',
+      '..YYAASSCCOOQ!!QOOCCSSAAYY..',
+      '..YYYAASSCCOOOOOOCCSSAAAYY..',
+      '...YYYAASSCCCCCCCCSSAAAYY...',
+      '....YYYAAASSSSSSSSAAAYYY....',
+      '......YYYAAAAAAAAAAYYY......',
+      '........YYYYYYYYYYYY........',
+      '....####............####....'
+    ]},
+    { name: 'ORICHALCUM SUBMARINE', world: 2, grid: [
+      '............SSSS............',
+      '............SSCC............',
+      '...........SSSSSS...........',
+      '..........SSSSSSSS..........',
+      '.........2222222222.........',
+      '...AA..SSSSSSSSSSSSSS..YY...',
+      '..AAASSSSSSSSSSSSSSSSSSYYY..',
+      '.AAAASSCCSSCCSSCCSSQ!!SSYYY.',
+      '..AAASSSSSSSSSSSSSSSSSSYYY..',
+      '...AA..22222222222222..YY...',
+      '............................',
+      '....AAAA....QQQQ....AAAA....',
+      '...AA!!AA..AAAAAA..AA!!AA...',
+      '....AAAA...AA..AA...AAAA....',
+      '..CCCCCCCCCCCCCCCCCCCCCCCC..',
+      '.BBBBBBBBBBBBBBBBBBBBBBBBBB.'
+    ]},
+    { name: 'LABYRINTH OF KNOSSOS', world: 2, grid: [
+      '..WW....................WW..',
+      '..WWW..................WWW..',
+      '...WWWW....AAAAAA....WWWW...',
+      '....WWWW..AAAAAAAA..WWWW....',
+      '.....NNNNNNNNNNNNNNNNNN.....',
+      '.....NNRRNNNNQQNNNNRRNN.....',
+      '######NNNNNNNNNNNNNNNN######',
+      '....##..NNNNN!!NNNNN..##....',
+      '....##...NNNNNNNNNN...##....',
+      '..AAAA....NNKKKKNN....AAAA..',
+      '..A!!A#...NNNNNNNN...#A!!A..',
+      '..AAAA#....NNQQNN....#AAAA..',
+      '......#.....NNNN.....#......',
+      '..3333#....OOOOOO....#3333..',
+      '..OOOOO...OOOOOOOO...OOOOO..',
+      '..RRRRRRRRRRRRRRRRRRRRRRRR..'
+    ]},
+    { name: 'COLOSSUS GOD-MACHINE', world: 2, grid: [
+      '...YY..................YY...',
+      '..YYY....AAAAAAAAAA....YYY..',
+      '..YYY...AAEEEEEEEEAA...YYY..',
+      '...YYY.AAEEQRRRRQEEAA.YYY...',
+      '....YYYYEEAAAAAAAAEEYYYY....',
+      '......AAAAEEAAAAEEAAAA......',
+      '.....3333AAAAAAAAAA3333.....',
+      '....333AA!!AAQQAA!!AA333....',
+      '....33..AAAAAAAAAAAA..33....',
+      '....33..AAEEEEEEEEAA..33....',
+      '........AAEEOOOOEEAA........',
+      '.......333AAAAAAAA333.......',
+      '......333..AA..AA..333......',
+      '.....333..QAA..AAQ..333.....',
+      '....####..AAA..AAA..####....',
+      '...OOOOOO.AAA..AAA.OOOOOO...'
+    ]},
+
+    // ---- WORLD 4: SPACE COMBAT (Levels 19-24) ----
+    { name: 'RED FIVE X-WING', world: 3, grid: [
+      'R..........................R',
+      'R............WW............R',
+      'S...........WWWW...........S',
+      'S...........WWWW...........S',
+      'SS..........WRRW..........SS',
+      'SSRR.......WWBBWW.......RRSS',
+      'SSSSRR.....WWWWWW.....RRSSSS',
+      '.SSSSSRR..WWWUUWWW..RRSSSSS.',
+      '..SSSSSSSSWWW22WWWSSSSSSSS..',
+      '....SSSSSSWW2!!2WWSSSSSS....',
+      '..SSSSSSSSWWW22WWWSSSSSSSS..',
+      '.SSSSSRR..WWWUUWWW..RRSSSSS.',
+      'SSSSRR.....WWOOOWW....RRSSSS',
+      'SS..........OOOO..........SS',
+      'R............OO............R',
+      'R..........................R'
+    ]},
+    { name: 'IMPERIAL TIE ADVANCED', world: 3, grid: [
+      '...####..............####...',
+      '..##KKK..............KKK##..',
+      '.##KKKK..............KKKK##.',
+      '.#KKKKK.....DDDD.....KKKKK#.',
+      '.#KKKKK...DDSSSSDD...KKKKK#.',
+      '#KKKKKK..DSSKKKKSSD..KKKKKK#',
+      '#KKKKKKSSSSKRRRRKSSSSKKKKKK#',
+      '#KKKKKK22SSKRUURKSS22KKKKKK#',
+      '#KKKKKK22SSKRUURKSS22KKKKKK#',
+      '#KKKKKKSSSSKRRRRKSSSSKKKKKK#',
+      '#KKKKKK..DSSKKKKSSD..KKKKKK#',
+      '.#KKKKK...DDSSSSDD...KKKKK#.',
+      '.#KKKKK.....DDDD.....KKKKK#.',
+      '.##KKKK......!!......KKKK##.',
+      '..##KKK..............KKK##..',
+      '...####..............####...'
+    ]},
+    { name: 'MILLENNIUM FALCON', world: 3, grid: [
+      '.........WWWW..WWWW.........',
+      '........WWWW..WWWW..........',
+      '.......WWWWW..WWWWW.........',
+      '......WWWWWW..WWWWWW..CCC...',
+      '.....WWWWWWSSSWWWWWWW.C22C..',
+      '....WWWWWWSSSSSWWWWWWWSSSS..',
+      '...WWWWWRRSSUUSSRRWWWWWW....',
+      '...WWWWWSSSSSSSSSSWWWWWW....',
+      '...WWWWWWSS2!!2SSWWWWWWW....',
+      '...WWWWWWSSSSSSSSWWWWWWW....',
+      '....WWWWWWSSSSSSWWWWWWW.....',
+      '.....WWWWWWWWWWWWWWWWW......',
+      '......WWWWWWWWWWWWWWW.......',
+      '.......WWCCCCCCCCCCWW.......',
+      '........CCCCCCCCCCCC........',
+      '..........CCCCCCCC..........'
+    ]},
+    { name: 'DEATH STAR II REACTOR', world: 3, grid: [
+      '........3333333333..........',
+      '......33SSSSSSSSSS33........',
+      '....33SSSSGGGGGGSSSS33......',
+      '...33SSSGGEEEEEEGGSSS33.....',
+      '..33SSSGEE!!EE!!EEGSSS22....',
+      '..3SSSGGEEEEUUEEEEGGSS222...',
+      '.33SSSGEEE!!EE!!EEEGSSDDDD..',
+      '.33SSSSGGEEEEEEEEGGSSDDDD...',
+      '.33SSSSSSGGGGGGGGSS2222.....',
+      '.33SSSSSSSSSSSSSSSS22DD##...',
+      '..3SSSSSSSSSSSSSS222DDDD....',
+      '..33SSSSSSSSSSSS222DDD......',
+      '...33SSSSSSSSSS22222........',
+      '....33SSSSSSSS222DD##.......',
+      '......33SSSSSS222...........',
+      '........33333333............'
+    ]},
+    { name: 'REBEL ALLIANCE CREST', world: 3, grid: [
+      '.............RR.............',
+      '....RR......RRRR......RR....',
+      '...RRR......RRRR......RRR...',
+      '..RRRR.....RRRRRR.....RRRR..',
+      '.RRRRR......RRRR......RRRRR.',
+      '.RRRRR..UU..RRRR..UU..RRRRR.',
+      '.RRRRRR....RRRRRR....RRRRRR.',
+      '..RRRRRR..RRRRRRRR..RRRRRR..',
+      '..RRRRRRRRRRR!!RRRRRRRRRRR..',
+      '...RRRRRRRRRRRRRRRRRRRRRR...',
+      '....RRRRRRRRRRRRRRRRRRRR....',
+      '.....RRRRRRRRRRRRRRRRRR.....',
+      '......RRRRRRRRRRRRRRRR......',
+      '........RRRRRRRRRRRR........',
+      '......YYYYYYYYYYYYYYYY......',
+      '....22222222222222222222....'
+    ]},
+    { name: 'EXHAUST PORT TRENCH', world: 3, grid: [
+      '####..SSSSSSSSSSSSSSSS..####',
+      '####..SS222222222222SS..####',
+      '####..SS2CCCCCCCCCC2SS..####',
+      '##....SS2CUUUUUUUUC2SS....##',
+      '##....SS2CU!!!!!!UC2SS....##',
+      '##....SS2CU!RRRR!UC2SS....##',
+      '##....SS2CU!!!!!!UC2SS....##',
+      '##....SS2CUUUUUUUUC2SS....##',
+      '####..SS2CCCCCCCCCC2SS..####',
+      '####..SS222222222222SS..####',
+      '####....SSSS....SSSS....####',
+      '##......SSSS....SSSS......##',
+      '##..RR..SSSS....SSSS..RR..##',
+      '##..RR..2222....2222..RR..##',
+      '####..................####..',
+      '######..............######..'
+    ]},
+
+    // ---- WORLD 5: LOOM (Levels 25-30) ----
+    { name: 'WHITE SWAN OF LOOM', world: 4, grid: [
+      '.......WWWW.................',
+      '......WW..WW................',
+      '.....OO...WW................',
+      '..........WW.......ZZZZ.....',
+      '..........WW.....WWWWWWWW...',
+      '.........WWW...WWWWWWWWWWW..',
+      '........WWWW..WWWWWWWWWWWWW.',
+      '.......WWWWWWWWWWWWWWSSWWWW.',
+      '......WWWWWWWWWWWWWSSSSWWWW.',
+      '......WWWWWWWWWWWWSSSSWWWWW.',
+      '.......WWWWWWWWWWWWWWWWWWW..',
+      '........WWWWWWWWWWWWWWWWW...',
+      '..........WWWWWWWWWWWWW.....',
+      '...ZZZZ................ZZZZ.',
+      '..CCCCCCCCCCCCCCCCCCCCCCCC..',
+      '.EEEEEEEEEEEEEEEEEEEEEEEEEE.'
+    ]},
+    { name: 'BOBBIN DISTAFF', world: 4, grid: [
+      '...................YY.......',
+      '.................YYCCYY.....',
+      '................YCCCCCCY....',
+      '...............YYCCZZCCYY...',
+      '................YCCCCCCY....',
+      '.....ZZ..........YYCCYY.....',
+      '...............NNNNYY.......',
+      '.............NNNN...........',
+      '...........NNNN......ZZ.....',
+      '.........NNNN...............',
+      '.......NNNN..!!.............',
+      '.....NNNN..........ZZ.......',
+      '...NNNN.....................',
+      '..NNN....IIIIIIIIIIII.......',
+      '.......IIVVVVVVVVVVVVII.....',
+      '.....22222222222222222222...'
+    ]},
+    { name: 'CRYSTALGARD SPIRES', world: 4, grid: [
+      '.............CC.............',
+      '............CCCC............',
+      '.....EE....CCEECC....EE.....',
+      '....EEEE...CCEECC...EEEE....',
+      '...EECCEE.CCEEEECC.EECCEE...',
+      '...EECCEE.CCEZZECC.EECCEE...',
+      '..EEECCEEECCEEEECCEEECCEEE..',
+      '..EEEZZEEECCEEEECCEEEZZEEE..',
+      '..EEECCEEECC!EE!CCEEECCEEE..',
+      '..EEEEEEEECCEEEECCEEEEEEEE..',
+      '.222222222CCEEEECC222222222.',
+      '..IIIIIIIICCCCCCCCIIIIIIII..',
+      '...IIIIIIIZZZZZZZZIIIIIII...',
+      '....IIIIIIIIIIIIIIIIIIII....',
+      '.....CCCCCCCCCCCCCCCCCC.....',
+      '....33333333333333333333....'
+    ]},
+    { name: 'DRAGON & GOLDEN FLEECE', world: 4, grid: [
+      '......RRRR........RRRR......',
+      '....RRRRORRR....RRRORRRR....',
+      '...RRROOOORRRRRRRROOOORRR...',
+      '..RRROOYYOORRRRRROOYYOORRR..',
+      '..RROOOOOOOORRRROOOOOOOORR..',
+      '...RROO...RRRRRRRR...OORR...',
+      '.........RRR!ZZ!RRR.........',
+      '........RRRRROORRRRR........',
+      '.........RRRRRRRRRR.........',
+      '...........RRRRRR...........',
+      '......YYYYYYYYYYYYYYYY......',
+      '....YYYYZYYYYYYYYYYZYYYY....',
+      '...YYYYYYYYYYYYYYYYYYYYYY...',
+      '....YYYYYYYYYYYYYYYYYYYY....',
+      '......2222222222222222......',
+      '....NNNNNNNNNNNNNNNNNNNN....'
+    ]},
+    { name: 'BLACKSMITHS FORGE', world: 4, grid: [
+      '....SS................SS....',
+      '...SSSS..............SSSS...',
+      '....SSNN............NNSS....',
+      '......NNNN........NNNN......',
+      '........NNNN....NNNN........',
+      '..........NNNZZNNN..........',
+      '....DDDDDDDDDDDDDDDDDDDD....',
+      '..DDDDDDDDDDDDDDDDDDDDDDDD..',
+      '....DDDDSSSSSSSSSSSSDDDD....',
+      '........SSSSSSSSSSSS........',
+      '.........SSSSSSSSSS.........',
+      '.......DDDDDDDDDDDDDD.......',
+      '.....DDDDDDDDDDDDDDDDDD.....',
+      '...OOOOOO!!ZZ!!ZZ!!OOOOOO...',
+      '..RRRRRRRRRRRRRRRRRRRRRRRR..',
+      '.##########################.'
+    ]},
+    { name: 'THE GREAT LOOM RIFT', world: 4, grid: [
+      '..YYYYYYYYYYYYYYYYYYYYYYYY..',
+      '..YYRROOYYGGCCBBVVMMZZRRYY..',
+      '..YYRR..YYGG..BBVVKK..RRYY..',
+      '..YYRR..YYGG.KKKVVKK..RRYY..',
+      '..YYRROOYYGGKKVVKKMMZZRRYY..',
+      '..YYRR..YYGKKVVKK.MM..RRYY..',
+      '..YYRR..YYKKVV!KK.MM..RRYY..',
+      '..YYRROOYKKVV!!KK.MMZZRRYY..',
+      '..YYRR..KKVV!KKBB.MM..RRYY..',
+      '..YYRR..KKVVKK.BB.MM..RRYY..',
+      '..YYRROOKKVVKK.BB.MMZZRRYY..',
+      '..YYRR...KKK...BB.MM..RRYY..',
+      '..YYRROOYYGGCCBBVVMMZZRRYY..',
+      '..YYYYYYYYYYYYYYYYYYYYYYYY..',
+      '....333333........333333....',
+      '..########........########..'
+    ]},
+
+    // ---- WORLD 6: SAM & MAX HIT THE ROAD (Levels 31-32) ----
+    { name: 'MAX UNHINGED GRIN!', world: 5, grid: [
+      '.....WWWW..........WWWW.....',
+      '....WWFFWW........WWFFWW....',
+      '....WWFFWW........WWFFWW....',
+      '....WWFFWW........WWFFWW....',
+      '.....WWWW..WWWWWW..WWWW.....',
+      '......WWWWWWWWWWWWWWWW......',
+      '.....WWWWWWWWWWWWWWWWWW.....',
+      '....WWWWKKKWWWWWWKKKWWWW....',
+      '...WWWWWWWWWWFFWWWWWWWWWW...',
+      '..WWWWKKKKWWWWWWWWKKKKWWWW..',
+      '..WWWKKKKKKKKKKKKKKKKKKWWW..',
+      '..WWWKWWKWWKWWKWWKWWKWWKWW..',
+      '...WWKKKKKKKKHHKKKKKKKKWW...',
+      '....WWKWWKWWKWWKWWKWWKWW....',
+      '.....WWWWKKKKKKKKKKWWWW.....',
+      '.......WWWWWWWWWWWWWW.......'
+    ]},
+    { name: 'DESOTO POLICE CRUISER', world: 5, grid: [
+      '..........RRRHHBBB..........',
+      '........WWWWWWWWWWWW........',
+      '......WWCCCCCCCCCCCCWW......',
+      '.....WWCCCCCCCCCCCCCCWW.....',
+      '....WWCCCCCCCCCCCCCCCCWW....',
+      '..KKKKKKKKKKKKKKKKKKKKKKKK..',
+      '.KKKKWWWWWWWWWWWWWWWWWWKKKK.',
+      '.YYKKWWWWWWYYHHYYWWWWWWKKRR.',
+      '.YYKKWWWWWWYYYYYYWWWWWWKKRR.',
+      '.KKKKKKKKKKKKKKKKKKKKKKKKKK.',
+      '.SSSSSSSSSSSSSSSSSSSSSSSSSS.',
+      '...KKKKK...!!..!!...KKKKK...',
+      '..KKSSSKK..........KKSSSKK..',
+      '..KKSSSKK..........KKSSSKK..',
+      '...KKKKK............KKKKK...',
+      '............................'
+    ]},
+
+    // ---- WORLD 7: LECHUCK'S LAIR BOSS FINALE (Level 33) ----
+    { name: 'GHOST PIRATE LECHUCK!', world: 6, grid: [
+      '..LL....EEEEEEEEEEEE....LL..',
+      '..22..EEWWWWWWWWWWWWEE..22..',
+      '.....EEWWKKWWWWWWKKWWEE.....',
+      '....EEWWWWWWWWWWWWWWWWEE....',
+      '....EEWWWWKWWLLWWKWWWWEE....',
+      '.....EEEEEWWWWWWWWEEEEE.....',
+      '..##....NNNNNNNNNNNN....##..',
+      '..##..NNNNN!!LL!!NNNNN..##..',
+      '.....NNNNNNNNNNNNNNNNNN.....',
+      '....NNN33NNNNNNNNNN33NNN....',
+      '...NNNN33NN!NNNN!NN33NNNN...',
+      '....NNNNNNNNNNNNNNNNNNNN....',
+      '.....NNNNNNNNLLNNNNNNNN.....',
+      '...OOOOOOOONNNNNNOOOOOOOO...',
+      '..RRRRRRRRROOOOOORRRRRRRRR..',
+      '..33333333........33333333..'
+    ]}
+  ];
+
+  // ============================================================================
+  // 7. WORLD MECHANICS, GAMEPLAY PHYSICS, HUD SIDEBAR & MAIN LOOP
+  // ============================================================================
+  const PIRATE_DUELS = [
+    ['FIGHT LIKE A DAIRY FARMER!', 'YOU FIGHT LIKE A COW!'],
+    ['SOON YOU WEAR MY SWORD!', 'WAVING IT LIKE A FEATHER!'],
+    ['MY HANKY WIPED YOUR BLOOD!', 'SO YOU GOT THAT JOB!'],
+    ['DOGS ARE SMARTER THAN YOU!', 'HE TAUGHT YOU EVERYTHING!']
+  ];
+  const LOOM_DRAFTS = [
+    { name: 'OPENING!', effect: 'open' },
+    { name: 'SHARPENING!', effect: 'laser' },
+    { name: 'TRANSCEND!', effect: 'multi' }
+  ];
+
+  let hiScore = 50000;
+  try {
+    const saved = localStorage.getItem('scummoid_hiscore');
+    if (saved) hiScore = Math.max(hiScore, parseInt(saved, 10) || 50000);
+  } catch (_) { /* ignore sandboxed storage */ }
+
+  const state = {
+    mode: 'MENU', // MENU, PLAY, PAUSE, STAGE_CLEAR, GAME_OVER, VICTORY
+    selectedLevel: 0,
+    levelIdx: 0,
+    score: 0,
+    lives: 3,
+    tick: 0,
+    combo: 0,
+    shakeTicks: 0,
+    shakeX: 0,
+    shakeY: 0,
+    grogFlashTicks: 0,
+    clearTimer: 0,
+    bricks: [],
+    destructibleCount: 0,
+    balls: [],
+    capsules: [],
+    lasers: [],
+    projectiles: [], // Poison darts & LeChuck voodoo skulls
+    sparks: [],
+    shockwaves: [],
+    popups: [],
+    grogQueue: [],
+    vortices: [],
+    boss: null,
+    // World mechanic state
+    duelMeter: 0,
+    duelBanner: '',
+    duelBannerTicks: 0,
+    chronoEra: 1, // 0=PAST, 1=NOW, 2=2200
+    chronoTimer: 600,
+    loomNotes: [],
+    highwayPhase: 0,
+    // Vaus Paddle state
+    paddle: {
+      x: 128,
+      y: 184,
+      w: 36,
+      h: 8,
+      expandTicks: 0,
+      laserTicks: 0,
+      catchTicks: 0,
+      slowTicks: 0,
+      laserCooldown: 0,
+      stunTicks: 0
+    }
+  };
+
+  // Input state
+  const keys = {};
+  let mouseTargetX = null;
+
+  function clampPaddleX(x, pw) {
+    const half = pw * 0.5;
+    return Math.max(INNER_X0 + half, Math.min(INNER_X1 - half, x));
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const cx = ((e.clientX - rect.left) / rect.width) * W;
+    mouseTargetX = Math.max(INNER_X0, Math.min(INNER_X1, cx));
+  });
+
+  canvas.addEventListener('mousedown', () => {
+    AudioEngine.init();
+    handlePrimaryAction();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    AudioEngine.init();
+    const k = e.key;
+    keys[k] = true;
+
+    if (k === 'm' || k === 'M') {
+      AudioEngine.toggleMute();
+      return;
+    }
+    if (k === 'p' || k === 'P') {
+      if (state.mode === 'PLAY') state.mode = 'PAUSE';
+      else if (state.mode === 'PAUSE') state.mode = 'PLAY';
+      return;
+    }
+    if (k === 'Escape' && (state.mode === 'PLAY' || state.mode === 'PAUSE')) {
+      state.mode = 'MENU';
+      loadLevel(state.selectedLevel, true);
+      return;
+    }
+
+    if (state.mode === 'MENU') {
+      if (k === 'ArrowLeft' || k === 'a' || k === 'A') {
+        state.selectedLevel = (state.selectedLevel + LEVELS.length - 1) % LEVELS.length;
+        loadLevel(state.selectedLevel, true);
+        AudioEngine.playSfx('paddle', 0);
+        e.preventDefault();
+      } else if (k === 'ArrowRight' || k === 'd' || k === 'D') {
+        state.selectedLevel = (state.selectedLevel + 1) % LEVELS.length;
+        loadLevel(state.selectedLevel, true);
+        AudioEngine.playSfx('paddle', 0.5);
+        e.preventDefault();
+      } else if (k === ' ' || k === 'Enter') {
+        startNewGame(state.selectedLevel);
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (k === ' ' || k === 'Enter') {
+      handlePrimaryAction();
+      e.preventDefault();
+    }
+    if (k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowUp' || k === 'ArrowDown') {
+      e.preventDefault();
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    keys[e.key] = false;
+  });
+
+  function handlePrimaryAction() {
+    if (state.mode === 'MENU') {
+      startNewGame(state.selectedLevel);
+      return;
+    }
+    if (state.mode === 'GAME_OVER' || state.mode === 'VICTORY') {
+      state.mode = 'MENU';
+      loadLevel(state.selectedLevel, true);
+      return;
+    }
+    if (state.mode !== 'PLAY') return;
+
+    // Release any caught balls
+    let released = false;
+    for (const b of state.balls) {
+      if (b.caught) {
+        b.caught = false;
+        const off = (b.catchOffset || 0) / (state.paddle.w * 0.5);
+        const ang = Math.max(-1.1, Math.min(1.1, off * 0.95 || -0.32));
+        b.vx = Math.sin(ang) * b.speed;
+        b.vy = -Math.cos(ang) * b.speed;
+        released = true;
+      }
+    }
+    if (released) {
+      AudioEngine.playSfx('paddle', 0.3);
+    }
+
+    // Fire Space-Ranger Lasers if L active
+    if (state.paddle.laserTicks > 0 && state.paddle.laserCooldown <= 0) {
+      const px = state.paddle.x;
+      const py = state.paddle.y - 4;
+      const spread = state.paddle.expandTicks > 0 ? 18 : 12;
+      state.lasers.push({ x: px - spread, y: py }, { x: px + spread, y: py });
+      state.paddle.laserCooldown = 12;
+      AudioEngine.playSfx('laser');
+    }
+  }
+
+  function addScore(pts, x, y, label) {
+    state.score += pts;
+    if (state.score > hiScore) {
+      hiScore = state.score;
+      try { localStorage.setItem('scummoid_hiscore', String(hiScore)); } catch (_) {}
+    }
+    if (x !== undefined && y !== undefined) {
+      state.popups.push({
+        text: label || ('+' + pts),
+        x: Math.max(24, Math.min(224, x)),
+        y,
+        ticks: 40,
+        col: label ? C_CYAN : C_GOLD
+      });
+    }
+  }
+
+  function spawnSparks(x, y, col1, col2, count = 8) {
+    for (let i = 0; i < count; i++) {
+      if (state.sparks.length > 180) break;
+      const ang = (i / count) * Math.PI * 2 + Math.random() * 0.6;
+      const spd = 0.7 + Math.random() * 2.1;
+      state.sparks.push({
+        x, y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - 0.6,
+        col: (i & 1) ? col1 : col2,
+        life: 16 + ((Math.random() * 14) | 0)
+      });
+    }
+  }
+
+  function resetPaddleAndBall() {
+    const p = state.paddle;
+    p.x = 128;
+    p.y = 184;
+    p.w = 36;
+    p.expandTicks = 0;
+    p.laserTicks = 0;
+    p.catchTicks = 0;
+    p.slowTicks = 0;
+    p.laserCooldown = 0;
+    p.stunTicks = 0;
+
+    const baseSpeed = Math.min(3.65, 2.55 + state.levelIdx * 0.032);
+    state.balls = [{
+      x: p.x,
+      y: p.y - 6,
+      vx: baseSpeed * 0.45,
+      vy: -baseSpeed * 0.89,
+      speed: baseSpeed,
+      baseSpeed,
+      caught: true,
+      catchOffset: 3,
+      pierceTicks: 0,
+      stuckTicks: 0,
+      trail: []
+    }];
+    state.lasers = [];
+    state.projectiles = [];
+    state.capsules = [];
+  }
+
+  function loadLevel(idx, menuPreview = false) {
+    state.levelIdx = idx;
+    const lvl = LEVELS[idx];
+    AudioEngine.setWorldTrack(lvl.world);
+
+    state.bricks = [];
+    state.destructibleCount = 0;
+    state.grogQueue = [];
+    state.shockwaves = [];
+    state.popups = [];
+    state.sparks = [];
+    state.duelMeter = 0;
+    state.duelBanner = '';
+    state.duelBannerTicks = 0;
+    state.chronoEra = 1;
+    state.chronoTimer = 540;
+    state.loomNotes = [];
+    state.highwayPhase = 0;
+
+    const rows = lvl.grid.length;
+    const cols = lvl.grid[0].length;
+    const startX = INNER_X0 + (((240 - cols * 8) >> 1));
+    // Level 33 starts at y=38 so 40x28 Ghost Pirate LeChuck patrols cleanly at y=9..37!
+    const startY = idx === 32 ? 38 : 20;
+
+    for (let r = 0; r < rows; r++) {
+      const line = lvl.grid[r];
+      for (let c = 0; c < cols; c++) {
+        const ch = line[c];
+        if (!ch || ch === '.') continue;
+        const bx = startX + c * 8;
+        const by = startY + r * 6;
+        let kind = 'NORMAL';
+        let hp = 1;
+        let colorKey = ch;
+        let mechKey = null;
+
+        if (ch === '#') {
+          kind = 'STEEL';
+          hp = 9999;
+        } else if (ch === '2' || ch === '3') {
+          kind = 'ARMOR';
+          hp = ch === '3' ? 3 : 2;
+        } else if (ch === '!') {
+          kind = 'GROG';
+          hp = 1;
+        } else if (BRICK_SPRITES.MECH[ch]) {
+          kind = 'MECH';
+          mechKey = ch;
+          hp = 1;
+        }
+
+        const phaseGroup = (lvl.world === 1 && kind === 'ARMOR') ? ((r + c) & 1) : -1;
+        const laneDir = (lvl.world === 5) ? ((r & 1) ? 1 : -1) : 0;
+
+        state.bricks.push({
+          row: r,
+          col: c,
+          baseX: bx,
+          x: bx,
+          y: by,
+          kind,
+          colorKey,
+          mechKey,
+          hp,
+          alive: true,
+          glintTicks: 0,
+          phaseGroup,
+          laneDir,
+          idolCooldown: 120 + ((r * 37 + c * 53) % 180)
+        });
+        if (kind !== 'STEEL') state.destructibleCount++;
+      }
+    }
+
+    // World 4 Orbital Gravity Vortices
+    state.vortices = [];
+    if (lvl.world === 3) {
+      state.vortices.push({ x: 68, y: 138, dir: 1 }, { x: 188, y: 138, dir: -1 });
+    }
+
+    // Level 33 Boss: Ghost Pirate LeChuck!
+    if (idx === 32) {
+      state.boss = {
+        x: 108,
+        y: 9,
+        w: 40,
+        h: 28,
+        vx: 0.95,
+        hp: 40,
+        maxHp: 40,
+        flashTicks: 0,
+        fireCooldown: 95,
+        summonCooldown: 420
+      };
+    } else {
+      state.boss = null;
+    }
+
+    resetPaddleAndBall();
+    if (menuPreview) {
+      state.balls[0].caught = true;
+    }
+  }
+
+  function startNewGame(startIdx) {
+    state.score = 0;
+    state.lives = 3;
+    state.combo = 0;
+    loadLevel(startIdx, false);
+    state.mode = 'PLAY';
+  }
+
+  function maybeDropCapsule(x, y, forceType = null) {
+    if (state.capsules.length >= 3) return;
+    if (!forceType && Math.random() > 0.21) return;
+    const pool = ['L', 'E', 'C', 'S', 'L', 'E', 'C', 'S', 'P'];
+    const type = forceType || pool[(Math.random() * pool.length) | 0];
+    const cx = Math.max(INNER_X0 + 1, Math.min(INNER_X1 - 19, Math.round(x - 9)));
+    state.capsules.push({ x: cx, y, type });
+  }
+
+  function triggerWorldMechanic(brick) {
+    const cx = brick.x + 4, cy = brick.y + 3;
+    const mk = brick.mechKey;
+    if (mk === 'X') {
+      // World 1: Insult Sword-Fighting Duel!
+      state.duelMeter = Math.min(4, state.duelMeter + 1);
+      const pair = PIRATE_DUELS[(state.tick + brick.col) % PIRATE_DUELS.length];
+      if (state.duelMeter >= 4) {
+        state.duelMeter = 0;
+        state.duelBanner = pair[1];
+        state.duelBannerTicks = 150;
+        addScore(500, cx, cy, 'PARRY!+500');
+        AudioEngine.playSfx('powerup');
+        // Spawn Swordmaster twin ball!
+        if (state.balls.length < 4 && state.balls[0]) {
+          const b0 = state.balls[0];
+          state.balls.push({
+            x: b0.x, y: b0.y,
+            vx: -b0.vx || 1.6, vy: -Math.abs(b0.vy),
+            speed: b0.speed, baseSpeed: b0.baseSpeed,
+            caught: false, catchOffset: 0, pierceTicks: 0, stuckTicks: 0, trail: []
+          });
+        }
+      } else {
+        state.duelBanner = pair[0];
+        state.duelBannerTicks = 110;
+        addScore(200, cx, cy, 'EN GARDE!');
+      }
+    } else if (mk === 'J') {
+      // World 2: Chron-o-John Era Shift!
+      state.chronoEra = (state.chronoEra + 1) % 3;
+      state.chronoTimer = 540;
+      const names = ['1780 PAST!', 'PRESENT!', '2200 A.D.!'];
+      addScore(300, cx, cy, names[state.chronoEra]);
+      AudioEngine.playSfx('powerup');
+      maybeDropCapsule(cx, cy, 'S');
+    } else if (mk === 'Q') {
+      // World 3: Shattered Golden Idol Orichalcum Shower!
+      addScore(400, cx, cy, 'IDOL+400');
+      spawnSparks(cx, cy, C_GOLD, C_CYAN, 14);
+      maybeDropCapsule(cx, cy);
+    } else if (mk === 'U') {
+      // World 4: Gravity Overdrive!
+      addScore(350, cx, cy, 'HYPER+350');
+      maybeDropCapsule(cx, cy, 'L');
+    } else if (mk === 'Z') {
+      // World 5: Loom 4-Note Musical Spell Weaving!
+      const notes = ['C', 'D', 'E', 'F', 'G', 'A'];
+      const note = notes[(brick.col + brick.row) % notes.length];
+      AudioEngine.playSfx('note', brick.col + brick.row);
+      state.loomNotes.push(note);
+      if (state.loomNotes.length >= 4) {
+        const draft = LOOM_DRAFTS[(state.tick + brick.col) % LOOM_DRAFTS.length];
+        state.loomNotes = [];
+        addScore(600, cx, cy, draft.name);
+        AudioEngine.playSfx('powerup');
+        if (draft.effect === 'open') {
+          // Opening Draft cracks all Armored bricks -1 HP!
+          for (const b of state.bricks) {
+            if (b.alive && b.kind === 'ARMOR' && b.hp > 1) b.hp--;
+          }
+        } else if (draft.effect === 'laser') {
+          state.paddle.laserTicks = 720;
+          for (const bl of state.balls) bl.pierceTicks = 240;
+        } else if (state.balls.length < 4 && state.balls[0]) {
+          const b0 = state.balls[0];
+          state.balls.push({
+            x: b0.x, y: b0.y, vx: -b0.vx || 1.8, vy: -Math.abs(b0.vy),
+            speed: b0.speed, baseSpeed: b0.baseSpeed,
+            caught: false, catchOffset: 0, pierceTicks: 180, stuckTicks: 0, trail: []
+          });
+        }
+      } else {
+        addScore(150, cx, cy, 'NOTE ' + note);
+      }
+    } else if (mk === 'H') {
+      // World 6: Sam & Max Siren Nitro!
+      addScore(350, cx, cy, 'MAX NITRO!');
+      maybeDropCapsule(cx, cy, 'E');
+    } else if (mk === 'L') {
+      // World 7: Voodoo Totem!
+      addScore(350, cx, cy, 'VOODOO!');
+      if (state.boss && state.boss.hp > 1) {
+        state.boss.hp = Math.max(1, state.boss.hp - 2);
+        state.boss.flashTicks = 8;
+      }
+      maybeDropCapsule(cx, cy);
+    }
+  }
+
+  function damageBrick(brick, byGrog = false) {
+    if (!brick.alive) return;
+    if (brick.kind === 'STEEL') {
+      if (byGrog) {
+        // Grog acid melts even steel if directly adjacent? Prompt says Steel (indestructible), so keep Steel indestructible!
+        brick.glintTicks = 10;
+        return;
+      }
+      brick.glintTicks = 10;
+      AudioEngine.playSfx('steel');
+      return;
+    }
+
+    // World 2 Future Era shield gives phased Armor bricks temporary resistance on first tap
+    if (!byGrog && state.chronoEra === 2 && brick.phaseGroup === 1 && brick.hp === 2 && Math.random() < 0.35) {
+      brick.glintTicks = 8;
+      AudioEngine.playSfx('armor');
+      spawnSparks(brick.x + 4, brick.y + 3, C_CYAN, C_PURPLE, 5);
+      return;
+    }
+
+    if (byGrog && brick.kind === 'ARMOR') {
+      brick.hp = 1;
+    }
+
+    brick.hp--;
+    const cx = brick.x + 4;
+    const cy = brick.y + 3;
+
+    if (brick.hp > 0) {
+      brick.glintTicks = 6;
+      AudioEngine.playSfx('armor');
+      spawnSparks(cx, cy, C_LTGOLD, C_LTGRAY, 6);
+      addScore(50, cx, cy);
+      return;
+    }
+
+    brick.alive = false;
+    state.destructibleCount = Math.max(0, state.destructibleCount - 1);
+    state.combo++;
+
+    if (brick.kind === 'GROG') {
+      AudioEngine.playSfx('grog');
+      state.shakeTicks = Math.max(state.shakeTicks, 14);
+      state.grogFlashTicks = 6;
+      state.shockwaves.push({ x: cx, y: cy, r: 3, maxR: 26 });
+      spawnSparks(cx, cy, C_LIME, C_GREEN, 14);
+      addScore(250, cx, cy, 'GROG!');
+      // Splash damage to LeChuck if detonated near boss!
+      if (state.boss && state.boss.hp > 0) {
+        const bs = state.boss;
+        if (Math.hypot((bs.x + 20) - cx, (bs.y + 16) - cy) <= 38) {
+          bs.hp = Math.max(0, bs.hp - 4);
+          bs.flashTicks = 9;
+          addScore(400, bs.x + 20, bs.y + 14, 'ACID!-4');
+        }
+      }
+      // Queue 3x3 recursive chain explosion!
+      for (const nb of state.bricks) {
+        if (!nb.alive || nb === brick || nb.grogQueued) continue;
+        if (Math.abs(nb.x - brick.x) <= 10 && Math.abs(nb.y - brick.y) <= 8) {
+          nb.grogQueued = true;
+          state.grogQueue.push({ brick: nb, delay: 4 });
+        }
+      }
+    } else if (brick.kind === 'MECH') {
+      AudioEngine.playSfx('brick', state.combo);
+      spawnSparks(cx, cy, C_WHITE, C_GOLD, 10);
+      triggerWorldMechanic(brick);
+    } else {
+      AudioEngine.playSfx('brick', state.combo);
+      const col = BRICK_SPRITES[brick.colorKey] ? C_GOLD : C_LTGRAY;
+      spawnSparks(cx, cy, col, C_WHITE, 7);
+      addScore(brick.kind === 'ARMOR' ? 150 : 100, cx, cy);
+      maybeDropCapsule(cx, cy);
+    }
+  }
+
+  function applyCapsule(type) {
+    const p = state.paddle;
+    AudioEngine.playSfx('powerup');
+    if (type === 'E') {
+      p.expandTicks = 960;
+      p.w = 52;
+      p.x = clampPaddleX(p.x, p.w);
+      addScore(250, p.x, p.y - 8, 'CHICKEN!');
+    } else if (type === 'L') {
+      p.laserTicks = 960;
+      if (p.expandTicks <= 0) p.w = 38;
+      addScore(250, p.x, p.y - 8, 'LASER!');
+    } else if (type === 'C') {
+      p.catchTicks = 960;
+      if (p.expandTicks <= 0) p.w = 38;
+      addScore(250, p.x, p.y - 8, 'COMPASS!');
+    } else if (type === 'S') {
+      p.slowTicks = 720;
+      for (const b of state.balls) {
+        b.speed = Math.max(1.85, b.baseSpeed * 0.7);
+        const cur = Math.hypot(b.vx, b.vy) || 1;
+        b.vx = (b.vx / cur) * b.speed;
+        b.vy = (b.vy / cur) * b.speed;
+      }
+      addScore(250, p.x, p.y - 8, 'SLOW!');
+    } else if (type === 'P') {
+      state.lives = Math.min(9, state.lives + 1);
+      addScore(1000, p.x, p.y - 8, '1UP!');
+    }
+  }
+
+  // Sub-stepped Circle-vs-AABB Physics Update
+  function updateGameplay() {
+    const p = state.paddle;
+    const lvl = LEVELS[state.levelIdx];
+
+    // 1. Update Paddle Timers & Morph Width
+    if (p.expandTicks > 0) p.expandTicks--;
+    if (p.laserTicks > 0) p.laserTicks--;
+    if (p.catchTicks > 0) p.catchTicks--;
+    if (p.slowTicks > 0) {
+      p.slowTicks--;
+      if (p.slowTicks === 0) {
+        for (const b of state.balls) {
+          b.speed = b.baseSpeed;
+          const cur = Math.hypot(b.vx, b.vy) || 1;
+          b.vx = (b.vx / cur) * b.speed;
+          b.vy = (b.vy / cur) * b.speed;
+        }
+      }
+    }
+    if (p.laserCooldown > 0) p.laserCooldown--;
+    if (p.stunTicks > 0) p.stunTicks--;
+
+    p.w = p.expandTicks > 0 ? 52 : ((p.laserTicks > 0 || p.catchTicks > 0) ? 38 : 36);
+
+    // Smooth Keyboard + Mouse Paddle Movement
+    const moveSpd = p.stunTicks > 0 ? 1.8 : 3.9;
+    const leftHeld = keys['ArrowLeft'] || keys['a'] || keys['A'];
+    const rightHeld = keys['ArrowRight'] || keys['d'] || keys['D'];
+    const prevPx = p.x;
+    if (leftHeld) {
+      mouseTargetX = null;
+      p.x -= moveSpd;
+    } else if (rightHeld) {
+      mouseTargetX = null;
+      p.x += moveSpd;
+    } else if (mouseTargetX !== null) {
+      p.x += (mouseTargetX - p.x) * (p.stunTicks > 0 ? 0.18 : 0.42);
+    }
+    p.x = clampPaddleX(p.x, p.w);
+    const paddleVx = p.x - prevPx;
+
+    // 2. World-Specific Active Mechanics
+    if (state.duelBannerTicks > 0) state.duelBannerTicks--;
+    if (lvl.world === 1) {
+      state.chronoTimer--;
+      if (state.chronoTimer <= 0) {
+        state.chronoEra = (state.chronoEra + 1) % 3;
+        state.chronoTimer = 540;
+      }
+    }
+    if (lvl.world === 2) {
+      // Golden Idols periodically spit Atlantean Poison Darts!
+      for (const b of state.bricks) {
+        if (!b.alive || b.mechKey !== 'Q') continue;
+        b.idolCooldown--;
+        if (b.idolCooldown <= 0) {
+          b.idolCooldown = 210 + ((Math.random() * 90) | 0);
+          if (state.projectiles.length < 5) {
+            state.projectiles.push({
+              x: b.x + 2,
+              y: b.y + 6,
+              vx: 0,
+              vy: p.slowTicks > 0 ? 1.0 : 1.55,
+              kind: 'DART'
+            });
+          }
+        }
+      }
+    }
+    if (lvl.world === 5) {
+      // Sam & Max Moving Highway Convoy Formations!
+      state.highwayPhase += 0.026;
+      const shift = Math.sin(state.highwayPhase) * 8;
+      for (const b of state.bricks) {
+        if (!b.alive) continue;
+        b.x = Math.round(Math.max(INNER_X0 + 1, Math.min(INNER_X1 - 9, b.baseX + shift * b.laneDir)));
+      }
+    }
+
+    // 3. Process Recursive Grog 3x3 Chain Explosion Queue
+    for (let i = state.grogQueue.length - 1; i >= 0; i--) {
+      const item = state.grogQueue[i];
+      item.delay--;
+      if (item.delay <= 0) {
+        state.grogQueue.splice(i, 1);
+        damageBrick(item.brick, true);
+      }
+    }
+
+    // 4. Update Space-Ranger Lasers
+    for (let i = state.lasers.length - 1; i >= 0; i--) {
+      const ls = state.lasers[i];
+      ls.y -= 4.8;
+      if (ls.y < INNER_Y0) {
+        state.lasers.splice(i, 1);
+        continue;
+      }
+      // Check Boss hit
+      if (state.boss && state.boss.hp > 0) {
+        const bs = state.boss;
+        if (ls.x >= bs.x && ls.x <= bs.x + bs.w && ls.y >= bs.y && ls.y <= bs.y + bs.h) {
+          bs.hp = Math.max(0, bs.hp - 1);
+          bs.flashTicks = 5;
+          AudioEngine.playSfx('bossHit');
+          spawnSparks(ls.x, ls.y, C_RED, C_GOLD, 6);
+          addScore(100, ls.x, ls.y);
+          state.lasers.splice(i, 1);
+          continue;
+        }
+      }
+      // Shoot down enemy darts/skulls!
+      let hitProj = false;
+      for (let j = state.projectiles.length - 1; j >= 0; j--) {
+        const pr = state.projectiles[j];
+        if (Math.abs(ls.x - (pr.x + 3)) < 5 && Math.abs(ls.y - (pr.y + 4)) < 6) {
+          spawnSparks(pr.x + 2, pr.y + 4, C_LIME, C_GOLD, 6);
+          addScore(75, pr.x, pr.y);
+          state.projectiles.splice(j, 1);
+          hitProj = true;
+          break;
+        }
+      }
+      if (hitProj) {
+        state.lasers.splice(i, 1);
+        continue;
+      }
+      // Check Brick hit
+      for (const b of state.bricks) {
+        if (!b.alive) continue;
+        if (ls.x >= b.x && ls.x <= b.x + 8 && ls.y >= b.y && ls.y <= b.y + 6) {
+          damageBrick(b, false);
+          state.lasers.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    // 5. Update Level 33 Boss: Ghost Pirate LeChuck!
+    if (state.boss && state.boss.hp > 0) {
+      const bs = state.boss;
+      if (bs.flashTicks > 0) bs.flashTicks--;
+      const rage = bs.hp <= bs.maxHp * 0.5 ? 1.45 : 1.0;
+      bs.x += bs.vx * rage;
+      if (bs.x <= INNER_X0 + 4) { bs.x = INNER_X0 + 4; bs.vx = Math.abs(bs.vx); }
+      if (bs.x + bs.w >= INNER_X1 - 4) { bs.x = INNER_X1 - bs.w - 4; bs.vx = -Math.abs(bs.vx); }
+      bs.y = 9 + Math.sin(state.tick * 0.05) * 2.5;
+
+      bs.fireCooldown--;
+      if (bs.fireCooldown <= 0) {
+        bs.fireCooldown = bs.hp <= 20 ? 68 : 105;
+        const aimAngle = Math.atan2(p.y - (bs.y + 22), p.x - (bs.x + 20));
+        const spd = 1.65;
+        state.projectiles.push({
+          x: bs.x + 16,
+          y: bs.y + 22,
+          vx: Math.cos(aimAngle) * spd * 0.65,
+          vy: Math.max(1.1, Math.sin(aimAngle) * spd),
+          kind: 'SKULL'
+        });
+      }
+    }
+
+    // 6. Update Enemy Projectiles (Atlantean Darts & Voodoo Skulls)
+    for (let i = state.projectiles.length - 1; i >= 0; i--) {
+      const pr = state.projectiles[i];
+      pr.x += pr.vx;
+      pr.y += pr.vy;
+      if (pr.y > H || pr.x < INNER_X0 || pr.x > INNER_X1 - 5) {
+        state.projectiles.splice(i, 1);
+        continue;
+      }
+      const pwHalf = p.w * 0.5;
+      if (pr.x + 4 >= p.x - pwHalf && pr.x <= p.x + pwHalf && pr.y + 7 >= p.y - 3 && pr.y <= p.y + 5) {
+        state.projectiles.splice(i, 1);
+        p.stunTicks = 75;
+        p.expandTicks = 0;
+        state.shakeTicks = 8;
+        AudioEngine.playSfx('bossHit');
+        spawnSparks(p.x, p.y, C_LIME, C_RED, 10);
+        state.popups.push({ text: pr.kind === 'DART' ? 'POISON!' : 'CURSED!', x: p.x, y: p.y - 10, ticks: 36, col: C_LTRED });
+      }
+    }
+
+    // 7. Update Falling Sculpted Capsules
+    for (let i = state.capsules.length - 1; i >= 0; i--) {
+      const cap = state.capsules[i];
+      cap.y += 1.12;
+      if (cap.y > H) {
+        state.capsules.splice(i, 1);
+        continue;
+      }
+      const pwHalf = p.w * 0.5;
+      if (cap.x + 18 >= p.x - pwHalf && cap.x <= p.x + pwHalf && cap.y + 9 >= p.y - 4 && cap.y <= p.y + 6) {
+        const t = cap.type;
+        state.capsules.splice(i, 1);
+        applyCapsule(t);
+      }
+    }
+
+    // 8. Sub-Stepped Circle-vs-AABB Ball Physics
+    const RADIUS = 2.5;
+    for (let bi = state.balls.length - 1; bi >= 0; bi--) {
+      const b = state.balls[bi];
+      if (b.pierceTicks > 0) b.pierceTicks--;
+
+      if (b.caught) {
+        b.x = clampPaddleX(p.x + b.catchOffset, 6);
+        b.y = p.y - 5.5;
+        b.trail.length = 0;
+        continue;
+      }
+
+      // Record dithered afterimage trail
+      if ((state.tick & 1) === 0) {
+        b.trail.push({ x: b.x, y: b.y });
+        if (b.trail.length > 5) b.trail.shift();
+      }
+
+      // World 4 Orbital Gravity Vortices gentle acceleration!
+      if (state.vortices.length > 0) {
+        for (const v of state.vortices) {
+          const dx = v.x - b.x;
+          const dy = v.y - b.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist > 8 && dist < 56) {
+            const pull = 0.032 * (1 - dist / 56);
+            b.vx += (dx / dist) * pull - (dy / dist) * pull * 0.55 * v.dir;
+            b.vy += (dy / dist) * pull + (dx / dist) * pull * 0.55 * v.dir;
+          }
+        }
+        // Normalize back to target ball speed
+        const mag = Math.hypot(b.vx, b.vy) || 1;
+        b.vx = (b.vx / mag) * b.speed;
+        b.vy = (b.vy / mag) * b.speed;
+      }
+
+      b.stuckTicks++;
+      if (b.stuckTicks > 720) {
+        b.stuckTicks = 0;
+        b.vy += (b.vy >= 0 ? 0.35 : -0.35);
+      }
+
+      const steps = Math.max(2, Math.ceil(b.speed / 1.35));
+      const stepVx = b.vx / steps;
+      const stepVy = b.vy / steps;
+      let lost = false;
+
+      for (let s = 0; s < steps; s++) {
+        b.x += stepVx;
+        b.y += stepVy;
+
+        // Playfield pipe walls
+        if (b.x - RADIUS < INNER_X0) {
+          b.x = INNER_X0 + RADIUS;
+          b.vx = Math.abs(b.vx);
+          AudioEngine.playSfx('wall');
+        } else if (b.x + RADIUS > INNER_X1) {
+          b.x = INNER_X1 - RADIUS;
+          b.vx = -Math.abs(b.vx);
+          AudioEngine.playSfx('wall');
+        }
+        if (b.y - RADIUS < INNER_Y0) {
+          b.y = INNER_Y0 + RADIUS;
+          b.vy = Math.abs(b.vy);
+          AudioEngine.playSfx('wall');
+        }
+        if (b.y - RADIUS > H + 4) {
+          lost = true;
+          break;
+        }
+
+        // Vaus Paddle bounce
+        const pwHalf = p.w * 0.5;
+        if (b.vy > 0 &&
+            b.y + RADIUS >= p.y - 3.5 &&
+            b.y - RADIUS <= p.y + 4.5 &&
+            b.x + RADIUS >= p.x - pwHalf &&
+            b.x - RADIUS <= p.x + pwHalf) {
+          state.combo = 0;
+          b.stuckTicks = 0;
+          const hitNorm = Math.max(-1, Math.min(1, (b.x - p.x) / pwHalf));
+          if (p.catchTicks > 0) {
+            b.caught = true;
+            b.catchOffset = b.x - p.x;
+            b.y = p.y - 5.5;
+            AudioEngine.playSfx('paddle', hitNorm);
+            break;
+          }
+          const maxAng = 1.18; // ~68 deg
+          const ang = hitNorm * maxAng;
+          b.speed = Math.min(4.35, b.speed + 0.015);
+          b.vx = Math.sin(ang) * b.speed + paddleVx * 0.12;
+          b.vy = -Math.cos(ang) * b.speed;
+          // Re-normalize
+          const m = Math.hypot(b.vx, b.vy) || 1;
+          b.vx = (b.vx / m) * b.speed;
+          b.vy = -Math.max(0.28 * b.speed, Math.abs((b.vy / m) * b.speed));
+          b.y = p.y - 3.5 - RADIUS;
+          AudioEngine.playSfx('paddle', hitNorm);
+          spawnSparks(b.x, p.y - 3, C_LTCYAN, C_WHITE, 4);
+          break;
+        }
+
+        // Level 33 LeChuck Boss Circle-vs-AABB Bounce!
+        if (state.boss && state.boss.hp > 0) {
+          const bs = state.boss;
+          const cx = Math.max(bs.x + 3, Math.min(bs.x + bs.w - 3, b.x));
+          const cy = Math.max(bs.y + 2, Math.min(bs.y + bs.h - 2, b.y));
+          const dx = b.x - cx, dy = b.y - cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < RADIUS * RADIUS) {
+            bs.hp = Math.max(0, bs.hp - 2);
+            bs.flashTicks = 7;
+            state.shakeTicks = 6;
+            AudioEngine.playSfx('bossHit');
+            addScore(250, b.x, b.y, bs.hp === 0 ? 'VANQUISHED!' : 'HIT!-2');
+            spawnSparks(b.x, b.y, C_LIME, C_GOLD, 12);
+            if (Math.abs(dx) > Math.abs(dy)) {
+              b.vx = dx >= 0 ? Math.abs(b.vx) : -Math.abs(b.vx);
+              b.x += (dx >= 0 ? 2 : -2);
+            } else {
+              b.vy = dy >= 0 ? Math.abs(b.vy) : -Math.abs(b.vy);
+              b.y += (dy >= 0 ? 2 : -2);
+            }
+            if (bs.hp === 0) {
+              state.shakeTicks = 28;
+              state.shockwaves.push({ x: bs.x + 20, y: bs.y + 14, r: 4, maxR: 48 });
+              spawnSparks(bs.x + 20, bs.y + 14, C_GOLD, C_LIME, 32);
+              addScore(5000, bs.x + 20, bs.y + 14, 'LECHUCK+5000');
+              AudioEngine.playSfx('grog');
+            }
+            break;
+          }
+        }
+
+        // Corner-Safe Circle-vs-AABB Brick Collision (select deepest overlap first)
+        let bestBrick = null;
+        let bestDist2 = RADIUS * RADIUS;
+        let bestDx = 0, bestDy = 0;
+
+        for (let k = 0; k < state.bricks.length; k++) {
+          const br = state.bricks[k];
+          if (!br.alive) continue;
+          if (b.x + RADIUS < br.x || b.x - RADIUS > br.x + 8 ||
+              b.y + RADIUS < br.y || b.y - RADIUS > br.y + 6) continue;
+          const cx = b.x < br.x ? br.x : (b.x > br.x + 8 ? br.x + 8 : b.x);
+          const cy = b.y < br.y ? br.y : (b.y > br.y + 6 ? br.y + 6 : b.y);
+          const dx = b.x - cx;
+          const dy = b.y - cy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < bestDist2) {
+            bestDist2 = d2;
+            bestBrick = br;
+            bestDx = dx;
+            bestDy = dy;
+          }
+        }
+
+        if (bestBrick) {
+          if (bestBrick.kind !== 'STEEL') b.stuckTicks = 0;
+          const shouldPierce = b.pierceTicks > 0 && bestBrick.kind !== 'STEEL' && bestBrick.hp <= 1;
+          if (!shouldPierce) {
+            if (bestDist2 > 0.0001) {
+              const dist = Math.sqrt(bestDist2);
+              const nx = bestDx / dist;
+              const ny = bestDy / dist;
+              b.x += nx * (RADIUS - dist + 0.05);
+              b.y += ny * (RADIUS - dist + 0.05);
+              const dot = b.vx * nx + b.vy * ny;
+              if (dot < 0) {
+                b.vx -= 2 * dot * nx;
+                b.vy -= 2 * dot * ny;
+              }
+            } else {
+              // Ball center inside AABB: resolve along shallowest penetration axis
+              const penL = Math.abs(b.x - bestBrick.x);
+              const penR = Math.abs((bestBrick.x + 8) - b.x);
+              const penT = Math.abs(b.y - bestBrick.y);
+              const penB = Math.abs((bestBrick.y + 6) - b.y);
+              const minPen = Math.min(penL, penR, penT, penB);
+              if (minPen === penL || minPen === penR) b.vx = -b.vx;
+              else b.vy = -b.vy;
+            }
+
+            // Enforce minimum vertical velocity component so ball never loops horizontally
+            const minVy = 0.24 * b.speed;
+            if (Math.abs(b.vy) < minVy) {
+              b.vy = (b.vy >= 0 ? 1 : -1) * minVy;
+              const remVx = Math.sqrt(Math.max(0.1, b.speed * b.speed - b.vy * b.vy));
+              b.vx = (b.vx >= 0 ? 1 : -1) * remVx;
+            }
+          }
+          damageBrick(bestBrick, false);
+          break;
+        }
+      }
+
+      if (lost) {
+        state.balls.splice(bi, 1);
+      }
+    }
+
+    // 9. Handle Ball Loss / Extra Lives
+    if (state.balls.length === 0) {
+      state.lives--;
+      AudioEngine.playSfx('lost');
+      state.shakeTicks = 12;
+      if (state.lives <= 0) {
+        state.mode = 'GAME_OVER';
+      } else {
+        resetPaddleAndBall();
+      }
+      return;
+    }
+
+    // 10. Check Stage Clear (all destructible bricks cleared + LeChuck defeated on Level 33)
+    const bossAlive = state.boss && state.boss.hp > 0;
+    if (state.destructibleCount <= 0 && state.grogQueue.length === 0 && !bossAlive) {
+      AudioEngine.playSfx('clear');
+      addScore(1000, 128, 100, 'STAGE CLEAR!');
+      if (state.levelIdx >= LEVELS.length - 1) {
+        state.mode = 'VICTORY';
+      } else {
+        state.mode = 'STAGE_CLEAR';
+        state.clearTimer = 110;
+      }
+    }
+  }
+
+  function updateParticlesAndOverlays() {
+    for (const br of state.bricks) {
+      if (br.glintTicks > 0) br.glintTicks--;
+    }
+    for (let i = state.sparks.length - 1; i >= 0; i--) {
+      const sp = state.sparks[i];
+      sp.x += sp.vx;
+      sp.y += sp.vy;
+      sp.vy += 0.08;
+      sp.life--;
+      if (sp.life <= 0) state.sparks.splice(i, 1);
+    }
+    for (let i = state.shockwaves.length - 1; i >= 0; i--) {
+      const sw = state.shockwaves[i];
+      sw.r += 1.65;
+      if (sw.r >= sw.maxR) state.shockwaves.splice(i, 1);
+    }
+    for (let i = state.popups.length - 1; i >= 0; i--) {
+      const pp = state.popups[i];
+      pp.y -= 0.38;
+      pp.ticks--;
+      if (pp.ticks <= 0) state.popups.splice(i, 1);
+    }
+    if (state.grogFlashTicks > 0) state.grogFlashTicks--;
+    if (state.shakeTicks > 0) {
+      state.shakeTicks--;
+      state.shakeX = ((Math.random() * 5) | 0) - 2;
+      state.shakeY = ((Math.random() * 5) | 0) - 2;
+    } else {
+      state.shakeX = 0;
+      state.shakeY = 0;
+    }
+  }
+
+  // ============================================================================
+  // 8. FULL SOFTWARE FRAMEBUFFER RENDERING (PLAYFIELD + 64x200 HUD + OVERLAYS)
+  // ============================================================================
+  function renderGravityVortices(tick) {
+    for (const v of state.vortices) {
+      const vx = v.x | 0, vy = v.y | 0;
+      for (let dy = -13; dy <= 13; dy++) {
+        for (let dx = -13; dx <= 13; dx++) {
+          const r = Math.hypot(dx, dy);
+          if (r > 13 || r < 1) continue;
+          const theta = Math.atan2(dy, dx) * v.dir;
+          const arm = Math.sin(theta * 3 - r * 0.55 + tick * 0.14);
+          if (arm > 0.45 && BAYER_4X4[((vy + dy) & 3) * 4 + ((vx + dx) & 3)] < (15 - r)) {
+            putPixel(vx + dx, vy + dy, r < 5 ? C_WHITE : (r < 9 ? C_CYAN : C_BLUE));
+          }
+        }
+      }
+    }
+  }
+
+  function renderShockwaves() {
+    if (state.grogFlashTicks > 0) {
+      const dens = state.grogFlashTicks;
+      const flashCol = state.grogFlashTicks >= 5 ? C_WHITE : C_LIME;
+      for (let y = INNER_Y0; y < H; y++) {
+        const row = y * W;
+        for (let x = INNER_X0; x < INNER_X1; x++) {
+          if (BAYER_4X4[((y & 3) << 2) | (x & 3)] < dens) {
+            fb[row + x] = flashCol;
+          }
+        }
+      }
+    }
+    for (const sw of state.shockwaves) {
+      const density = Math.max(2, Math.round(16 * (1 - sw.r / sw.maxR)));
+      const rInt = sw.r | 0;
+      for (let dy = -rInt; dy <= rInt; dy++) {
+        const py = (sw.y + dy) | 0;
+        if (py < INNER_Y0 || py >= H) continue;
+        for (let dx = -rInt; dx <= rInt; dx++) {
+          const px = (sw.x + dx) | 0;
+          if (px < INNER_X0 || px >= INNER_X1) continue;
+          const d = Math.hypot(dx, dy);
+          if (Math.abs(d - sw.r) <= 2.2) {
+            if (BAYER_4X4[((py & 3) << 2) | (px & 3)] < density) {
+              fb[py * W + px] = d > sw.r ? C_WHITE : C_LIME;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function renderHudSidebar(tick) {
+    // 64x200 Bayer-dithered metallic slate HUD panel (x = 256..319)
+    drawBevelBox(HUD_X, 0, 64, 200, 26, 30, 46, C_LTGRAY, C_DKGRAY);
+    // Corner rivets
+    for (const [rx, ry] of [[258, 2], [316, 2], [258, 196], [316, 196]]) {
+      putPixel(rx, ry, C_WHITE);
+      putPixel(rx + 1, ry + 1, C_BLACK);
+    }
+
+    // 1. Sculpted Logo Plaque (y=4..25)
+    drawBevelBox(259, 4, 58, 21, 16, 12, 34, C_DKGRAY, C_LTGRAY);
+    drawTextCentered('SCUMM', 288, 6, C_WHITE, 1, { colBot: C_GOLD });
+    drawTextCentered('ARKANOID', 288, 15, C_LTCYAN, 1, { colBot: C_BLUE });
+
+    // 2. 7-Digit HI-SCORE & SCORE (y=28..69)
+    drawBevelBox(259, 28, 58, 41, 8, 10, 18, C_DKGRAY, C_LTGRAY);
+    drawText('HI-SCORE', 263, 30, C_LTRED, 1);
+    const hiStr = String(Math.min(9999999, hiScore)).padStart(7, '0');
+    drawText(hiStr, 266, 39, C_WHITE, 1, { colBot: C_LTGOLD, monoDigits: true });
+    drawText('1UP SCORE', 263, 49, C_LTCYAN, 1);
+    const scStr = String(Math.min(9999999, state.score)).padStart(7, '0');
+    drawText(scStr, 266, 58, C_WHITE, 1, { colBot: C_GOLD, monoDigits: true });
+
+    // 3. Stage XX/33 Counter (y=72..90)
+    drawBevelBox(259, 72, 58, 18, 12, 16, 28, C_DKGRAY, C_LTGRAY);
+    const shownStage = (state.mode === 'MENU' ? state.selectedLevel : state.levelIdx) + 1;
+    drawText('STG', 262, 77, C_LTGRAY, 1);
+    drawText(String(shownStage).padStart(2, '0') + '/33', 283, 77, C_GOLD, 1, { monoDigits: true });
+
+    // 4. Mini-Paddle Lives (y=93..110)
+    drawBevelBox(259, 93, 58, 17, 10, 14, 24, C_DKGRAY, C_LTGRAY);
+    const maxIcons = Math.min(3, Math.max(0, state.lives));
+    for (let i = 0; i < maxIcons; i++) {
+      blitSprite(PADDLE_SPRITES.MINI, 262 + i * 15, 99);
+    }
+    if (state.lives > 3) {
+      drawText('+' + (state.lives - 3), 305, 98, C_GOLD, 1);
+    }
+
+    // 5. Custom World-Mechanic Gauge (y=113..145)
+    drawBevelBox(259, 113, 58, 32, 10, 12, 22, C_DKGRAY, C_LTGRAY);
+    const lvl = LEVELS[state.mode === 'MENU' ? state.selectedLevel : state.levelIdx];
+    const wId = lvl.world;
+    if (wId === 0) {
+      drawTextCentered('SWORD WIT', 288, 116, C_GOLD, 1);
+      for (let i = 0; i < 4; i++) {
+        const filled = i < state.duelMeter;
+        fillSolidRect(263 + i * 13, 127, 10, 12, filled ? C_LIME : C_DKBLUE);
+        fillSolidRect(263 + i * 13, 127, 10, 2, filled ? C_WHITE : C_DKGRAY);
+      }
+    } else if (wId === 1) {
+      drawTextCentered('CHRONO ERA', 288, 116, C_LTCYAN, 1);
+      const eras = ['1780 PAST', 'PRESENT', '2200 A.D.'];
+      const cols = [C_GOLD, C_LIME, C_MAGENTA];
+      drawTextCentered(eras[state.chronoEra], 288, 126, cols[state.chronoEra], 1);
+      const barW = Math.round((state.chronoTimer / 540) * 50);
+      fillSolidRect(263, 137, 50, 4, C_DKGRAY);
+      fillSolidRect(263, 137, barW, 4, cols[state.chronoEra]);
+    } else if (wId === 2) {
+      drawTextCentered('IDOL TRAP', 288, 116, C_GOLD, 1);
+      const idolsLeft = state.bricks.filter((b) => b.alive && b.mechKey === 'Q').length;
+      drawTextCentered('IDOLS: ' + idolsLeft, 288, 127, idolsLeft > 0 ? C_LTRED : C_LIME, 1);
+      fillSolidRect(263, 137, 50, 4, (tick & 16) && idolsLeft > 0 ? C_ORANGE : C_DKGRAY);
+    } else if (wId === 3) {
+      drawTextCentered('GRAV WELL', 288, 116, C_LTCYAN, 1);
+      drawTextCentered('2 VORTICES', 288, 127, C_BLUE, 1);
+      const pulse = Math.round(25 + Math.sin(tick * 0.12) * 22);
+      fillSolidRect(263, 137, 50, 4, C_DKBLUE);
+      fillSolidRect(263 + (25 - (pulse >> 1)), 137, pulse, 4, C_CYAN);
+    } else if (wId === 4) {
+      drawTextCentered('LOOM DRAFT', 288, 116, C_LTCYAN, 1);
+      for (let i = 0; i < 4; i++) {
+        const n = state.loomNotes[i] || '-';
+        drawText(n, 265 + i * 13, 129, n === '-' ? C_DKGRAY : C_GOLD, 1);
+      }
+    } else if (wId === 5) {
+      drawTextCentered('CONVOY MPH', 288, 116, C_ORANGE, 1);
+      const mph = 85 + Math.round(Math.abs(Math.cos(state.highwayPhase)) * 35);
+      drawTextCentered(mph + ' MPH', 288, 127, C_GOLD, 1);
+      fillSolidRect(263, 137, Math.min(50, (mph - 60)), 4, C_RED);
+    } else {
+      drawTextCentered('LECHUCK HP', 288, 116, C_LTRED, 1);
+      const ratio = state.boss ? (state.boss.hp / state.boss.maxHp) : 0;
+      fillSolidRect(263, 128, 50, 11, C_DKGRAY);
+      fillSolidRect(264, 129, Math.round(48 * ratio), 9, ratio > 0.5 ? C_LIME : C_RED);
+    }
+
+    // 6. Active Capsule Icons Slot (y=148..172)
+    drawBevelBox(259, 148, 58, 24, 10, 12, 22, C_DKGRAY, C_LTGRAY);
+    const p = state.paddle;
+    const slots = [
+      { k: 'L', rem: p.laserTicks, max: 960, col: C_LTRED },
+      { k: 'E', rem: p.expandTicks, max: 960, col: C_GOLD },
+      { k: 'C', rem: p.catchTicks, max: 960, col: C_LIME },
+      { k: 'S', rem: p.slowTicks, max: 720, col: C_MAGENTA }
+    ];
+    for (let i = 0; i < 4; i++) {
+      const sl = slots[i];
+      const bx = 262 + i * 13;
+      const on = sl.rem > 0;
+      fillSolidRect(bx, 151, 11, 14, on ? C_BLUE : C_BLACK);
+      drawText(sl.k, bx + 3, 154, on ? sl.col : C_DKGRAY, 1);
+      fillSolidRect(bx, 166, 11, 3, C_BLACK);
+      if (on) {
+        fillSolidRect(bx + 1, 167, Math.max(1, Math.round(9 * (sl.rem / sl.max))), 1, sl.col);
+      }
+    }
+
+    // 7. Scrolling OPL2 Song Title Marquee + Mute/Pause Status (y=175..196)
+    drawBevelBox(259, 175, 58, 21, 6, 8, 14, C_DKGRAY, C_LTGRAY);
+    const marquee = '~ OPL2 FM: ' + AudioEngine.getTrackTitle() + '   ';
+    const mw = measureText(marquee, 1);
+    const scrollX = 315 - ((tick >> 1) % (mw + 56));
+    drawText(marquee, scrollX, 178, C_LIME, 1, { clipX0: 261, clipX1: 315 });
+    drawText(AudioEngine.isMuted() ? 'M:MUTE' : 'M:ON', 262, 187, AudioEngine.isMuted() ? C_LTRED : C_LTGRAY, 1);
+    drawText('P:PAU', 292, 187, state.mode === 'PAUSE' ? C_GOLD : C_LTGRAY, 1);
+  }
+
+  function renderPaddleAndEntities(tick) {
+    const p = state.paddle;
+    const ox = state.shakeX, oy = state.shakeY;
+
+    // 1. Bricks (9x7 sprites blitted at x-1, y-1 so 1px silhouette outline wraps cleanly!)
+    const anim4 = (tick >> 3) & 3;
+    for (let i = 0; i < state.bricks.length; i++) {
+      const br = state.bricks[i];
+      if (!br.alive) continue;
+      let spr = null;
+      if (br.kind === 'NORMAL') {
+        spr = BRICK_SPRITES[br.colorKey] || BRICK_SPRITES.W;
+      } else if (br.kind === 'ARMOR') {
+        spr = BRICK_SPRITES.ARMOR[Math.max(0, Math.min(2, br.hp - 1))];
+      } else if (br.kind === 'STEEL') {
+        spr = BRICK_SPRITES.STEEL[br.glintTicks > 0 ? 1 : 0];
+      } else if (br.kind === 'GROG') {
+        spr = BRICK_SPRITES.GROG[(anim4 + br.col) & 3];
+      } else if (br.kind === 'MECH') {
+        spr = BRICK_SPRITES.MECH[br.mechKey][(anim4 + br.row) & 3];
+      }
+      if (spr) {
+        blitSprite(spr, br.x - 1 + ox, br.y - 1 + oy, true, br.glintTicks > 3 && br.kind !== 'STEEL');
+      }
+    }
+
+    // 2. World 4 Swirling Gravity Vortices
+    if (state.vortices.length > 0) renderGravityVortices(tick);
+
+    // 3. Level 33 Ghost Pirate LeChuck Boss!
+    if (state.boss && state.boss.hp > 0) {
+      const bs = state.boss;
+      const bSpr = LECHUCK_SPRITES[(tick >> 2) & 3];
+      blitSprite(bSpr, bs.x + ox, bs.y + oy, true, bs.flashTicks > 0);
+    }
+
+    // 4. Sculpted 18x9 Falling Capsules
+    const capShimmer = (tick >> 4) & 1;
+    for (const cap of state.capsules) {
+      blitSprite(CAPSULE_SPRITES[cap.type][capShimmer], cap.x + ox, cap.y + oy, true);
+    }
+
+    // 5. Space-Ranger Twin Lasers
+    for (const ls of state.lasers) {
+      const lx = (ls.x + ox) | 0, ly = (ls.y + oy) | 0;
+      fillSolidRect(lx - 1, ly - 3, 3, 7, C_BLACK);
+      fillSolidRect(lx, ly - 2, 1, 5, C_WHITE);
+      putPixel(lx, ly - 3, C_CYAN);
+      putPixel(lx, ly + 3, C_RED);
+    }
+
+    // 6. Atlantean Poison Darts & Voodoo Skulls
+    for (const pr of state.projectiles) {
+      if (pr.kind === 'DART') {
+        blitSprite(POISON_DART_SPRITE, pr.x + ox, pr.y + oy, true);
+      } else {
+        blitSprite(VOODOO_SKULL_SPRITE[(tick >> 2) & 1], pr.x + ox, pr.y + oy, true);
+      }
+    }
+
+    // 7. Sculpted Vaus Paddle (physically morphs for E, L, C!)
+    let padSpr = PADDLE_SPRITES.NORMAL;
+    let padOffY = -4;
+    if (p.expandTicks > 0) {
+      padSpr = p.laserTicks > 0 ? PADDLE_SPRITES.EXPAND_LASER : PADDLE_SPRITES.EXPAND;
+      padOffY = -6;
+    } else if (p.laserTicks > 0) {
+      padSpr = PADDLE_SPRITES.LASER;
+      padOffY = -6;
+    } else if (p.catchTicks > 0) {
+      padSpr = PADDLE_SPRITES.CATCH;
+      padOffY = -5;
+    }
+    blitSprite(padSpr, Math.round(p.x - padSpr.w * 0.5) + ox, p.y + padOffY + oy, true, p.stunTicks > 0 && (tick & 2) === 0);
+
+    // 8. Specular-Lit 5x5 Balls + Bayer-Stippled Afterimage Trails
+    for (const b of state.balls) {
+      const ballSpr = b.pierceTicks > 0 ? BALL_FIRE : (p.slowTicks > 0 ? BALL_PLASMA : BALL_CHROME);
+      for (let ti = 0; ti < b.trail.length; ti++) {
+        const tr = b.trail[ti];
+        const dens = (ti + 1) * 2;
+        blitSpriteStipple(ballSpr, Math.round(tr.x - 2) + ox, Math.round(tr.y - 2) + oy, dens, C_CYAN, true);
+      }
+      blitSprite(ballSpr, Math.round(b.x - 2) + ox, Math.round(b.y - 2) + oy, true);
+    }
+
+    // 9. EGA Stipple Shockwaves, Physics Sparks & Floating Outlined Popups
+    renderShockwaves();
+    for (const sp of state.sparks) {
+      const sx = (sp.x + ox) | 0, sy = (sp.y + oy) | 0;
+      if (sx >= INNER_X0 && sx < INNER_X1 && sy >= INNER_Y0 && sy < H) {
+        fb[sy * W + sx] = sp.col;
+      }
+    }
+
+    // Pirate Insult Sword-Fighting Banner
+    if (state.duelBannerTicks > 0) {
+      drawBevelBox(22, 10, 212, 13, 12, 6, 28, C_GOLD, C_RED);
+      drawTextCentered(state.duelBanner, 128, 13, C_WHITE, 1, { colBot: C_GOLD });
+    }
+
+    for (const pp of state.popups) {
+      if (pp.ticks > 10 || (pp.ticks & 1)) {
+        drawTextCentered(pp.text, pp.x, pp.y | 0, C_WHITE, 1, { colBot: pp.col });
+      }
+    }
+  }
+
+  function renderOverlayScreens(tick) {
+    if (state.mode === 'MENU') {
+      // Rendered directly over the live animated backdrop + brick mosaic of selected level (1-33)!
+      const lvl = LEVELS[state.selectedLevel];
+      // Translucent Bayer-stippled shadow plaque at top & bottom so mosaic shines in center!
+      for (let y = 10; y < 56; y++) {
+        for (let x = 16; x < 240; x++) {
+          if (BAYER_4X4[((y & 3) << 2) | (x & 3)] < 11) fb[y * W + x] = C_BLACK;
+        }
+      }
+      drawTextCentered('SCUMM-OID', 128, 14, C_WHITE, 3, { colMid: C_GOLD, colBot: C_ORANGE });
+      drawTextCentered('64-COLOR EGA SHADER EDITION', 128, 39, C_LTCYAN, 1, { colBot: C_BLUE });
+
+      // Stage Selector Plaque near bottom
+      drawBevelBox(16, 130, 224, 48, 12, 14, 30, C_GOLD, C_BLUE);
+      const stgStr = '< STAGE ' + String(state.selectedLevel + 1).padStart(2, '0') + '/33 >';
+      drawTextCentered(stgStr, 128, 134, C_WHITE, 1, { colBot: C_GOLD });
+      drawTextCentered(lvl.name, 128, 144, C_LIME, 1);
+      drawTextCentered('LEFT/RIGHT: STAGE   M: MUTE   P: PAUSE', 128, 155, C_LTGRAY, 1);
+      if ((tick % 48) < 34) {
+        drawTextCentered('CLICK OR SPACE TO LAUNCH!', 128, 166, C_WHITE, 1, { colBot: C_CYAN });
+      }
+    } else if (state.mode === 'PAUSE') {
+      drawBevelBox(66, 80, 124, 38, 14, 16, 36, C_CYAN, C_BLUE);
+      drawTextCentered('PAUSED', 128, 86, C_WHITE, 2, { colBot: C_GOLD });
+      drawTextCentered('PRESS P TO RESUME', 128, 105, C_LTCYAN, 1);
+    } else if (state.mode === 'STAGE_CLEAR') {
+      drawBevelBox(44, 76, 168, 42, 12, 24, 28, C_LIME, C_EMERALD);
+      drawTextCentered('STAGE CLEAR!', 128, 83, C_WHITE, 2, { colBot: C_LIME });
+      drawTextCentered('WARPING TO NEXT MOSAIC...', 128, 104, C_GOLD, 1);
+    } else if (state.mode === 'GAME_OVER') {
+      drawBevelBox(44, 72, 168, 52, 32, 8, 16, C_LTRED, C_RED);
+      drawTextCentered('GAME OVER', 128, 79, C_WHITE, 2, { colBot: C_LTRED });
+      drawTextCentered('FINAL SCORE: ' + state.score, 128, 99, C_GOLD, 1);
+      if ((tick % 44) < 30) {
+        drawTextCentered('SPACE OR CLICK FOR MENU', 128, 111, C_WHITE, 1);
+      }
+    } else if (state.mode === 'VICTORY') {
+      if ((tick % 18) === 0) {
+        spawnSparks(40 + Math.random() * 176, 35 + Math.random() * 90, C_GOLD, C_CYAN, 16);
+      }
+      drawBevelBox(24, 58, 208, 76, 18, 14, 42, C_GOLD, C_PURPLE);
+      drawTextCentered('VICTORY!', 128, 65, C_WHITE, 3, { colMid: C_GOLD, colBot: C_ORANGE });
+      drawTextCentered('LECHUCK IS BANISHED!', 128, 92, C_LIME, 1);
+      drawTextCentered('GRAND SCORE: ' + state.score, 128, 104, C_WHITE, 1, { colBot: C_GOLD });
+      drawTextCentered('CLICK OR SPACE FOR STAGE SELECT', 128, 118, C_LTCYAN, 1);
+    }
+  }
+
+  function renderFrame() {
+    const activeIdx = state.mode === 'MENU' ? state.selectedLevel : state.levelIdx;
+    const worldId = LEVELS[activeIdx].world;
+    const paddleNormX = (state.paddle.x - INNER_X0) / 240;
+
+    renderWorldBackdrop(worldId, state.tick, paddleNormX, state.chronoEra);
+    renderPlayfieldPipes();
+    renderPaddleAndEntities(state.tick);
+    renderHudSidebar(state.tick);
+    renderOverlayScreens(state.tick);
+
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  // ============================================================================
+  // 9. LOCKED-60-FPS MAIN GAME LOOP & BOOTSTRAP
+  // ============================================================================
+  loadLevel(0, true);
+
+  const FIXED_STEP = 1000 / 60;
+  let lastTime = performance.now();
+  let accumulator = 0;
+
+  function stepSimulation() {
+    state.tick++;
+    if (state.mode === 'PLAY') {
+      updateGameplay();
+      updateParticlesAndOverlays();
+    } else if (state.mode === 'STAGE_CLEAR') {
+      updateParticlesAndOverlays();
+      state.clearTimer--;
+      if (state.clearTimer <= 0) {
+        loadLevel(state.levelIdx + 1, false);
+        state.mode = 'PLAY';
+      }
+    } else if (state.mode === 'MENU') {
+      // Gently animate Vaus preview paddle following mouse or smooth demo sway
+      if (mouseTargetX !== null) {
+        state.paddle.x = clampPaddleX(mouseTargetX, state.paddle.w);
+      } else {
+        state.paddle.x = clampPaddleX(128 + Math.sin(state.tick * 0.03) * 58, state.paddle.w);
+      }
+      if (state.balls[0]) {
+        state.balls[0].x = state.paddle.x + 3;
+        state.balls[0].y = state.paddle.y - 5.5;
+      }
+      if (state.boss) {
+        state.boss.x = 108 + Math.sin(state.tick * 0.035) * 65;
+      }
+    } else if (state.mode === 'VICTORY') {
+      updateParticlesAndOverlays();
+    }
+  }
+
+  function mainLoop(now) {
+    const dt = Math.min(100, now - lastTime);
+    lastTime = now;
+    accumulator += dt;
+
+    while (accumulator >= FIXED_STEP) {
+      stepSimulation();
+      accumulator -= FIXED_STEP;
+    }
+    renderFrame();
+    requestAnimationFrame(mainLoop);
+  }
+
+  renderFrame();
+  requestAnimationFrame(mainLoop);
+})();
+</script>
+</body>
+</html>

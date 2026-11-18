@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arkanoid Graphics Prompt Lab · Gemini 4 Carbon vs Fable 5.2</title>
+<style>
+  :root {
+    --bg: #080c14;
+    --bg-panel: #101726;
+    --bg-card: #131c2e;
+    --border: #1e2d47;
+    --border-bright: #334a73;
+    --amber: #f59e0b;
+    --cyan: #38bdf8;
+    --emerald: #34d399;
+    --purple: #a78bfa;
+    --rose: #fb7185;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --dim: #64748b;
+    --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at 50% 0%, #16213a 0%, var(--bg) 65%);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    padding: 24px 20px 72px;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .crumb { color: var(--muted); text-decoration: none; font-family: var(--mono); font-size: 13px; }
+  .crumb:hover { color: var(--cyan); }
+  .badge {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 999px;
+    background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: var(--cyan);
+  }
+  header h1 { font-size: clamp(26px, 3.6vw, 42px); font-weight: 800; letter-spacing: -0.8px; margin-bottom: 8px; }
+  header p { color: var(--muted); max-width: 960px; font-size: 15px; }
+
+  /* Dual Live Arena */
+  .arena-box {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .arena-controls {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .presets span { font-family: var(--mono); font-size: 12px; color: var(--dim); margin-right: 4px; }
+  button.preset-btn {
+    background: #18243c; color: var(--text); border: 1px solid var(--border-bright);
+    border-radius: 6px; padding: 6px 11px; font-size: 12px; font-family: var(--mono);
+    cursor: pointer; transition: all 0.15s;
+  }
+  button.preset-btn:hover, button.preset-btn.active {
+    background: rgba(56, 189, 248, 0.2); border-color: var(--cyan); color: #fff;
+  }
+  .dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 1024px) { .dual-grid { grid-template-columns: 1fr; } }
+  .pane {
+    background: #05080f;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .pane-bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 8px 12px; background: #0d1424; border-bottom: 1px solid var(--border);
+  }
+  .pane-bar select {
+    background: #162238; color: var(--text); border: 1px solid var(--border-bright);
+    border-radius: 6px; padding: 5px 10px; font-family: var(--mono); font-size: 12px; flex: 1;
+  }
+  .pane-links { display: flex; gap: 8px; }
+  .pane-links a {
+    font-family: var(--mono); font-size: 11px; color: var(--cyan); text-decoration: none;
+    padding: 4px 8px; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 5px;
+  }
+  .pane-links a:hover { background: rgba(56, 189, 248, 0.15); }
+  .pane iframe {
+    width: 100%;
+    height: 510px;
+    border: 0;
+    background: #000;
+  }
+
+  /* Cards Grid */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .card.variant { border-color: rgba(52, 211, 153, 0.32); }
+  .card.control { border-color: rgba(245, 158, 11, 0.32); }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card-title { font-size: 18px; font-weight: 700; }
+  .card-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .pill {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 3px 8px;
+    border-radius: 6px; white-space: nowrap;
+  }
+  .pill-control { background: rgba(245, 158, 11, 0.14); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.35); }
+  .pill-exp { background: rgba(52, 211, 153, 0.14); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.35); }
+  .card p { font-size: 13.5px; color: var(--muted); }
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    background: rgba(8, 12, 20, 0.65); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; font-family: var(--mono);
+  }
+  .stat-k { font-size: 10px; color: var(--dim); text-transform: uppercase; }
+  .stat-v { font-size: 13px; font-weight: 700; color: var(--text); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 8px 13px; border-radius: 7px; font-family: var(--mono); font-size: 12px;
+    font-weight: 700; text-decoration: none; cursor: pointer; border: 1px solid transparent;
+  }
+  .btn-play { background: var(--cyan); color: #06101e; }
+  .btn-play:hover { filter: brightness(1.1); }
+  .btn-sec { background: #19253d; color: var(--text); border-color: var(--border-bright); }
+  .btn-sec:hover { border-color: var(--cyan); }
+
+  /* Telemetry Table */
+  table {
+    width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px;
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: #0d1424; color: var(--muted); font-size: 11px; text-transform: uppercase; }
+  td.num, th.num { text-align: right; }
+  tr:last-child td { border-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="crumb" href="../../index.html">&larr; Back to Slopanoid Master Portal</a>
+    <span class="badge">Clean-Room Prompt Ablation · 5 Carbon Runs (Graphics + iMUSE Audio)</span>
+  </div>
+
+  <header>
+    <h1>🎨🎵 Arkanoid Graphics &amp; iMUSE Prompt Lab (`gemini-4-carbon-high`)</h1>
+    <p>
+      Why did baseline <strong>Gemini 4 Carbon</strong> trail <strong>Fable 5.2</strong>? The canonical prompt gave basic Web Audio plumbing
+      and only 4 vague bullets for graphics. Below are <strong>5 air-gapped one-shot runs</strong> on the exact same
+      <code>gemini-4-carbon-high</code> model—culminating in <strong>v5 (`247.0 KB`)</strong>, which combines 1992 256-color VGA pixel art
+      &amp; animated SCUMM portraits with true Yamaha OPL2 <code>PeriodicWave</code> operators and dynamic LucasArts <em>iMUSE</em> stems
+      for <strong>$6.23 Std / $3.12 Intro</strong> (still cheaper than Baseline Carbon's $7.69 and 3.6× cheaper than Fable 5.2's $22.62!).
+    </p>
+  </header>
+
+  <!-- LIVE SIDE-BY-SIDE COMPARATOR -->
+  <section class="arena-box">
+    <div class="arena-controls">
+      <div style="font-weight:700; font-size:15px;">⚡ Live Side-by-Side Viewport Comparator <span style="color:var(--dim); font-weight:400; font-size:13px;">(click inside either cabinet to focus controls &amp; unlock OPL2 audio)</span></div>
+      <div class="presets">
+        <span>Quick Compare:</span>
+        <button class="preset-btn active" data-l="baseline" data-r="v5">Baseline vs v5 (VGA + OPL2 iMUSE)</button>
+        <button class="preset-btn" data-l="fable52" data-r="v5">Fable 5.2 vs v5 (VGA + OPL2 iMUSE)</button>
+        <button class="preset-btn" data-l="v4" data-r="v5">v4 (VGA) vs v5 (VGA + iMUSE)</button>
+        <button class="preset-btn" data-l="baseline" data-r="v2">Baseline vs v2 (Framebuffer Shader)</button>
+        <button class="preset-btn" data-l="baseline" data-r="v1">Baseline vs v1 (EGA Pipeline)</button>
+        <button class="preset-btn" data-l="baseline" data-r="v3">Baseline vs v3 (Few-Shot Art)</button>
+      </div>
+    </div>
+
+    <div class="dual-grid">
+      <div class="pane">
+        <div class="pane-bar">
+          <select id="sel-left" aria-label="Left Viewport Build"></select>
+          <div class="pane-links">
+            <a id="open-left" href="#" target="_blank">Full Tab &nearr;</a>
+            <a id="prompt-left" href="#" target="_blank">PROMPT.md</a>
+          </div>
+        </div>
+        <iframe id="frame-left" title="Left Arkanoid Build"></iframe>
+      </div>
+
+      <div class="pane">
+        <div class="pane-bar">
+          <select id="sel-right" aria-label="Right Viewport Build"></select>
+          <div class="pane-links">
+            <a id="open-right" href="#" target="_blank">Full Tab &nearr;</a>
+            <a id="prompt-right" href="#" target="_blank">PROMPT.md</a>
+          </div>
+        </div>
+        <iframe id="frame-right" title="Right Arkanoid Build"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALL 7 BUILDS -->
+  <section class="cards">
+    <div class="card variant" style="border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 0 24px rgba(56, 189, 248, 0.08);">
+      <div>
+        <div class="card-head">
+          <div>
+            <div class="card-title">v5 · 256-Color VGA + OPL2 &amp; iMUSE</div>
+            <div class="card-sub">SCUMM OF THE CARIBBEAN (1992 VGA + iMUSE)</div>
+          </div>
+          <span class="pill pill-exp" style="background:rgba(56,189,248,0.18);color:var(--cyan);border-color:var(--cyan);">Carbon Lab v5 · Flagship</span>
+        </div>
+        <p style="margin-top:10px;">
+          Combines v4's painterly 256-color VGA ramps &amp; live animated SCUMM portraits with full <strong>Yamaha YM3812
+          <code>PeriodicWave</code></strong> feedback operators (<code>fb1</code>–<code>fb3</code>), 16–24 bar multi-section polyphonic chord
+          arrangements, gameplay-reactive <em>iMUSE</em> overdrive stems, sidechain ducking, and scale-quantized in-key brick SFX!
+        </p>
+      </div>
+      <div>
+        <div class="stats" style="margin-bottom:12px;">
+          <div><div class="stat-k">Shipped</div><div class="stat-v">247.0 KB</div></div>
+          <div><div class="stat-k">Calls</div><div class="stat-v">26</div></div>
+          <div><div class="stat-k">Out Tok</div><div class="stat-v">157.9k</div></div>
+          <div><div class="stat-k">Est. Cost</div><div class="stat-v" style="color:var(--cyan);">$6.23</div></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-play" href="v5-vga-imuse/index.html" target="_blank">Play Full Tab</a>
+          <a class="btn btn-sec" href="v5-vga-imuse/PROMPT.md" target="_blank">Read Prompt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card variant">
+      <div>
+        <div class="card-head">
+          <div>
+            <div class="card-title">v1 · Explicit EGA Pixel Pipeline</div>
+            <div class="card-sub">SCUMM-NOID: 1990 EGA Edition</div>
+          </div>
+          <span class="pill pill-exp">Carbon Lab v1</span>
+        </div>
+        <p style="margin-top:10px;">
+          Matches the audio section's specificity for EGA graphics: mandates <code>30×18</code> (<code>8×6</code> brick) mosaics,
+          4×4 Bayer dithering, <code>egaShade</code>, 3-layer offscreen backdrops, <code>makeSprite</code> ASCII pixel matrices,
+          <code>5×7</code> outlined font, and a classic <code>256+64</code> right-hand HUD.
+        </p>
+      </div>
+      <div>
+        <div class="stats" style="margin-bottom:12px;">
+          <div><div class="stat-k">Shipped</div><div class="stat-v">183.1 KB</div></div>
+          <div><div class="stat-k">Calls</div><div class="stat-v">26</div></div>
+          <div><div class="stat-k">Out Tok</div><div class="stat-v">112.8k</div></div>
+          <div><div class="stat-k">Est. Cost</div><div class="stat-v" style="color:var(--emerald);">$3.96</div></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-play" href="v1-ega-pipeline/index.html" target="_blank">Play Full Tab</a>
+          <a class="btn btn-sec" href="v1-ega-pipeline/PROMPT.md" target="_blank">Read Prompt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card variant">
+      <div>
+        <div class="card-head">
+          <div>
+            <div class="card-title">v2 · Framebuffer + Surface-Normal Shader</div>
+            <div class="card-sub">SCUMM-OID 320x200 Demoscene Blitter</div>
+          </div>
+          <span class="pill pill-exp">Carbon Lab v2 · Fastest</span>
+        </div>
+        <p style="margin-top:10px;">
+          Plays directly to Carbon's Xenon 2 math superpower: pure <code>Uint32Array</code> / <code>ImageData</code> software rasterizer
+          with finite-difference heightmap surface-normal lighting (<code>compileLitSprite</code>), automatic <code>1px</code> dark
+          silhouettes, EGA Bayer quantizer, and per-scanline water/highway/lava raster effects. Built in <strong>10.4 min active time</strong>!
+        </p>
+      </div>
+      <div>
+        <div class="stats" style="margin-bottom:12px;">
+          <div><div class="stat-k">Shipped</div><div class="stat-v">162.9 KB</div></div>
+          <div><div class="stat-k">Calls</div><div class="stat-v">26</div></div>
+          <div><div class="stat-k">Out Tok</div><div class="stat-v">105.3k</div></div>
+          <div><div class="stat-k">Est. Cost</div><div class="stat-v" style="color:var(--emerald);">$4.17</div></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-play" href="v2-framebuffer-shader/index.html" target="_blank">Play Full Tab</a>
+          <a class="btn btn-sec" href="v2-framebuffer-shader/PROMPT.md" target="_blank">Read Prompt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card variant">
+      <div>
+        <div class="card-head">
+          <div>
+            <div class="card-title">v3 · Few-Shot Art Bible + Self-Audit</div>
+            <div class="card-sub">VAUS OF MONKEY ISLAND Anthology</div>
+          </div>
+          <span class="pill pill-exp">Carbon Lab v3</span>
+        </div>
+        <p style="margin-top:10px;">
+          Tests "show, don't just tell": embeds concrete mini code exemplars (8-line <code>BAYER4</code> ditherer + a multi-tone
+          <code>1px</code>-outlined ASCII skull sprite) plus a mandatory pre-completion visual self-audit verifying silhouette density,
+          dithered planets, <code>8×6</code> mosaic clarity, and typography.
+        </p>
+      </div>
+      <div>
+        <div class="stats" style="margin-bottom:12px;">
+          <div><div class="stat-k">Shipped</div><div class="stat-v">159.3 KB</div></div>
+          <div><div class="stat-k">Calls</div><div class="stat-v">38</div></div>
+          <div><div class="stat-k">Out Tok</div><div class="stat-v">111.5k</div></div>
+          <div><div class="stat-k">Est. Cost</div><div class="stat-v" style="color:var(--emerald);">$4.03</div></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-play" href="v3-fewshot-art-bible/index.html" target="_blank">Play Full Tab</a>
+          <a class="btn btn-sec" href="v3-fewshot-art-bible/PROMPT.md" target="_blank">Read Prompt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card variant">
+      <div>
+        <div class="card-head">
+          <div>
+            <div class="card-title">v4 · Art-First + 256-Color VGA SCUMM</div>
+            <div class="card-sub">SCUMM-ANOID DELUXE (1992 Mode 13h)</div>
+          </div>
+          <span class="pill pill-exp">Carbon Lab v4 · Fewest Calls</span>
+        </div>
+        <p style="margin-top:10px;">
+          Flips Visuals to Section #1 ahead of Audio, upgrades from 64-color EGA to painterly 1992 <em>Monkey Island 2</em> 256-color
+          VGA 16-shade ramps, and adds a <strong>live animated character portrait box</strong> (Guybrush, Purple Tentacle, Indy, Bobbin,
+          Max, LeChuck) in the <code>64px</code> sidebar! Completed in just <strong>22 LLM calls</strong>.
+        </p>
+      </div>
+      <div>
+        <div class="stats" style="margin-bottom:12px;">
+          <div><div class="stat-k">Shipped</div><div class="stat-v">169.8 KB</div></div>
+          <div><div class="stat-k">Calls</div><div class="stat-v">22</div></div>
+          <div><div class="stat-k">Out Tok</div><div class="stat-v">106.3k</div></div>
+          <div><div class="stat-k">Est. Cost</div><div class="stat-v" style="color:var(--emerald);">$4.56</div></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-play" href="v4-vga-scumm-deluxe/index.html" target="_blank">Play Full Tab</a>
+          <a class="btn btn-sec" href="v4-vga-scumm-deluxe/PROMPT.md" target="_blank">Read Prompt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card control">
+      <div>
+        <div class="card-head">
+          <div>
+            <div class="card-title">Control A · Baseline Gemini 4 Carbon</div>
+            <div class="card-sub">Canonical 4-Line Graphics Prompt</div>
+          </div>
+          <span class="pill pill-control">Baseline Control</span>
+        </div>
+        <p style="margin-top:10px;">
+          Original clean-room Carbon build on the unmodified benchmark prompt: coarse <code>16×11</code> grid of wide <code>18×7</code>
+          bricks, flat <code>fillRect</code> backdrops, <code>3×5</code> micro-font, and <code>fillRect</code> capsule/boss boxes.
+        </p>
+      </div>
+      <div>
+        <div class="stats" style="margin-bottom:12px;">
+          <div><div class="stat-k">Shipped</div><div class="stat-v">136.7 KB</div></div>
+          <div><div class="stat-k">Calls</div><div class="stat-v">52</div></div>
+          <div><div class="stat-k">Out Tok</div><div class="stat-v">172.8k</div></div>
+          <div><div class="stat-k">Est. Cost</div><div class="stat-v" style="color:var(--amber);">$7.69</div></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-sec" href="../../simple-prompt/gemini-4-carbon/arkanoid/index.html" target="_blank">Play Baseline Carbon</a>
+          <a class="btn btn-sec" href="../../simple-prompt/gemini-4-carbon/arkanoid/PROMPT.md" target="_blank">Canonical Prompt</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card control">
+      <div>
+        <div class="card-head">
+          <div>
+            <div class="card-title">Control B · Fable 5.2 Reference</div>
+            <div class="card-sub">Groganoid (Canonical Prompt)</div>
+          </div>
+          <span class="pill pill-control">Fable 5.2 Reference</span>
+        </div>
+        <p style="margin-top:10px;">
+          Fable 5.2's unprompted EGA craft benchmark on the canonical prompt: <code>30×18</code> mosaics, 4×4 Bayer dithering,
+          offscreen parallax layers, <code>makeSprite</code> icons, and proportional <code>5×7</code> font—at <code>~5×</code> the
+          standard API cost of our Carbon Lab variants.
+        </p>
+      </div>
+      <div>
+        <div class="stats" style="margin-bottom:12px;">
+          <div><div class="stat-k">Shipped</div><div class="stat-v">206.2 KB</div></div>
+          <div><div class="stat-k">Calls</div><div class="stat-v">56</div></div>
+          <div><div class="stat-k">Out Tok</div><div class="stat-v">346.3k</div></div>
+          <div><div class="stat-k">Est. Cost</div><div class="stat-v" style="color:var(--rose);">$22.62</div></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-sec" href="../../simple-prompt/fable-5.2/arkanoid/index.html" target="_blank">Play Fable 5.2</a>
+          <a class="btn btn-sec" href="../../simple-prompt/fable-5.2/arkanoid/PROMPT.md" target="_blank">Canonical Prompt</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TELEMETRY TABLE -->
+  <section>
+    <table>
+      <thead>
+        <tr>
+          <th>Build</th>
+          <th>Prompt Strategy</th>
+          <th class="num">Active Time</th>
+          <th class="num">LLM Calls</th>
+          <th class="num">Output Tokens</th>
+          <th class="num">Total Input</th>
+          <th class="num">Est. API Cost (Std / Intro)</th>
+          <th class="num">Shipped Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Carbon Baseline</strong></td>
+          <td>Canonical prompt (23L audio / 4L graphics)</td>
+          <td class="num">26.3 min</td>
+          <td class="num">52</td>
+          <td class="num">172,845</td>
+          <td class="num">8,482,301</td>
+          <td class="num"><strong>$7.69</strong> <span style="color:var(--dim);">($3.84)</span></td>
+          <td class="num">136.7 KB · 3,557 L</td>
+        </tr>
+        <tr>
+          <td><strong>Fable 5.2 Reference</strong></td>
+          <td>Canonical prompt (autonomous EGA craft)</td>
+          <td class="num">67.7 min</td>
+          <td class="num">56</td>
+          <td class="num">346,262</td>
+          <td class="num">18,618,436</td>
+          <td class="num"><strong style="color:var(--rose);">$22.62</strong></td>
+          <td class="num">206.2 KB · 3,930 L</td>
+        </tr>
+        <tr>
+          <td><strong>Carbon v1 (`v1-ega-pipeline`)</strong></td>
+          <td>Explicit EGA pipeline + 30×18 8×6 mosaics + 256+64 HUD</td>
+          <td class="num">29.6 min</td>
+          <td class="num">26</td>
+          <td class="num">112,801</td>
+          <td class="num">2,876,569</td>
+          <td class="num"><strong style="color:var(--emerald);">$3.96</strong> <span style="color:var(--dim);">($1.98)</span></td>
+          <td class="num">183.1 KB · 5,308 L</td>
+        </tr>
+        <tr>
+          <td><strong>Carbon v2 (`v2-framebuffer-shader`)</strong></td>
+          <td><code>Uint32Array</code> framebuffer + heightmap normal shader + scanlines</td>
+          <td class="num">10.4 min</td>
+          <td class="num">26</td>
+          <td class="num">105,263</td>
+          <td class="num">3,168,321</td>
+          <td class="num"><strong style="color:var(--emerald);">$4.17</strong> <span style="color:var(--dim);">($2.08)</span></td>
+          <td class="num">162.9 KB · 4,428 L</td>
+        </tr>
+        <tr>
+          <td><strong>Carbon v3 (`v3-fewshot-art-bible`)</strong></td>
+          <td>Few-shot Bayer &amp; ASCII sprite exemplars + visual self-audit</td>
+          <td class="num">25.3 min</td>
+          <td class="num">38</td>
+          <td class="num">111,540</td>
+          <td class="num">4,980,588</td>
+          <td class="num"><strong style="color:var(--emerald);">$4.03</strong> <span style="color:var(--dim);">($2.02)</span></td>
+          <td class="num">159.3 KB · 4,606 L</td>
+        </tr>
+        <tr>
+          <td><strong>Carbon v4 (`v4-vga-scumm-deluxe`)</strong></td>
+          <td>Visuals-first ordering + 256-color VGA ramps + animated SCUMM portraits</td>
+          <td class="num">27.3 min</td>
+          <td class="num">22</td>
+          <td class="num">106,293</td>
+          <td class="num">2,260,699</td>
+          <td class="num"><strong style="color:var(--emerald);">$4.56</strong> <span style="color:var(--dim);">($2.28)</span></td>
+          <td class="num">169.8 KB · 4,629 L</td>
+        </tr>
+        <tr>
+          <td><strong>Carbon v5 (`v5-vga-imuse`)</strong> ⭐</td>
+          <td>256-color VGA + SCUMM portraits + OPL2 <code>PeriodicWave</code> + polyphonic iMUSE stems</td>
+          <td class="num">44.4 min</td>
+          <td class="num">26</td>
+          <td class="num">157,906</td>
+          <td class="num">3,621,175</td>
+          <td class="num"><strong style="color:var(--cyan);">$6.23</strong> <span style="color:var(--dim);">($3.12)</span></td>
+          <td class="num"><strong>247.0 KB · 5,986 L</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:10px; font-family:var(--mono); font-size:11.5px; color:var(--dim);">
+      * API Cost Basis (per 1M tokens — uncached input / cache read / output): Gemini 4 Carbon Standard List = $4.00 / $0.20 / $20.00 (Introductory rate in parentheses = $2.00 / $0.10 / $10.00 through Nov 30, 2026); Claude Fable 5.2 Standard = $8.00 / $0.20 / $40.00.
+    </p>
+  </section>
+</div>
+
+<script>
+  const BUILDS = {
+    baseline: {
+      label: "Control A · Baseline Gemini 4 Carbon (136.7 KB · $7.69)",
+      url: "../../simple-prompt/gemini-4-carbon/arkanoid/index.html",
+      prompt: "../../simple-prompt/gemini-4-carbon/arkanoid/PROMPT.md"
+    },
+    fable52: {
+      label: "Control B · Fable 5.2 Reference — Groganoid (206.2 KB · $22.62)",
+      url: "../../simple-prompt/fable-5.2/arkanoid/index.html",
+      prompt: "../../simple-prompt/fable-5.2/arkanoid/PROMPT.md"
+    },
+    v5: {
+      label: "Carbon Lab v5 · 256-Color VGA + OPL2 iMUSE Flagship (247.0 KB · $6.23)",
+      url: "v5-vga-imuse/index.html",
+      prompt: "v5-vga-imuse/PROMPT.md"
+    },
+    v4: {
+      label: "Carbon Lab v4 · 256-Color VGA + Animated SCUMM Portraits (169.8 KB · $4.56)",
+      url: "v4-vga-scumm-deluxe/index.html",
+      prompt: "v4-vga-scumm-deluxe/PROMPT.md"
+    },
+    v2: {
+      label: "Carbon Lab v2 · Uint32Array Framebuffer + Normal Shader (162.9 KB · $4.17)",
+      url: "v2-framebuffer-shader/index.html",
+      prompt: "v2-framebuffer-shader/PROMPT.md"
+    },
+    v1: {
+      label: "Carbon Lab v1 · Explicit EGA Pipeline (183.1 KB · $3.96)",
+      url: "v1-ega-pipeline/index.html",
+      prompt: "v1-ega-pipeline/PROMPT.md"
+    },
+    v3: {
+      label: "Carbon Lab v3 · Few-Shot Art Bible + Self-Audit (159.3 KB · $4.03)",
+      url: "v3-fewshot-art-bible/index.html",
+      prompt: "v3-fewshot-art-bible/PROMPT.md"
+    }
+  };
+
+  const selL = document.getElementById("sel-left");
+  const selR = document.getElementById("sel-right");
+  const frameL = document.getElementById("frame-left");
+  const frameR = document.getElementById("frame-right");
+  const openL = document.getElementById("open-left");
+  const openR = document.getElementById("open-right");
+  const promptL = document.getElementById("prompt-left");
+  const promptR = document.getElementById("prompt-right");
+
+  for (const [k, b] of Object.entries(BUILDS)) {
+    selL.add(new Option(b.label, k));
+    selR.add(new Option(b.label, k));
+  }
+
+  function syncSide(side, key) {
+    const b = BUILDS[key];
+    if (side === "L") {
+      selL.value = key;
+      if (frameL.dataset.key !== key) { frameL.src = b.url; frameL.dataset.key = key; }
+      openL.href = b.url;
+      promptL.href = b.prompt;
+    } else {
+      selR.value = key;
+      if (frameR.dataset.key !== key) { frameR.src = b.url; frameR.dataset.key = key; }
+      openR.href = b.url;
+      promptR.href = b.prompt;
+    }
+  }
+
+  selL.addEventListener("change", () => syncSide("L", selL.value));
+  selR.addEventListener("change", () => syncSide("R", selR.value));
+
+  document.querySelectorAll(".preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".preset-btn").forEach((x) => x.classList.remove("active"));
+      btn.classList.add("active");
+      syncSide("L", btn.dataset.l);
+      syncSide("R", btn.dataset.r);
+    });
+  });
+
+  syncSide("L", "baseline");
+  syncSide("R", "v5");
+</script>
+</body>
+</html>

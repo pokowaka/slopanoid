@@ -128,6 +128,14 @@ token efficiency (~705 output tokens per shipped KB) in the benchmark.
 | Shipped runtime bytes | 690 KB | 904 KB | 647 KB | 1,750 KB |
 | Shipped runtime lines | 21,005 | 26,599 | 8,719 | 35,015 |
 | Output tokens / shipped KB | ~810 | ~705 | ~1,270 | ~2,690 |
+| **Est. API cost — Standard List** | **$12.09** | **$24.25** | **$63.42** | **$319.85** |
+| **Est. API cost — Promotional / Intro** | **$6.05** | **$12.13** | — | — |
+
+> **API Pricing Basis (per 1M tokens — uncached input / cache read / output):**
+> - **Gemini 3.8 Flash:** `$1.50 / $0.15 / $7.50` standard list (`$0.75 / $0.075 / $3.75` intro through Dec 31, 2026) — per game (Std): Arkanoid `$2.02`, Xenon 2 `$3.21`, Ghosts `$2.31`, Lemmings `$4.55`.
+> - **Gemini 4 Carbon:** `$4.00 / $0.20 / $20.00` standard list (`$2.00 / $0.10 / $10.00` intro through Nov 30, 2026) — per game (Std): Arkanoid `$7.69`, Xenon 2 `$4.25`, Ghosts `$5.83`, Lemmings `$6.48`.
+> - **Claude Fable 5.1:** `$10.00 / $0.25 / $50.00` standard — per game: Arkanoid `$9.26`, Xenon 2 `$14.77`, Ghosts `$16.84`, Lemmings `$22.55`.
+> - **Claude Fable 5.2:** `$8.00 / $0.20 / $40.00` standard — per game: Arkanoid `$22.62`, Xenon 2 `$27.85`, Ghosts `$238.97`, Lemmings `$30.41`.
 
 Gemini 4 Carbon ships 31% more runtime bytes than Gemini 3.8 Flash (904 KB vs
 690 KB) and 40% more than Fable 5.1 (647 KB) while making the fewest LLM calls

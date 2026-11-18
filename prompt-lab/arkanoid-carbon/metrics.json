@@ -1,0 +1,1058 @@
+[
+ {
+  "conv": "124e615a-597f-4afc-a19e-d47c421b0218",
+  "model": "\"carbon-g-jetski/tfhub/prod/ml-gemini-experimental/Gemini-5-M-IT-G1149-Rev27-Carbon-G/1\"",
+  "llm_calls": 26,
+  "transcript_steps": 53,
+  "start": "2026-11-18T01:01:30Z",
+  "end": "2026-11-18T01:48:42Z",
+  "duration_s": 2832.0,
+  "totals": {
+   "out": 112801,
+   "in_uncached": 298097,
+   "in_cached": 2578472,
+   "in_total": 2876569
+  },
+  "max_ctx": 150839,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 350,
+    "in_uncached": 14974,
+    "in_cached": 0,
+    "ctx": 20844
+   },
+   {
+    "idx": 1,
+    "out": 214,
+    "in_uncached": 3718,
+    "in_cached": 14975,
+    "ctx": 25156
+   },
+   {
+    "idx": 2,
+    "out": 28780,
+    "in_uncached": 2449,
+    "in_cached": 16644,
+    "ctx": 25475
+   },
+   {
+    "idx": 3,
+    "out": 9292,
+    "in_uncached": 28859,
+    "in_cached": 19094,
+    "ctx": 54291
+   },
+   {
+    "idx": 4,
+    "out": 11885,
+    "in_uncached": 9371,
+    "in_cached": 47954,
+    "ctx": 63619
+   },
+   {
+    "idx": 5,
+    "out": 16661,
+    "in_uncached": 11964,
+    "in_cached": 57326,
+    "ctx": 75540
+   },
+   {
+    "idx": 6,
+    "out": 10662,
+    "in_uncached": 16740,
+    "in_cached": 69291,
+    "ctx": 92237
+   },
+   {
+    "idx": 7,
+    "out": 26904,
+    "in_uncached": 10741,
+    "in_cached": 86032,
+    "ctx": 102935
+   },
+   {
+    "idx": 8,
+    "out": 432,
+    "in_uncached": 25529,
+    "in_cached": 96774,
+    "ctx": 129875
+   },
+   {
+    "idx": 9,
+    "out": 3699,
+    "in_uncached": 123783,
+    "in_cached": 0,
+    "ctx": 130339
+   },
+   {
+    "idx": 10,
+    "out": 102,
+    "in_uncached": 3994,
+    "in_cached": 123784,
+    "ctx": 134300
+   },
+   {
+    "idx": 11,
+    "out": 254,
+    "in_uncached": 2601,
+    "in_cached": 125729,
+    "ctx": 134780
+   },
+   {
+    "idx": 12,
+    "out": 189,
+    "in_uncached": 2421,
+    "in_cached": 126281,
+    "ctx": 135103
+   },
+   {
+    "idx": 13,
+    "out": 201,
+    "in_uncached": 2049,
+    "in_cached": 127325,
+    "ctx": 136296
+   },
+   {
+    "idx": 14,
+    "out": 275,
+    "in_uncached": 3086,
+    "in_cached": 127325,
+    "ctx": 137189
+   },
+   {
+    "idx": 15,
+    "out": 220,
+    "in_uncached": 8477,
+    "in_cached": 130412,
+    "ctx": 143652
+   },
+   {
+    "idx": 16,
+    "out": 164,
+    "in_uncached": 3554,
+    "in_cached": 136840,
+    "ctx": 145007
+   },
+   {
+    "idx": 17,
+    "out": 344,
+    "in_uncached": 2317,
+    "in_cached": 138345,
+    "ctx": 145229
+   },
+   {
+    "idx": 18,
+    "out": 279,
+    "in_uncached": 2528,
+    "in_cached": 138613,
+    "ctx": 145650
+   },
+   {
+    "idx": 19,
+    "out": 95,
+    "in_uncached": 2446,
+    "in_cached": 139092,
+    "ctx": 145998
+   },
+   {
+    "idx": 20,
+    "out": 228,
+    "in_uncached": 2372,
+    "in_cached": 139489,
+    "ctx": 146291
+   },
+   {
+    "idx": 21,
+    "out": 94,
+    "in_uncached": 2867,
+    "in_cached": 141862,
+    "ctx": 148274
+   },
+   {
+    "idx": 22,
+    "out": 202,
+    "in_uncached": 3103,
+    "in_cached": 142680,
+    "ctx": 149013
+   },
+   {
+    "idx": 23,
+    "out": 419,
+    "in_uncached": 2362,
+    "in_cached": 143734,
+    "ctx": 149276
+   },
+   {
+    "idx": 24,
+    "out": 257,
+    "in_uncached": 2692,
+    "in_cached": 144047,
+    "ctx": 149822
+   },
+   {
+    "idx": 25,
+    "out": 599,
+    "in_uncached": 3100,
+    "in_cached": 144824,
+    "ctx": 150839
+   }
+  ]
+ },
+ {
+  "conv": "be85c524-0bb0-497f-9f07-353404d63b4a",
+  "model": "\"carbon-g-jetski/tfhub/prod/ml-gemini-experimental/Gemini-5-M-IT-G1149-Rev27-Carbon-G/1\"",
+  "llm_calls": 26,
+  "transcript_steps": 53,
+  "start": "2026-11-18T01:01:30Z",
+  "end": "2026-11-18T01:25:43Z",
+  "duration_s": 1453.0,
+  "totals": {
+   "out": 105263,
+   "in_uncached": 376291,
+   "in_cached": 2792030,
+   "in_total": 3168321
+  },
+  "max_ctx": 155585,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 386,
+    "in_uncached": 14973,
+    "in_cached": 0,
+    "ctx": 20858
+   },
+   {
+    "idx": 1,
+    "out": 166,
+    "in_uncached": 2886,
+    "in_cached": 14974,
+    "ctx": 24025
+   },
+   {
+    "idx": 2,
+    "out": 16942,
+    "in_uncached": 2400,
+    "in_cached": 15811,
+    "ctx": 24295
+   },
+   {
+    "idx": 3,
+    "out": 74154,
+    "in_uncached": 35250,
+    "in_cached": 0,
+    "ctx": 41287
+   },
+   {
+    "idx": 4,
+    "out": 3217,
+    "in_uncached": 94864,
+    "in_cached": 14624,
+    "ctx": 115477
+   },
+   {
+    "idx": 5,
+    "out": 89,
+    "in_uncached": 3296,
+    "in_cached": 109489,
+    "ctx": 118730
+   },
+   {
+    "idx": 6,
+    "out": 2256,
+    "in_uncached": 2277,
+    "in_cached": 110736,
+    "ctx": 118915
+   },
+   {
+    "idx": 7,
+    "out": 114,
+    "in_uncached": 2373,
+    "in_cached": 113014,
+    "ctx": 121242
+   },
+   {
+    "idx": 8,
+    "out": 151,
+    "in_uncached": 2994,
+    "in_cached": 115388,
+    "ctx": 123404
+   },
+   {
+    "idx": 9,
+    "out": 130,
+    "in_uncached": 3201,
+    "in_cached": 116333,
+    "ctx": 124312
+   },
+   {
+    "idx": 10,
+    "out": 148,
+    "in_uncached": 2172,
+    "in_cached": 119535,
+    "ctx": 126009
+   },
+   {
+    "idx": 11,
+    "out": 120,
+    "in_uncached": 10579,
+    "in_cached": 121708,
+    "ctx": 133822
+   },
+   {
+    "idx": 12,
+    "out": 96,
+    "in_uncached": 3267,
+    "in_cached": 130238,
+    "ctx": 134805
+   },
+   {
+    "idx": 13,
+    "out": 168,
+    "in_uncached": 10839,
+    "in_cached": 133506,
+    "ctx": 142540
+   },
+   {
+    "idx": 14,
+    "out": 971,
+    "in_uncached": 4807,
+    "in_cached": 144346,
+    "ctx": 145034
+   },
+   {
+    "idx": 15,
+    "out": 129,
+    "in_uncached": 3138,
+    "in_cached": 147104,
+    "ctx": 146076
+   },
+   {
+    "idx": 16,
+    "out": 383,
+    "in_uncached": 2512,
+    "in_cached": 149536,
+    "ctx": 147351
+   },
+   {
+    "idx": 17,
+    "out": 1019,
+    "in_uncached": 2550,
+    "in_cached": 149999,
+    "ctx": 147805
+   },
+   {
+    "idx": 18,
+    "out": 1146,
+    "in_uncached": 153687,
+    "in_cached": 0,
+    "ctx": 148896
+   },
+   {
+    "idx": 19,
+    "out": 775,
+    "in_uncached": 2348,
+    "in_cached": 152604,
+    "ctx": 150114
+   },
+   {
+    "idx": 20,
+    "out": 785,
+    "in_uncached": 2094,
+    "in_cached": 153752,
+    "ctx": 150961
+   },
+   {
+    "idx": 21,
+    "out": 152,
+    "in_uncached": 2955,
+    "in_cached": 153797,
+    "ctx": 151820
+   },
+   {
+    "idx": 22,
+    "out": 205,
+    "in_uncached": 2457,
+    "in_cached": 154703,
+    "ctx": 152203
+   },
+   {
+    "idx": 23,
+    "out": 290,
+    "in_uncached": 2691,
+    "in_cached": 155111,
+    "ctx": 152728
+   },
+   {
+    "idx": 24,
+    "out": 539,
+    "in_uncached": 2165,
+    "in_cached": 157803,
+    "ctx": 154284
+   },
+   {
+    "idx": 25,
+    "out": 732,
+    "in_uncached": 3516,
+    "in_cached": 157919,
+    "ctx": 155585
+   }
+  ]
+ },
+ {
+  "conv": "378a7455-8c0b-4c77-a75c-ead603013b61",
+  "model": "\"carbon-g-jetski/tfhub/prod/ml-gemini-experimental/Gemini-5-M-IT-G1149-Rev27-Carbon-G/1\"",
+  "llm_calls": 38,
+  "transcript_steps": 78,
+  "start": "2026-11-18T01:01:30Z",
+  "end": "2026-11-18T01:44:24Z",
+  "duration_s": 2574.0,
+  "totals": {
+   "out": 111540,
+   "in_uncached": 211578,
+   "in_cached": 4769010,
+   "in_total": 4980588
+  },
+  "max_ctx": 165672,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 657,
+    "in_uncached": 14995,
+    "in_cached": 0,
+    "ctx": 20855
+   },
+   {
+    "idx": 1,
+    "out": 137,
+    "in_uncached": 3226,
+    "in_cached": 14996,
+    "ctx": 24097
+   },
+   {
+    "idx": 2,
+    "out": 30503,
+    "in_uncached": 2371,
+    "in_cached": 16173,
+    "ctx": 24338
+   },
+   {
+    "idx": 3,
+    "out": 20532,
+    "in_uncached": 30582,
+    "in_cached": 18545,
+    "ctx": 54877
+   },
+   {
+    "idx": 4,
+    "out": 12912,
+    "in_uncached": 20613,
+    "in_cached": 49128,
+    "ctx": 75445
+   },
+   {
+    "idx": 5,
+    "out": 24502,
+    "in_uncached": 12991,
+    "in_cached": 69742,
+    "ctx": 88393
+   },
+   {
+    "idx": 6,
+    "out": 4013,
+    "in_uncached": 24581,
+    "in_cached": 82734,
+    "ctx": 112931
+   },
+   {
+    "idx": 7,
+    "out": 108,
+    "in_uncached": 4092,
+    "in_cached": 107316,
+    "ctx": 116980
+   },
+   {
+    "idx": 8,
+    "out": 3509,
+    "in_uncached": 2343,
+    "in_cached": 109359,
+    "ctx": 117218
+   },
+   {
+    "idx": 9,
+    "out": 203,
+    "in_uncached": 3629,
+    "in_cached": 111703,
+    "ctx": 120798
+   },
+   {
+    "idx": 10,
+    "out": 153,
+    "in_uncached": 2194,
+    "in_cached": 114735,
+    "ctx": 121960
+   },
+   {
+    "idx": 11,
+    "out": 144,
+    "in_uncached": 8742,
+    "in_cached": 116930,
+    "ctx": 128127
+   },
+   {
+    "idx": 12,
+    "out": 91,
+    "in_uncached": 2417,
+    "in_cached": 125673,
+    "ctx": 129879
+   },
+   {
+    "idx": 13,
+    "out": 138,
+    "in_uncached": 2863,
+    "in_cached": 128091,
+    "ctx": 132080
+   },
+   {
+    "idx": 14,
+    "out": 331,
+    "in_uncached": 8037,
+    "in_cached": 130955,
+    "ctx": 137028
+   },
+   {
+    "idx": 15,
+    "out": 114,
+    "in_uncached": 2852,
+    "in_cached": 138993,
+    "ctx": 139196
+   },
+   {
+    "idx": 16,
+    "out": 85,
+    "in_uncached": 3713,
+    "in_cached": 139796,
+    "ctx": 140384
+   },
+   {
+    "idx": 17,
+    "out": 835,
+    "in_uncached": 3045,
+    "in_cached": 143510,
+    "ctx": 142697
+   },
+   {
+    "idx": 18,
+    "out": 218,
+    "in_uncached": 3005,
+    "in_cached": 144506,
+    "ctx": 143603
+   },
+   {
+    "idx": 19,
+    "out": 127,
+    "in_uncached": 2388,
+    "in_cached": 145462,
+    "ctx": 143892
+   },
+   {
+    "idx": 20,
+    "out": 110,
+    "in_uncached": 2095,
+    "in_cached": 147512,
+    "ctx": 145209
+   },
+   {
+    "idx": 21,
+    "out": 141,
+    "in_uncached": 2280,
+    "in_cached": 147558,
+    "ctx": 145390
+   },
+   {
+    "idx": 22,
+    "out": 359,
+    "in_uncached": 2868,
+    "in_cached": 147851,
+    "ctx": 146034
+   },
+   {
+    "idx": 23,
+    "out": 235,
+    "in_uncached": 2529,
+    "in_cached": 148670,
+    "ctx": 146464
+   },
+   {
+    "idx": 24,
+    "out": 174,
+    "in_uncached": 2406,
+    "in_cached": 149150,
+    "ctx": 146771
+   },
+   {
+    "idx": 25,
+    "out": 699,
+    "in_uncached": 2981,
+    "in_cached": 149507,
+    "ctx": 147479
+   },
+   {
+    "idx": 26,
+    "out": 312,
+    "in_uncached": 2869,
+    "in_cached": 150439,
+    "ctx": 148249
+   },
+   {
+    "idx": 27,
+    "out": 475,
+    "in_uncached": 8366,
+    "in_cached": 153309,
+    "ctx": 154203
+   },
+   {
+    "idx": 28,
+    "out": 2881,
+    "in_uncached": 2645,
+    "in_cached": 159626,
+    "ctx": 154749
+   },
+   {
+    "idx": 29,
+    "out": 1234,
+    "in_uncached": 3001,
+    "in_cached": 162272,
+    "ctx": 157701
+   },
+   {
+    "idx": 30,
+    "out": 1003,
+    "in_uncached": 3406,
+    "in_cached": 163224,
+    "ctx": 159007
+   },
+   {
+    "idx": 31,
+    "out": 2427,
+    "in_uncached": 2389,
+    "in_cached": 165365,
+    "ctx": 160081
+   },
+   {
+    "idx": 32,
+    "out": 191,
+    "in_uncached": 2506,
+    "in_cached": 167755,
+    "ctx": 162544
+   },
+   {
+    "idx": 33,
+    "out": 662,
+    "in_uncached": 2652,
+    "in_cached": 168212,
+    "ctx": 163053
+   },
+   {
+    "idx": 34,
+    "out": 233,
+    "in_uncached": 2832,
+    "in_cached": 168815,
+    "ctx": 163786
+   },
+   {
+    "idx": 35,
+    "out": 154,
+    "in_uncached": 2049,
+    "in_cached": 169953,
+    "ctx": 164091
+   },
+   {
+    "idx": 36,
+    "out": 285,
+    "in_uncached": 2174,
+    "in_cached": 170453,
+    "ctx": 164625
+   },
+   {
+    "idx": 37,
+    "out": 653,
+    "in_uncached": 2851,
+    "in_cached": 170992,
+    "ctx": 165672
+   }
+  ]
+ },
+ {
+  "conv": "849bf972-86ca-47e0-821f-8c099174094d",
+  "model": "\"carbon-g-jetski/tfhub/prod/ml-gemini-experimental/Gemini-5-M-IT-G1149-Rev27-Carbon-G/1\"",
+  "llm_calls": 22,
+  "transcript_steps": 46,
+  "start": "2026-11-18T01:01:31Z",
+  "end": "2026-11-18T01:46:23Z",
+  "duration_s": 2692.0,
+  "totals": {
+   "out": 106293,
+   "in_uncached": 520942,
+   "in_cached": 1739757,
+   "in_total": 2260699
+  },
+  "max_ctx": 135489,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 656,
+    "in_uncached": 15009,
+    "in_cached": 0,
+    "ctx": 20853
+   },
+   {
+    "idx": 1,
+    "out": 450,
+    "in_uncached": 2766,
+    "in_cached": 15010,
+    "ctx": 23881
+   },
+   {
+    "idx": 2,
+    "out": 41295,
+    "in_uncached": 2693,
+    "in_cached": 15727,
+    "ctx": 24438
+   },
+   {
+    "idx": 3,
+    "out": 15029,
+    "in_uncached": 59795,
+    "in_cached": 0,
+    "ctx": 65769
+   },
+   {
+    "idx": 4,
+    "out": 17313,
+    "in_uncached": 74910,
+    "in_cached": 0,
+    "ctx": 80834
+   },
+   {
+    "idx": 5,
+    "out": 22730,
+    "in_uncached": 92302,
+    "in_cached": 0,
+    "ctx": 98183
+   },
+   {
+    "idx": 6,
+    "out": 3163,
+    "in_uncached": 115112,
+    "in_cached": 0,
+    "ctx": 120949
+   },
+   {
+    "idx": 7,
+    "out": 121,
+    "in_uncached": 3242,
+    "in_cached": 115113,
+    "ctx": 124148
+   },
+   {
+    "idx": 8,
+    "out": 241,
+    "in_uncached": 2665,
+    "in_cached": 116306,
+    "ctx": 124661
+   },
+   {
+    "idx": 9,
+    "out": 237,
+    "in_uncached": 2497,
+    "in_cached": 116922,
+    "ctx": 125062
+   },
+   {
+    "idx": 10,
+    "out": 766,
+    "in_uncached": 2673,
+    "in_cached": 117370,
+    "ctx": 126154
+   },
+   {
+    "idx": 11,
+    "out": 448,
+    "in_uncached": 120992,
+    "in_cached": 0,
+    "ctx": 127040
+   },
+   {
+    "idx": 12,
+    "out": 167,
+    "in_uncached": 2823,
+    "in_cached": 118943,
+    "ctx": 127772
+   },
+   {
+    "idx": 13,
+    "out": 209,
+    "in_uncached": 2619,
+    "in_cached": 121165,
+    "ctx": 129210
+   },
+   {
+    "idx": 14,
+    "out": 1300,
+    "in_uncached": 3038,
+    "in_cached": 121735,
+    "ctx": 129930
+   },
+   {
+    "idx": 15,
+    "out": 267,
+    "in_uncached": 2204,
+    "in_cached": 123994,
+    "ctx": 131301
+   },
+   {
+    "idx": 16,
+    "out": 162,
+    "in_uncached": 2439,
+    "in_cached": 124149,
+    "ctx": 131639
+   },
+   {
+    "idx": 17,
+    "out": 246,
+    "in_uncached": 2205,
+    "in_cached": 124774,
+    "ctx": 132015
+   },
+   {
+    "idx": 18,
+    "out": 123,
+    "in_uncached": 3206,
+    "in_cached": 124930,
+    "ctx": 132970
+   },
+   {
+    "idx": 19,
+    "out": 461,
+    "in_uncached": 2395,
+    "in_cached": 127226,
+    "ctx": 133932
+   },
+   {
+    "idx": 20,
+    "out": 207,
+    "in_uncached": 2168,
+    "in_cached": 128137,
+    "ctx": 134520
+   },
+   {
+    "idx": 21,
+    "out": 702,
+    "in_uncached": 3189,
+    "in_cached": 128256,
+    "ctx": 135489
+   }
+  ]
+ },
+ {
+  "conv": "ee2fb8a3-57fc-4905-ab24-b6c64d360713",
+  "model": "\"carbon-g-jetski/tfhub/prod/ml-gemini-experimental/Gemini-5-M-IT-G1149-Rev27-Carbon-G/1\"",
+  "llm_calls": 26,
+  "transcript_steps": 52,
+  "start": "2026-11-18T02:06:41Z",
+  "end": "2026-11-18T02:51:07Z",
+  "duration_s": 2666.0,
+  "totals": {
+   "out": 157906,
+   "in_uncached": 617928,
+   "in_cached": 3003247,
+   "in_total": 3621175
+  },
+  "max_ctx": 204414,
+  "steps": [
+   {
+    "idx": 0,
+    "out": 367,
+    "in_uncached": 14985,
+    "in_cached": 0,
+    "ctx": 20839
+   },
+   {
+    "idx": 1,
+    "out": 358,
+    "in_uncached": 3869,
+    "in_cached": 14986,
+    "ctx": 25209
+   },
+   {
+    "idx": 2,
+    "out": 32652,
+    "in_uncached": 2593,
+    "in_cached": 16806,
+    "ctx": 25672
+   },
+   {
+    "idx": 3,
+    "out": 13388,
+    "in_uncached": 52130,
+    "in_cached": 0,
+    "ctx": 58360
+   },
+   {
+    "idx": 4,
+    "out": 11985,
+    "in_uncached": 13467,
+    "in_cached": 52131,
+    "ctx": 71784
+   },
+   {
+    "idx": 5,
+    "out": 9013,
+    "in_uncached": 12064,
+    "in_cached": 65599,
+    "ctx": 83805
+   },
+   {
+    "idx": 6,
+    "out": 12950,
+    "in_uncached": 9090,
+    "in_cached": 77664,
+    "ctx": 92854
+   },
+   {
+    "idx": 7,
+    "out": 32167,
+    "in_uncached": 13029,
+    "in_cached": 86755,
+    "ctx": 105840
+   },
+   {
+    "idx": 8,
+    "out": 1962,
+    "in_uncached": 130579,
+    "in_cached": 0,
+    "ctx": 138043
+   },
+   {
+    "idx": 9,
+    "out": 134,
+    "in_uncached": 132057,
+    "in_cached": 0,
+    "ctx": 140037
+   },
+   {
+    "idx": 10,
+    "out": 167,
+    "in_uncached": 14112,
+    "in_cached": 132058,
+    "ctx": 152321
+   },
+   {
+    "idx": 11,
+    "out": 319,
+    "in_uncached": 2337,
+    "in_cached": 146171,
+    "ctx": 154041
+   },
+   {
+    "idx": 12,
+    "out": 26451,
+    "in_uncached": 3992,
+    "in_cached": 146459,
+    "ctx": 155744
+   },
+   {
+    "idx": 13,
+    "out": 2598,
+    "in_uncached": 176982,
+    "in_cached": 0,
+    "ctx": 182231
+   },
+   {
+    "idx": 14,
+    "out": 1988,
+    "in_uncached": 2737,
+    "in_cached": 176983,
+    "ctx": 184913
+   },
+   {
+    "idx": 15,
+    "out": 347,
+    "in_uncached": 2117,
+    "in_cached": 179721,
+    "ctx": 186984
+   },
+   {
+    "idx": 16,
+    "out": 1576,
+    "in_uncached": 4461,
+    "in_cached": 181839,
+    "ctx": 190775
+   },
+   {
+    "idx": 17,
+    "out": 1232,
+    "in_uncached": 3871,
+    "in_cached": 184251,
+    "ctx": 192559
+   },
+   {
+    "idx": 18,
+    "out": 802,
+    "in_uncached": 3387,
+    "in_cached": 186073,
+    "ctx": 193853
+   },
+   {
+    "idx": 19,
+    "out": 391,
+    "in_uncached": 2961,
+    "in_cached": 187411,
+    "ctx": 194719
+   },
+   {
+    "idx": 20,
+    "out": 179,
+    "in_uncached": 2390,
+    "in_cached": 190373,
+    "ctx": 196477
+   },
+   {
+    "idx": 21,
+    "out": 3474,
+    "in_uncached": 3248,
+    "in_cached": 190714,
+    "ctx": 197405
+   },
+   {
+    "idx": 22,
+    "out": 1999,
+    "in_uncached": 3594,
+    "in_cached": 193963,
+    "ctx": 200948
+   },
+   {
+    "idx": 23,
+    "out": 284,
+    "in_uncached": 2103,
+    "in_cached": 197558,
+    "ctx": 203007
+   },
+   {
+    "idx": 24,
+    "out": 237,
+    "in_uncached": 2557,
+    "in_cached": 197612,
+    "ctx": 203418
+   },
+   {
+    "idx": 25,
+    "out": 886,
+    "in_uncached": 3216,
+    "in_cached": 198120,
+    "ctx": 204414
+   }
+  ]
+ }
+]
